@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>酒 — Wine Story</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; }
+
+  [data-composition-id="wine-root"] {
+    background: #0a0608;
+    color: #F5E6D3;
+    font-family: "Georgia", "Songti SC", "STSong", serif;
+  }
+
+  /* ===== Scene 1: Title ===== */
+  #scene-1 {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 120px 160px;
+    gap: 32px;
+  }
+  #scene-1 .title-char {
+    font-size: 280px;
+    font-weight: 700;
+    color: #C9A961;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 80px rgba(201, 169, 97, 0.4);
+  }
+  #scene-1 .subtitle-en {
+    font-size: 42px;
+    font-weight: 300;
+    color: #8B2253;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  #scene-1 .tagline {
+    font-size: 28px;
+    font-weight: 300;
+    color: #F5E6D3;
+    opacity: 0.7;
+    letter-spacing: 0.15em;
+  }
+  #scene-1 .gold-line {
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C9A961, transparent);
+  }
+
+  /* ===== Scene 2: Characteristics ===== */
+  #scene-2 {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 140px 200px;
+    gap: 48px;
+  }
+  #scene-2 .section-label {
+    font-size: 24px;
+    color: #C9A961;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  #scene-2 .feature-row {
+    display: flex;
+    gap: 80px;
+    justify-content: space-between;
+  }
+  #scene-2 .feature-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  #scene-2 .feature-num {
+    font-size: 72px;
+    font-weight: 700;
+    color: #8B2253;
+    font-variant-numeric: tabular-nums;
+  }
+  #scene-2 .feature-label {
+    font-size: 22px;
+    color: #F5E6D3;
+    opacity: 0.6;
+    letter-spacing: 0.1em;
+  }
+  #scene-2 .feature-desc {
+    font-size: 18px;
+    color: #F5E6D3;
+    opacity: 0.4;
+    line-height: 1.6;
+  }
+  #scene-2 .quote {
+    font-size: 32px;
+    font-style: italic;
+    color: #C9A961;
+    line-height: 1.5;
+    max-width: 80%;
+  }
+
+  /* ===== Scene 3: Closing ===== */
+  #scene-3 {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 120px 160px;
+    gap: 40px;
+  }
+  #scene-3 .closing-title {
+    font-size: 96px;
+    font-weight: 700;
+    color: #C9A961;
+    letter-spacing: 0.1em;
+  }
+  #scene-3 .closing-sub {
+    font-size: 36px;
+    font-weight: 300;
+    color: #8B2253;
+    letter-spacing: 0.2em;
+  }
+  #scene-3 .closing-tag {
+    font-size: 22px;
+    color: #F5E6D3;
+    opacity: 0.5;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  /* ===== Transition overlays ===== */
+  #trans-1to2, #trans-2to3 {
+    position: absolute;
+    inset: 0;
+    background: #0a0608;
+    z-index: 100;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div data-composition-id="wine-root" data-width="1920" data-height="1080">
+
+  <!-- Scene 1: Title Card (0 - 4.5s) -->
+  <div id="scene-1" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+    <div class="subtitle-en">Wine Story</div>
+    <div class="gold-line" id="line-1"></div>
+    <div class="title-char">酒</div>
+    <div class="tagline">千年醇香 · 一樽时光</div>
+  </div>
+
+  <!-- Transition 1→2 (4.0 - 4.6s) -->
+  <div id="trans-1to2" class="clip" data-start="4.0" data-duration="0.6" data-track-index="5"></div>
+
+  <!-- Scene 2: Characteristics (4.6 - 9.0s) -->
+  <div id="scene-2" class="clip" data-start="4.6" data-duration="4.4" data-track-index="0">
+    <div class="section-label">品鉴笔记 · Tasting Notes</div>
+    <div class="feature-row">
+      <div class="feature-item">
+        <div class="feature-num">1982</div>
+        <div class="feature-label">年份 Vintage</div>
+        <div class="feature-desc">波尔多左岸<br>赤霞珠混酿</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">13.5</div>
+        <div class="feature-label">酒精度 ABV</div>
+        <div class="feature-desc">温和圆润<br>余韵悠长</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">18</div>
+        <div class="feature-label">陈年 月</div>
+        <div class="feature-desc">法国橡木桶<br>香草与雪松</div>
+      </div>
+    </div>
+    <div class="quote">"一樽酒，藏着一座庄园的四季。"</div>
+  </div>
+
+  <!-- Transition 2→3 (8.8 - 9.4s) -->
+  <div id="trans-2to3" class="clip" data-start="8.8" data-duration="0.6" data-track-index="5"></div>
+
+  <!-- Scene 3: Closing (9.4 - 13.0s) -->
+  <div id="scene-3" class="clip" data-start="9.4" data-duration="3.6" data-track-index="0">
+    <div class="closing-title">敬时光</div>
+    <div class="closing-sub">Cheers to Time</div>
+    <div class="closing-tag">Wine · Story · 2026</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+
+    const tl = gsap.timeline({ paused: true });
+
+    // ===== Scene 1 entrances (0 - 4.5s) =====
+    tl.from("#scene-1 .subtitle-en", { y: 30, opacity: 0, duration: 0.8, ease: "power2.out" }, 0.2);
+    tl.fromTo("#line-1", { width: 0, opacity: 0 }, { width: 400, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 0.5);
+    tl.from("#scene-1 .title-char", { scale: 0.6, opacity: 0, duration: 1.0, ease: "back.out(1.4)" }, 0.6);
+    tl.from("#scene-1 .tagline", { y: 20, opacity: 0, duration: 0.7, ease: "power2.out" }, 1.2);
+
+    // ===== Transition 1→2: fade to black then reveal (4.0 - 4.6s) =====
+    tl.fromTo("#trans-1to2", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.in" }, 4.0);
+    tl.to("#trans-1to2", { opacity: 0, duration: 0.3, ease: "power2.out" }, 4.3);
+
+    // ===== Scene 2 entrances (4.6 - 9.0s) =====
+    tl.from("#scene-2 .section-label", { x: -40, opacity: 0, duration: 0.6, ease: "power3.out" }, 4.8);
+    tl.from("#scene-2 .feature-item:nth-child(1)", { y: 40, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.0);
+    tl.from("#scene-2 .feature-item:nth-child(2)", { y: 40, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.2);
+    tl.from("#scene-2 .feature-item:nth-child(3)", { y: 40, opacity: 0, duration: 0.5, ease: "power2.out" }, 5.4);
+    tl.from("#scene-2 .quote", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, 6.0);
+
+    // ===== Transition 2→3: fade to black then reveal (8.8 - 9.4s) =====
+    tl.fromTo("#trans-2to3", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.in" }, 8.8);
+    tl.to("#trans-2to3", { opacity: 0, duration: 0.3, ease: "power2.out" }, 9.1);
+
+    // ===== Scene 3 entrances + final fade (9.4 - 13.0s) =====
+    tl.from("#scene-3 .closing-title", { scale: 0.8, opacity: 0, duration: 0.8, ease: "back.out(1.2)" }, 9.6);
+    tl.from("#scene-3 .closing-sub", { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" }, 10.0);
+    tl.from("#scene-3 .closing-tag", { opacity: 0, duration: 0.5, ease: "power2.out" }, 10.4);
+
+    // Final scene fade out (only place exit animations are allowed)
+    tl.to("#scene-3 .closing-title", { opacity: 0, duration: 0.5, ease: "power2.in" }, 12.3);
+    tl.to("#scene-3 .closing-sub", { opacity: 0, duration: 0.4, ease: "power2.in" }, 12.4);
+    tl.to("#scene-3 .closing-tag", { opacity: 0, duration: 0.4, ease: "power2.in" }, 12.5);
+
+    window.__timelines["wine-root"] = tl;
+  </script>
+</div>
+
+</body>
+</html>

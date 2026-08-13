@@ -1,0 +1,8 @@
+{
+  "model": "seedance-2.0-text-to-video",
+  "prompt": "Cinematic close-up of deep red wine pouring into a crystal goblet, elegant legs forming on the glass walls, ruby red liquid glowing under warm lighting, vintage oak wine cellar background, camera slowly tilts down from rim to show swirling liquid, slow motion, premium commercial cinematography",
+  "duration": 5,
+  "quality": "720p",
+  "aspect_ratio": "16:9",
+  "generate_audio": true
+}

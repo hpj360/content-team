@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "@root/hyperframes": {
+      "name": "Hyperframes",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=hyperframes&namespace=root",
+      "source": "clawhub",
+      "version": "1.0.0",
+      "namespace": {
+        "canonicalName": "@root/hyperframes",
+        "displayName": "root",
+        "handle": "root",
+        "publicSlug": "hyperframes"
+      },
+      "internalSlug": "hyperframes",
+      "publicSlug": "hyperframes",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@root\\hyperframes"
+    },
+    "@heygen-com/media-use": {
+      "name": "Media Use",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=media-use&namespace=heygen-com",
+      "source": "clawhub",
+      "version": "1.0.31",
+      "namespace": {
+        "canonicalName": "@heygen-com/media-use",
+        "displayName": "heygen-com",
+        "handle": "heygen-com",
+        "publicSlug": "media-use"
+      },
+      "internalSlug": "media-use",
+      "publicSlug": "media-use",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@heygen-com\\media-use"
+    },
+    "@shreefentsar/remotion-video-toolkit": {
+      "name": "Remotion Video Toolkit",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=remotion-video-toolkit&namespace=shreefentsar",
+      "source": "clawhub",
+      "version": "1.4.0",
+      "namespace": {
+        "canonicalName": "@shreefentsar/remotion-video-toolkit",
+        "displayName": "shreefentsar",
+        "handle": "shreefentsar",
+        "publicSlug": "remotion-video-toolkit"
+      },
+      "internalSlug": "remotion-video-toolkit",
+      "publicSlug": "remotion-video-toolkit",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@shreefentsar\\remotion-video-toolkit"
+    },
+    "@lijiazhen0623/media-generation": {
+      "name": "Media Generation",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=media-generation&namespace=lijiazhen0623",
+      "source": "clawhub",
+      "version": "2.2.0",
+      "namespace": {
+        "canonicalName": "@lijiazhen0623/media-generation",
+        "displayName": "lijiazhen0623",
+        "handle": "lijiazhen0623",
+        "publicSlug": "media-generation"
+      },
+      "internalSlug": "media-generation",
+      "publicSlug": "media-generation",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@lijiazhen0623\\media-generation"
+    },
+    "@whitetowerai/video-cut": {
+      "name": "Video Cut",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=video-cut&namespace=whitetowerai",
+      "source": "clawhub",
+      "version": "1.0.2",
+      "namespace": {
+        "canonicalName": "@whitetowerai/video-cut",
+        "displayName": "whitetowerai",
+        "handle": "whitetowerai",
+        "publicSlug": "video-cut"
+      },
+      "internalSlug": "video-cut",
+      "publicSlug": "video-cut",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@whitetowerai\\video-cut"
+    },
+    "@xk103295870-alt/seedance2-video-gen": {
+      "name": "Seedance 2.0 Video Gen",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=seedance2-video-gen&namespace=xk103295870-alt",
+      "source": "clawhub",
+      "version": "1.0.2",
+      "namespace": {
+        "canonicalName": "@xk103295870-alt/seedance2-video-gen",
+        "displayName": "xk103295870-alt",
+        "handle": "xk103295870-alt",
+        "publicSlug": "seedance2-video-gen"
+      },
+      "internalSlug": "seedance2-video-gen",
+      "publicSlug": "seedance2-video-gen",
+      "installDir": "D:\\Hermes\\content-team\\skills\\@xk103295870-alt\\seedance2-video-gen"
+    }
+  }
+}

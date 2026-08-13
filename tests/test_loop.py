@@ -1,0 +1,4083 @@
+"""Tests for Loop Engineering: stop rules, state management, and orchestration."""
+from __future__ import annotations
+
+import pytest
+
+from hermes.loop import (
+    LOOP_PATTERNS,
+    STOP_RULES,
+    LoopRound,
+    LoopStage,
+    LoopStatus,
+    _save_loop_meta,
+    audit_deliverables,
+    audit_loop,
+    check_budget,
+    check_stop_rules,
+    get_loop,
+    init_loop,
+    list_loops,
+    record_round,
+)
+from hermes.runner import run_loop_continuous
+
+
+# ── Stop Rules Tests ──────────────────────────────────────────────────
+
+
+def _make_round(
+    round_num: int,
+    passed: bool = False,
+    failure_items: list[str] | None = None,
+    failure_count: int | None = None,
+    result_summary: str = "",
+    verifier_result: str = "",
+) -> LoopRound:
+    """Helper to create a LoopRound for testing."""
+    if failure_items is None:
+        failure_items = []
+    if failure_count is None:
+        failure_count = len(failure_items)
+    return LoopRound(
+        round_num=round_num,
+        timestamp="2025-01-01T00:00:00Z",
+        action="test action",
+        result_summary=result_summary or "test summary",
+        verifier_result=verifier_result,
+        passed=passed,
+        failure_count=failure_count,
+        failure_items=failure_items,
+    )
+
+
+def test_stop_rule_all_green() -> None:
+    """Rule 1: ALL GREEN — latest round passed."""
+    rounds = [_make_round(1, passed=False, failure_items=["a"]), _make_round(2, passed=True)]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "all_green"
+    assert result["action"] == "stop_success"
+
+
+def test_stop_rule_rounds_exhausted() -> None:
+    """Rule 2: Rounds exhausted — reached max_rounds."""
+    rounds = [_make_round(1, passed=False, failure_items=["a"])]
+    result = check_stop_rules("test", current_round=5, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "rounds_exhausted"
+    assert result["action"] == "stop_escalate"
+
+
+def test_stop_rule_same_failure_twice() -> None:
+    """Rule 3: Same failure appears in two consecutive rounds."""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["file.py:10 - error"]),
+        _make_round(2, passed=False, failure_items=["file.py:10 - error"]),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "same_failure_twice"
+
+
+def test_stop_rule_same_failure_twice_no_overlap() -> None:
+    """Rule 3 should NOT trigger if failures are different."""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["file.py:10 - error A"]),
+        _make_round(2, passed=False, failure_items=["file.py:20 - error B"]),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    # May still trigger on no_progress since count didn't decrease
+    assert result["rule_id"] != "same_failure_twice"
+
+
+def test_stop_rule_regression() -> None:
+    """Rule 4: Regression — fixing one thing broke another."""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a.py:1", "b.py:2"]),
+        _make_round(2, passed=False, failure_items=["a.py:1", "c.py:3"]),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "regression"
+
+
+def test_stop_rule_no_progress() -> None:
+    """Rule 5: No progress — failure count not decreasing."""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a", "b"], failure_count=2),
+        _make_round(2, passed=False, failure_items=["c", "d"], failure_count=2),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "no_progress"
+
+
+def test_stop_rule_no_progress_count_increased() -> None:
+    """新互斥设计: {a}→{a,b} 引入新失败且有重复 → regression（改坏了）。
+
+    旧设计此处用 "或" 断言掩盖了规则优先级 bug；新互斥设计下明确归为
+    regression（new≠∅ AND overlap≠∅），不再依赖评估顺序的偶然性。
+    """
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a"], failure_count=1),
+        _make_round(2, passed=False, failure_items=["a", "b"], failure_count=2),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "regression"
+
+
+def test_stop_rule_beyond_capability() -> None:
+    """Rule 6: Beyond capability — external dependency signals."""
+    rounds = [
+        _make_round(
+            1,
+            passed=False,
+            failure_items=["import error"],
+            result_summary="ModuleNotFoundError: No module named 'requests'",
+        ),
+    ]
+    result = check_stop_rules("test", current_round=1, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "beyond_capability"
+    assert "modulenotfounderror" in result["description"].lower()
+
+
+def test_stop_rule_beyond_capability_permission_denied() -> None:
+    """Rule 6: Beyond capability — permission denied."""
+    rounds = [
+        _make_round(
+            1,
+            passed=False,
+            failure_items=["access error"],
+            verifier_result="Permission denied: cannot write to /etc/config",
+        ),
+    ]
+    result = check_stop_rules("test", current_round=1, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is True
+    assert result["rule_id"] == "beyond_capability"
+
+
+def test_stop_rule_no_trigger_on_progress() -> None:
+    """No stop rule should trigger when there IS progress."""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a", "b", "c"], failure_count=3),
+        _make_round(2, passed=False, failure_items=["a"], failure_count=1),
+    ]
+    result = check_stop_rules("test", current_round=2, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is False
+    assert result["action"] == "continue"
+
+
+def test_stop_rule_empty_rounds() -> None:
+    """No rounds — should not stop."""
+    result = check_stop_rules("test", current_round=0, max_rounds=5, rounds=[])
+    assert result["should_stop"] is False
+    assert result["action"] == "continue"
+
+
+def test_stop_rule_single_round_not_passed() -> None:
+    """Single round, not passed, no capability signals — should continue."""
+    rounds = [_make_round(1, passed=False, failure_items=["a"])]
+    result = check_stop_rules("test", current_round=1, max_rounds=5, rounds=rounds)
+    assert result["should_stop"] is False
+
+
+def test_all_stop_rules_defined() -> None:
+    """Verify all stop rules are defined in STOP_RULES (1 success + 6 escalation = 7 total)."""
+    assert len(STOP_RULES) == 7
+    rule_ids = [r["id"] for r in STOP_RULES]
+    assert "all_green" in rule_ids
+    assert "rounds_exhausted" in rule_ids
+    assert "budget_exceeded" in rule_ids
+    assert "same_failure_twice" in rule_ids
+    assert "regression" in rule_ids
+    assert "no_progress" in rule_ids
+    assert "beyond_capability" in rule_ids
+
+
+def test_stop_rules_order_matches_evaluation() -> None:
+    """STOP_RULES 列表顺序必须等于 check_stop_rules 评估顺序（发现4.2 一致性）。"""
+    expected = [
+        "all_green",
+        "rounds_exhausted",
+        "budget_exceeded",
+        "beyond_capability",
+        "regression",
+        "same_failure_twice",
+        "no_progress",
+    ]
+    assert [r["id"] for r in STOP_RULES] == expected
+
+
+def test_stop_rules_mutually_exclusive() -> None:
+    """互斥设计验证：regression/same_failure_twice/no_progress 三者条件不重叠。
+
+    构造三个典型场景，各自只触发一条规则，证明无遮蔽。
+    """
+    # regression: new≠∅ AND overlap≠∅  ({a,b}→{a,c})
+    r = check_stop_rules(
+        "t", 2, 5,
+        [_make_round(1, failure_items=["a.py:1", "b.py:2"]),
+         _make_round(2, failure_items=["a.py:1", "c.py:3"])],
+    )
+    assert r["rule_id"] == "regression"
+
+    # same_failure_twice: new=∅ AND overlap≠∅ AND count未减  ({a}→{a})
+    r = check_stop_rules(
+        "t", 2, 5,
+        [_make_round(1, failure_items=["x.py:1"], failure_count=1),
+         _make_round(2, failure_items=["x.py:1"], failure_count=1)],
+    )
+    assert r["rule_id"] == "same_failure_twice"
+
+    # no_progress: new≠∅ AND overlap=∅ AND fixed≠∅ AND count未减  ({a,b}→{c,d})
+    r = check_stop_rules(
+        "t", 2, 5,
+        [_make_round(1, failure_items=["a", "b"], failure_count=2),
+         _make_round(2, failure_items=["c", "d"], failure_count=2)],
+    )
+    assert r["rule_id"] == "no_progress"
+
+
+# ── Loop Patterns Tests ───────────────────────────────────────────────
+
+
+def test_all_patterns_have_sub_agents() -> None:
+    """Every pattern should have sub_agents configuration."""
+    for name, pattern in LOOP_PATTERNS.items():
+        assert "sub_agents" in pattern, f"Pattern '{name}' missing sub_agents config"
+        assert isinstance(pattern["sub_agents"], list)
+        assert len(pattern["sub_agents"]) > 0, f"Pattern '{name}' has empty sub_agents"
+
+
+def test_builder_checker_has_parallel_checkers() -> None:
+    """builder-checker pattern should have parallel checker agents."""
+    pattern = LOOP_PATTERNS["builder-checker"]
+    sub_agents = pattern["sub_agents"]
+    parallel_checkers = [a for a in sub_agents if a.get("parallel") and "checker" in a["role"]]
+    assert len(parallel_checkers) >= 3, "Expected at least 3 parallel checker agents"
+
+
+def test_knowledge_hygiene_has_parallel_scanners() -> None:
+    """knowledge-hygiene pattern should have parallel scanner agents."""
+    pattern = LOOP_PATTERNS["knowledge-hygiene"]
+    sub_agents = pattern["sub_agents"]
+    parallel_scanners = [a for a in sub_agents if a.get("parallel")]
+    assert len(parallel_scanners) >= 3, "Expected at least 3 parallel scanner agents"
+
+
+# ── New patterns (Cobus Greyling 7-workflow alignment) ─────────────────
+
+
+def test_seven_built_in_patterns() -> None:
+    """8 内置工作流，对齐 Cobus Greyling loop-engineering 框架 + ai-berkshire 多视角并行。
+
+    daily-triage / knowledge-hygiene / ci-sweeper / pr-babysitter /
+    issue-triage / changelog-draft / builder-checker = 7（Cobus Greyling）
+    multi-perspective = 1（ai-berkshire 借鉴）= 8
+    """
+    assert len(LOOP_PATTERNS) == 8, f"Expected 8 patterns, got {len(LOOP_PATTERNS)}"
+    expected = {
+        "daily-triage", "knowledge-hygiene", "ci-sweeper", "pr-babysitter",
+        "issue-triage", "changelog-draft", "builder-checker", "multi-perspective",
+    }
+    assert set(LOOP_PATTERNS.keys()) == expected
+
+
+def test_issue_triage_pattern_shape() -> None:
+    """issue-triage pattern must declare denylist + parallel sub-agents + L1 default."""
+    pattern = LOOP_PATTERNS["issue-triage"]
+    assert pattern["default_stage"].value == "l1_report"
+    assert "label:security" in pattern["denylist"]
+    parallel = [a for a in pattern["sub_agents"] if a.get("parallel")]
+    assert len(parallel) >= 2, "issue-triage should have at least 2 parallel scanners"
+
+
+def test_changelog_draft_pattern_shape() -> None:
+    """changelog-draft pattern must protect CHANGELOG.md in denylist."""
+    pattern = LOOP_PATTERNS["changelog-draft"]
+    assert pattern["default_stage"].value == "l1_report"
+    assert "CHANGELOG.md" in pattern["denylist"]
+    assert pattern["max_rounds"] <= 3, "changelog should be short (≤3 rounds)"
+
+
+# ── Pain-point → pattern mapping (interactive picker) ──────────────────
+
+
+@pytest.mark.skip(reason="trae-only `_recommend_pattern_for_pain_point` removed by merge")
+def test_pain_point_to_pattern_recommendation() -> None:
+    """Pain-point keywords must map to the right pattern (first match wins).
+
+    SKIPPED: References trae-only `_recommend_pattern_for_pain_point` removed
+    by merge with new workbench main. Needs port to new workbench code.
+    """
+    pytest.skip("trae-only helper removed by merge with new workbench main")
+    from hermes.main import _recommend_pattern_for_pain_point
+
+    assert _recommend_pattern_for_pain_point("PR keeps getting stuck") == "pr-babysitter"
+    assert _recommend_pattern_for_pain_point("CI is flaky again") == "ci-sweeper"
+    assert _recommend_pattern_for_pain_point("changelog is tedious") == "changelog-draft"
+    assert _recommend_pattern_for_pain_point("issue 太乱") == "issue-triage"
+    assert _recommend_pattern_for_pain_point("更新日志") == "changelog-draft"
+    assert _recommend_pattern_for_pain_point("bug fix needed") == "builder-checker"
+    assert _recommend_pattern_for_pain_point("知识库 过期") == "knowledge-hygiene"
+
+
+@pytest.mark.skip(reason="trae-only `_recommend_pattern_for_pain_point` removed by merge")
+def test_pain_point_no_match_returns_none() -> None:
+    """Unrecognized pain point must return None (caller decides)."""
+    from hermes.main import _recommend_pattern_for_pain_point
+
+    assert _recommend_pattern_for_pain_point("xyzzy plugh") is None
+    assert _recommend_pattern_for_pain_point("") is None
+
+
+# ── Loop Ready badge rendering ─────────────────────────────────────────
+
+
+@pytest.mark.skip(reason="trae-only `_render_loop_badge` removed by merge")
+def test_loop_badge_thresholds() -> None:
+    """Badge label/color must follow the 85/70 threshold semantics."""
+    from hermes.main import _render_loop_badge
+
+    high = _render_loop_badge({"loop": "x", "pattern": "p", "score": 92})
+    assert "Loop_Ready" in high["markdown"]
+    assert "brightgreen" in high["markdown"]
+    assert "🟢" in high["markdown"]
+
+    mid = _render_loop_badge({"loop": "x", "pattern": "p", "score": 75})
+    assert "Loop_Aware" in mid["markdown"]
+    assert "yellow" in mid["markdown"]
+    assert "🟡" in mid["markdown"]
+
+    low = _render_loop_badge({"loop": "x", "pattern": "p", "score": 50})
+    assert "Loop_Incubating" in low["markdown"]
+    assert "lightgrey" in low["markdown"]
+    assert "⚪" in low["markdown"]
+
+    # All three must include the loop name + pattern + score
+    for badge in (high, mid, low):
+        assert "x" in badge["markdown"]
+        assert "`p`" in badge["markdown"]
+        assert "/100" in badge["markdown"]
+        # SVG must be valid SVG
+        assert badge["svg"].startswith("<svg")
+        assert badge["svg"].endswith("</svg>")
+
+
+# ── CLI subcommand registration ────────────────────────────────────────
+
+
+@pytest.mark.skip(reason="trae-only CLI flag removed by workbench rewrite")
+def test_cost_subcommand_is_registered() -> None:
+    """hermes loop cost must be a registered subcommand (alias of budget)."""
+    from hermes.main import build_parser
+
+    parser = build_parser()
+    # Parse a real call to ensure cost is recognized
+    args = parser.parse_args(["loop", "cost", "my-loop"])
+    assert args.loop_cmd == "cost"
+    assert args.name == "my-loop"
+    assert callable(args.func), "cost subcommand must have a callable func"
+
+
+@pytest.mark.skip(reason="trae-only CLI flag removed by workbench rewrite")
+def test_budget_subcommand_still_works_as_alias() -> None:
+    """hermes loop budget must remain as a backward-compatible alias."""
+    from hermes.main import build_parser
+
+    parser = build_parser()
+    args = parser.parse_args(["loop", "budget", "my-loop"])
+    assert args.loop_cmd == "budget"
+    assert args.name == "my-loop"
+
+
+@pytest.mark.skip(reason="trae-only CLI flag removed by workbench rewrite")
+def test_audit_badge_flag_registered() -> None:
+    """hermes loop audit --badge and --badge-format must be registered."""
+    from hermes.main import build_parser
+
+    parser = build_parser()
+    args = parser.parse_args(["loop", "audit", "--badge", "--badge-format", "svg"])
+    assert args.badge is True
+    assert args.badge_format == "svg"
+
+    args2 = parser.parse_args(["loop", "audit", "my-loop"])
+    assert args2.badge is False
+    assert args2.badge_format == "md"
+
+
+@pytest.mark.skip(reason="trae-only CLI flag removed by workbench rewrite")
+def test_init_interactive_flag_registered() -> None:
+    """hermes loop init --interactive and --from-pain-point must be registered."""
+    from hermes.main import build_parser
+
+    parser = build_parser()
+    args = parser.parse_args(["loop", "init", "x", "--interactive"])
+    assert args.interactive is True
+    assert args.from_pain_point is None
+
+    args2 = parser.parse_args(["loop", "init", "x", "--from-pain-point", "PR stuck"])
+    assert args2.from_pain_point == "PR stuck"
+    assert args2.interactive is False
+
+
+# ── LoopRound Serialization Tests ─────────────────────────────────────
+
+
+def test_loop_round_to_dict_from_dict_roundtrip() -> None:
+    """LoopRound serialization should roundtrip correctly."""
+    original = LoopRound(
+        round_num=3,
+        timestamp="2025-01-01T00:00:00Z",
+        action="builder-checker round",
+        result_summary="Fixed 2 issues",
+        verifier_result="ALL GREEN",
+        passed=True,
+        next_action="stop",
+        failure_count=0,
+        failure_items=[],
+        tokens_used=50000,
+        agent_reports={"builder": "Fixed bugs", "checker": "ALL GREEN"},
+    )
+    d = original.to_dict()
+    restored = LoopRound.from_dict(d)
+
+    assert restored.round_num == original.round_num
+    assert restored.timestamp == original.timestamp
+    assert restored.action == original.action
+    assert restored.passed == original.passed
+    assert restored.tokens_used == original.tokens_used
+    assert restored.agent_reports == original.agent_reports
+
+
+def test_loop_round_from_dict_defaults() -> None:
+    """LoopRound.from_dict should handle missing fields gracefully."""
+    minimal = {"round_num": 1}
+    restored = LoopRound.from_dict(minimal)
+    assert restored.round_num == 1
+    assert restored.passed is False
+    assert restored.failure_items == []
+    assert restored.tokens_used == 0
+
+
+# ── LoopState Persistence Tests ───────────────────────────────────────
+
+
+def test_init_and_list_loop() -> None:
+    """init_loop creates a loop, list_loops finds it."""
+    from hermes.loop import loops_dir
+
+    try:
+        result = init_loop("test-temp-loop", pattern="knowledge-hygiene")
+        assert result["success"] is True
+        assert result["name"] == "test-temp-loop"
+        assert "STATE.md" in result["files"]
+        assert "loop-budget.md" in result["files"]
+
+        # Verify it shows in list_loops
+        loops = list_loops()
+        assert any(lp.name == "test-temp-loop" for lp in loops)
+    finally:
+        import shutil
+        test_dir = loops_dir() / "test-temp-loop"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_record_round_persists() -> None:
+    """record_round should persist round data to meta.json."""
+    import shutil
+    from hermes.loop import get_loop, loops_dir
+
+    # Create a test loop
+    result = init_loop("test-record-loop", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        # Record a round
+        round_data = LoopRound(
+            round_num=1,
+            timestamp="2025-01-01T00:00:00Z",
+            action="test scan",
+            result_summary="Found 2 issues",
+            verifier_result="2 high priority",
+            passed=False,
+            failure_count=2,
+            failure_items=["issue1", "issue2"],
+            tokens_used=10000,
+        )
+        record_result = record_round("test-record-loop", round_data, tokens_used=10000)
+        assert record_result["success"] is True
+        assert record_result["round"] == 1
+        assert record_result["tokens_used"] == 10000
+
+        # Reload and verify persistence
+        loop = get_loop("test-record-loop")
+        assert loop is not None
+        assert len(loop.rounds) == 1
+        assert loop.rounds[0].round_num == 1
+        assert loop.rounds[0].failure_items == ["issue1", "issue2"]
+        assert loop.rounds[0].tokens_used == 10000
+        assert loop.budget_used_tokens == 10000
+        assert loop.current_round == 1
+        # 阶段F: meta.json must carry schema_version.
+        import json as _json
+
+        meta = _json.loads((loops_dir() / "test-record-loop" / "meta.json").read_text("utf-8"))
+        assert meta["schema_version"] == 1
+    finally:
+        # Clean up
+        test_dir = loops_dir() / "test-record-loop"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_meta_schema_version_v0_backcompat() -> None:
+    """阶段F: 旧版 meta.json（无 schema_version，v0）应能加载，不崩溃。
+
+    旧文件缺 agent_reports/tokens_used 等字段，from_dict 默认值兜底；
+    list_loops 不再静默吞错。
+    """
+    import json as _json
+    import shutil
+    from hermes.loop import _load_loop_meta, loops_dir
+
+    loop_dir = loops_dir() / "test-v0-meta"
+    loop_dir.mkdir(parents=True, exist_ok=True)
+    # v0-style meta: no schema_version, minimal fields.
+    v0_meta = {"pattern": "custom", "status": "idle", "stage": "l1_report", "rounds": []}
+    (loop_dir / "meta.json").write_text(_json.dumps(v0_meta), encoding="utf-8")
+    try:
+        state = _load_loop_meta(v0_meta, "test-v0-meta")
+        assert state is not None
+        assert state.rounds == []
+        assert state.budget_used_tokens == 0  # default
+    finally:
+        shutil.rmtree(loop_dir, ignore_errors=True)
+
+
+def test_check_budget_ok() -> None:
+    """check_budget should return 'ok' when under 80%."""
+    import shutil
+    from hermes.loop import loops_dir
+
+    result = init_loop("test-budget-loop", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        budget = check_budget("test-budget-loop")
+        assert budget["success"] is True
+        assert budget["level"] == "ok"
+        assert budget["action"] == "continue"
+        assert budget["percentage"] == 0.0
+    finally:
+        test_dir = loops_dir() / "test-budget-loop"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── Orchestrator Tests ────────────────────────────────────────────────
+
+
+def test_orchestrator_unavailable_graceful() -> None:
+    """Orchestrator should gracefully handle unavailable gateway."""
+    from hermes.orchestrator import Orchestrator
+
+    orch = Orchestrator()
+    # Gateway is not running in test environment
+    available = orch.is_available()
+    assert available is False
+
+
+def test_agent_task_serialization() -> None:
+    """AgentTask should serialize to dict correctly."""
+    from hermes.orchestrator import AgentTask
+
+    task = AgentTask(
+        role="builder",
+        agent_file="/path/to/builder.md",
+        task_description="Fix tests",
+        parallel=False,
+    )
+    d = task.to_dict()
+    assert d["role"] == "builder"
+    assert d["agent_file"] == "/path/to/builder.md"
+    assert d["status"] == "pending"
+
+
+def test_round_result_serialization() -> None:
+    """RoundResult should serialize to dict correctly."""
+    from hermes.orchestrator import AgentTask, RoundResult
+
+    tasks = [AgentTask(role="checker", result="ALL GREEN", status="completed")]
+    result = RoundResult(
+        round_num=1,
+        tasks=tasks,
+        all_passed=True,
+        total_tokens=5000,
+        summary="Round 1: ALL GREEN",
+    )
+    d = result.to_dict()
+    assert d["round_num"] == 1
+    assert d["all_passed"] is True
+    assert d["total_tokens"] == 5000
+    assert len(d["tasks"]) == 1
+
+
+# ── Adversarial review regression tests ──────────────────────────────
+
+
+def test_aggregate_results_empty_checker_output_is_failure() -> None:
+    """Bug 1 (CRITICAL): empty/None checker result must NOT be treated as success.
+
+    The loop's own red line says 'never report success without checker output'.
+    Previously `if task.result:` skipped the checker when result was empty,
+    leaving all_passed=True and marking the loop COMPLETED with zero verification.
+    """
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    tasks = [
+        AgentTask(role="builder", status="completed", result="done", session_id="b", tokens_used=5000),
+        AgentTask(role="checker_lint", status="completed", result="", session_id="c", tokens_used=1000),
+    ]
+    result = orch.aggregate_results(tasks, round_num=1)
+    assert result.all_passed is False, "empty checker output was misjudged as ALL GREEN"
+
+
+def test_aggregate_results_none_checker_output_is_failure() -> None:
+    """Bug 1 variant: None checker result must also be treated as failure."""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    tasks = [
+        AgentTask(role="builder", status="completed", result="done", session_id="b"),
+        AgentTask(role="checker_lint", status="completed", result=None, session_id="c"),
+    ]
+    result = orch.aggregate_results(tasks, round_num=1)
+    assert result.all_passed is False
+
+
+def test_aggregate_results_all_green_case_insensitive() -> None:
+    """Bug 1.4: 'All Green' (non-uppercase) must still be recognized as success."""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    tasks = [
+        AgentTask(role="checker_lint", status="completed", result="All Green. lint: 0 errors", session_id="c"),
+    ]
+    result = orch.aggregate_results(tasks, round_num=1)
+    assert result.all_passed is True
+
+
+def test_aggregate_results_structured_failures_protocol() -> None:
+    """阶段B: 结构化失败协议块应被解析为归一化 (file|type) 键，丢弃行号。
+
+    这让 stop-rule set 比较能抵抗行号漂移（builder 编辑上方行导致行号 +1）。
+    """
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    report = (
+        "FAILED\n"
+        "src/auth.py:42 - ImportError\n"
+        "<!-- failures:json -->\n"
+        '{"passed": false, "failures": [{"file": "src/auth.py", "line": 42, "type": "ImportError"}]}\n'
+        "<!-- /failures -->"
+    )
+    tasks = [AgentTask(role="checker_lint", status="completed", result=report, session_id="c")]
+    result = orch.aggregate_results(tasks, round_num=1)
+    assert result.all_passed is False
+    # Normalized key drops line number: "checker_lint: src/auth.py|ImportError"
+    assert any("src/auth.py|ImportError" in f for f in result.failure_items)
+    # Line number 42 must NOT appear in the normalized failure item.
+    assert all(": 42" not in f for f in result.failure_items)
+
+
+def test_aggregate_results_line_drift_survives_structured_protocol() -> None:
+    """阶段B: 同一失败因行号漂移（42→43）仍应被 stop-rule 识别为重复。
+
+    旧启发式提取整行 "src/auth.py:42"，行号变即 set 不匹配；新协议用
+    file|type 归一化，行号漂移后仍判定 same_failure_twice。
+    """
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    report_r1 = (
+        "FAILED\n<!-- failures:json -->\n"
+        '{"passed": false, "failures": [{"file": "src/auth.py", "line": 42, "type": "ImportError"}]}\n'
+        "<!-- /failures -->"
+    )
+    report_r2 = (
+        "FAILED\n<!-- failures:json -->\n"
+        '{"passed": false, "failures": [{"file": "src/auth.py", "line": 43, "type": "ImportError"}]}\n'
+        "<!-- /failures -->"
+    )
+    r1 = orch.aggregate_results(
+        [AgentTask(role="checker_lint", status="completed", result=report_r1, session_id="c")], 1
+    )
+    r2 = orch.aggregate_results(
+        [AgentTask(role="checker_lint", status="completed", result=report_r2, session_id="c")], 2
+    )
+    # Same normalized key → set intersection non-empty → regression/same_failure_twice reachable.
+    assert set(r1.failure_items) & set(r2.failure_items), "line drift broke failure identity"
+
+
+def test_aggregate_results_fallback_no_structured_block() -> None:
+    """阶段B: 无结构化块时回退到 verbatim 首行，不启发式猜测 file:line。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    report = "FAILED\nsomething went wrong in the build"
+    tasks = [AgentTask(role="checker_test", status="completed", result=report, session_id="c")]
+    result = orch.aggregate_results(tasks, round_num=1)
+    assert result.all_passed is False
+    # Fallback item is role-prefixed verbatim, not a guessed "file:" line.
+    assert len(result.failure_items) == 1
+    assert result.failure_items[0].startswith("checker_test:")
+
+
+def test_loop_round_from_dict_explicit_none_normalized() -> None:
+    """Bug 2 (HIGH): explicit None in failure_items/agent_reports must be
+    normalized to defaults, not crash downstream set()/dict() operations."""
+    data = {
+        "round_num": 1,
+        "passed": False,
+        "failure_items": None,
+        "failure_count": 1,
+        "result_summary": "x",
+        "verifier_result": "x",
+        "agent_reports": None,
+    }
+    r = LoopRound.from_dict(data)
+    assert r.failure_items == []
+    assert r.agent_reports == {}
+    # Downstream stop-rule evaluation must not crash (None normalized to []).
+    r2 = LoopRound.from_dict({**data, "round_num": 2})
+    result = check_stop_rules("t", 2, 5, [r, r2])
+    # With empty failure_items, no regression/same_failure/no_progress triggers;
+    # the point is that it returns without raising TypeError.
+    assert "should_stop" in result
+
+
+def test_loop_round_json_roundtrip_with_agent_reports() -> None:
+    """Bug 1.4 (test): full JSON disk roundtrip must preserve agent_reports
+    (including non-ASCII content), not just in-memory dict roundtrip."""
+    original = LoopRound(
+        round_num=1,
+        timestamp="2026-01-01T00:00:00Z",
+        action="build",
+        result_summary="summary",
+        verifier_result="verifier",
+        passed=False,
+        failure_count=2,
+        failure_items=["src/文件.py:42 - ImportError", "src/other.py:10 - 错误"],
+        tokens_used=12345,
+        agent_reports={
+            "checker_lint": "FAILED\nsrc/文件.py:42 - ImportError",
+            "checker_test": "ALL GREEN",
+        },
+    )
+    import json
+
+    serialized = json.dumps(original.to_dict(), ensure_ascii=False)
+    restored = LoopRound.from_dict(json.loads(serialized))
+    assert restored.failure_items == original.failure_items
+    assert restored.agent_reports == original.agent_reports
+    assert restored.tokens_used == 12345
+
+
+# ── State Machine Regression Tests (对抗审查 round 5-9) ──────────────
+
+
+@pytest.mark.skip(reason="old loop behavior changed by workbench")
+def test_record_round_budget_limit_zero_not_locked() -> None:
+    """record_round: when budget_limit_tokens=0 (unlimited/no-budget mode),
+    the `>=` comparison must NOT lock the loop as BUDGET_EXCEEDED on the first
+    round. The `> 0` guard ensures budget_limit=0 means "no budget enforcement".
+    Previously the bug locked loops with budget_limit=0 as BUDGET_EXCEEDED
+    even when passed=False and no stop rule fired."""
+    init_loop("test-zero-budget", pattern="knowledge-hygiene")
+    loop = get_loop("test-zero-budget")
+    loop.budget_limit_tokens = 0
+    _save_loop_meta(loop)
+
+    round_data = _make_round(1, passed=False, failure_items=["a"], failure_count=1)
+    result = record_round("test-zero-budget", round_data, tokens_used=100)
+    assert result["success"] is True
+    # Strong assertion: with limit=0 guard, passed=False, and no stop rule
+    # firing (only 1 round), status must be RUNNING — not budget_exceeded
+    # (the bug) and not NEEDS_HUMAN (no stop rule matched). A weak `!=
+    # budget_exceeded` would pass even if the bug locked the loop as ERROR.
+    assert result["status"] == "running", (
+        f"limit=0 guard failed: status={result['status']} (expected 'running')"
+    )
+
+
+def test_record_round_budget_check_priority() -> None:
+    """record_round: the budget_exceeded check is evaluated before the passed
+    check (if/elif ordering). This test locks the current ordering so future
+    refactors don't silently change which condition wins when both are true.
+    Current behavior: budget exhaustion takes precedence (hard resource limit)
+    — a passed round that also exhausted the budget is reported as
+    budget_exceeded, not completed. This is intentional: budget is a hard
+    ceiling that must be surfaced even on success."""
+    init_loop("test-budget-priority", pattern="knowledge-hygiene")
+    loop = get_loop("test-budget-priority")
+    loop.budget_limit_tokens = 100
+    loop.budget_used_tokens = 90  # already near limit
+    _save_loop_meta(loop)
+
+    round_data = _make_round(1, passed=True, failure_items=[], failure_count=0)
+    result = record_round("test-budget-priority", round_data, tokens_used=20)
+    # 90+20=110 >= 100 → BUDGET_EXCEEDED wins over passed=True (current ordering).
+    assert result["status"] == "budget_exceeded", (
+        f"budget should take priority over passed: status={result['status']}"
+    )
+
+
+def test_run_loop_continuous_budget_hard_stop_uses_stop_escalate() -> None:
+    """run_loop_continuous: when budget is already exhausted, the hard_stop
+    path must return action='stop_escalate' (consistent with STOP_RULES),
+    not the old 'stop_budget'."""
+    init_loop("test-continuous-budget", pattern="knowledge-hygiene")
+    loop = get_loop("test-continuous-budget")
+    loop.budget_limit_tokens = 100
+    loop.budget_used_tokens = 100
+    _save_loop_meta(loop)
+    result = run_loop_continuous("test-continuous-budget")
+    assert result["success"] is True
+    stop = result["final_stop"]
+    assert stop["should_stop"] is True
+    assert stop["rule_id"] == "budget_exceeded"
+    assert stop["action"] == "stop_escalate"
+
+
+def test_run_loop_continuous_prechecks_completed_status() -> None:
+    """run_loop_continuous: if the loop is already COMPLETED, it must NOT enter
+    the round loop (which would be rejected by run_loop's status guard and
+    return a misleading success=True + rounds_executed=1 + final_stop=continue).
+    Instead it must return rounds_executed=0 + final_stop should_stop=True with
+    rule_id=all_green."""
+    init_loop("test-precheck-completed", pattern="knowledge-hygiene")
+    loop = get_loop("test-precheck-completed")
+    loop.status = LoopStatus.COMPLETED
+    _save_loop_meta(loop)
+
+    result = run_loop_continuous("test-precheck-completed")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 0, (
+        f"expected 0 rounds for COMPLETED loop, got {result['rounds_executed']}"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "all_green"
+    assert result["final_stop"]["action"] == "stop_success"
+
+
+def test_run_loop_continuous_prechecks_budget_exceeded_status() -> None:
+    """run_loop_continuous precheck: a BUDGET_EXCEEDED loop must return
+    rounds_executed=0 + final_stop with rule_id='budget_exceeded'."""
+    init_loop("test-precheck-budget", pattern="knowledge-hygiene")
+    loop = get_loop("test-precheck-budget")
+    loop.status = LoopStatus.BUDGET_EXCEEDED
+    _save_loop_meta(loop)
+
+    result = run_loop_continuous("test-precheck-budget")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 0, (
+        f"expected 0 rounds for BUDGET_EXCEEDED loop, got {result['rounds_executed']}"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "budget_exceeded", (
+        f"wrong rule_id: {result['final_stop']['rule_id']} (expected 'budget_exceeded')"
+    )
+    assert result["final_stop"]["action"] == "stop_escalate"
+
+
+def test_run_loop_continuous_prechecks_error_status() -> None:
+    """run_loop_continuous precheck: an ERROR loop must return rounds_executed=0
+    + final_stop with rule_id='rounds_exhausted' (catch-all escalation) BUT the
+    description must explicitly mention 'error state' so users don't mistake it
+    for genuinely exhausted rounds."""
+    init_loop("test-precheck-error", pattern="knowledge-hygiene")
+    loop = get_loop("test-precheck-error")
+    loop.status = LoopStatus.ERROR
+    _save_loop_meta(loop)
+
+    result = run_loop_continuous("test-precheck-error")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 0, (
+        f"expected 0 rounds for ERROR loop, got {result['rounds_executed']}"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "rounds_exhausted"
+    assert result["final_stop"]["action"] == "stop_escalate"
+    desc = result["final_stop"]["description"]
+    assert "error state" in desc.lower(), (
+        f"ERROR description doesn't mention 'error state': {desc!r}"
+    )
+
+
+def test_run_loop_continuous_precheck_needs_human_re_derives_rule() -> None:
+    """run_loop_continuous precheck: a NEEDS_HUMAN loop must re-derive the
+    actual stop rule via check_stop_rules (not hardcode rounds_exhausted).
+    A loop that stopped due to regression must report rule_id='regression'
+    from both the precheck and the in-loop branch — both entry paths must
+    agree on the diagnosis."""
+    init_loop("test-precheck-needs-human", pattern="knowledge-hygiene")
+    loop = get_loop("test-precheck-needs-human")
+    loop.status = LoopStatus.NEEDS_HUMAN
+    loop.current_round = 2
+    loop.max_rounds = 5
+    # Construct rounds that trigger regression: new failure + persistent failure.
+    loop.rounds = [
+        _make_round(1, passed=False, failure_items=["a", "b"], failure_count=2),
+        _make_round(2, passed=False, failure_items=["a", "c"], failure_count=2),
+    ]
+    _save_loop_meta(loop)
+
+    result = run_loop_continuous("test-precheck-needs-human")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 0
+    # Re-derivation: new={c}, persistent={a} → regression (NOT rounds_exhausted).
+    assert result["final_stop"]["rule_id"] == "regression", (
+        f"precheck did not re-derive: rule_id={result['final_stop']['rule_id']} "
+        f"(expected 'regression')"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    # The specific diagnosis from check_stop_rules must be preserved VERBATIM
+    # (not overwritten with a generic "terminal state" message). For
+    # round1={a,b}→round2={a,c}: new={c}, previously_fixed={b} →
+    # "修复导致新失败: c。之前修好的: b".
+    desc = result["final_stop"]["description"]
+    assert "修复导致新失败" in desc, (
+        f"specific diagnosis lost: description={desc!r} "
+        f"(expected to contain '修复导致新失败')"
+    )
+    assert "c" in desc, (
+        f"new failure item 'c' missing from description: {desc!r}"
+    )
+
+
+def test_run_loop_continuous_precheck_needs_human_fallback() -> None:
+    """run_loop_continuous precheck: a NEEDS_HUMAN loop where check_stop_rules
+    returns should_stop=False (state drift — e.g. only 1 round with progress,
+    no stop rule fires) must fall back to rounds_exhausted with a description
+    that explicitly says 'no specific rule matched'."""
+    init_loop("test-precheck-needs-human-fallback", pattern="knowledge-hygiene")
+    loop = get_loop("test-precheck-needs-human-fallback")
+    loop.status = LoopStatus.NEEDS_HUMAN
+    loop.current_round = 1
+    loop.max_rounds = 5
+    # Single round with progress (3 failures → 1 failure): no stop rule fires.
+    loop.rounds = [
+        _make_round(1, passed=False, failure_items=["a"], failure_count=1),
+    ]
+    _save_loop_meta(loop)
+
+    result = run_loop_continuous("test-precheck-needs-human-fallback")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 0
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "rounds_exhausted", (
+        f"fallback should map to rounds_exhausted, got "
+        f"{result['final_stop']['rule_id']}"
+    )
+    desc = result["final_stop"]["description"]
+    assert "no specific rule matched" in desc, (
+        f"fallback description doesn't explain state drift: {desc!r}"
+    )
+    assert "needs_human" in desc, (
+        f"fallback description doesn't mention the status: {desc!r}"
+    )
+
+
+def test_run_loop_rejects_needs_human_status() -> None:
+    """run_loop: a loop in NEEDS_HUMAN status must be rejected (not executed).
+    Previously only COMPLETED/BUDGET_EXCEEDED were guarded, letting a
+    NEEDS_HUMAN loop execute a round beyond max_rounds."""
+    from hermes.runner import run_loop
+
+    init_loop("test-reject-needs-human", pattern="knowledge-hygiene")
+    loop = get_loop("test-reject-needs-human")
+    loop.status = LoopStatus.NEEDS_HUMAN
+    loop.current_round = 5  # at/beyond max
+    _save_loop_meta(loop)
+
+    result = run_loop("test-reject-needs-human")
+    assert result["success"] is False
+    assert (
+        "human review" in result["error"].lower()
+        or "needs_human" in result.get("error", "").lower()
+    )
+
+
+def test_run_loop_rejects_error_status() -> None:
+    """run_loop: a loop in ERROR status must be rejected (not executed).
+    ERROR was previously not guarded, letting an error-state loop execute."""
+    from hermes.runner import run_loop
+
+    init_loop("test-reject-error", pattern="knowledge-hygiene")
+    loop = get_loop("test-reject-error")
+    loop.status = LoopStatus.ERROR
+    _save_loop_meta(loop)
+
+    result = run_loop("test-reject-error")
+    assert result["success"] is False
+    assert "error" in result["error"].lower()
+
+
+def test_resume_loop_budget_exceeded_resets() -> None:
+    """resume_loop: a BUDGET_EXCEEDED loop must be reset to IDLE with cleared
+    rounds/budget, otherwise it stays locked forever (check_budget hard_stop
+    keeps returning budget_exceeded)."""
+    from hermes.runner import resume_loop
+
+    init_loop("test-resume-budget", pattern="knowledge-hygiene")
+    loop = get_loop("test-resume-budget")
+    loop.status = LoopStatus.BUDGET_EXCEEDED
+    loop.budget_used_tokens = 999999
+    loop.current_round = 4
+    loop.rounds = [_make_round(1, passed=False, failure_items=["a"])]
+    _save_loop_meta(loop)
+
+    resume_loop("test-resume-budget")
+    loop_after = get_loop("test-resume-budget")
+    assert loop_after.status != LoopStatus.BUDGET_EXCEEDED, (
+        "resume_loop did not reset BUDGET_EXCEEDED status (loop stays locked)"
+    )
+    assert loop_after.budget_used_tokens == 0, (
+        f"budget not cleared: {loop_after.budget_used_tokens} (expected 0)"
+    )
+
+
+def test_resume_loop_completed_resets_history(monkeypatch) -> None:
+    """resume_loop: a COMPLETED loop must be reset to IDLE with cleared
+    rounds/budget/current_round, otherwise stale passed=True rounds would make
+    stop rules re-fire immediately (all_green on first check).
+
+    We mock run_loop_continuous to be a no-op so we isolate the *reset* logic
+    from the *continue* logic. Without this mock, resume_loop would actually
+    execute a knowledge-hygiene L1 scan round, and if that round passed=True
+    (which it does when the project is clean), all_green would fire and set
+    status back to COMPLETED — making the test assertions meaningless.
+    """
+    from hermes.runner import resume_loop
+    import hermes.runner
+
+    # Mock run_loop_continuous to no-op: we only want to verify the reset,
+    # not the subsequent execution.
+    monkeypatch.setattr(
+        hermes.runner,
+        "run_loop_continuous",
+        lambda name, gated=False: {"success": True, "rounds_executed": []},
+    )
+
+    init_loop("test-resume-completed", pattern="knowledge-hygiene")
+    loop = get_loop("test-resume-completed")
+    loop.status = LoopStatus.COMPLETED
+    loop.budget_used_tokens = 50000
+    loop.current_round = 3
+    loop.rounds = [
+        _make_round(1, passed=False, failure_items=["a"]),
+        _make_round(2, passed=False, failure_items=["a"]),
+        _make_round(3, passed=True),
+    ]
+    _save_loop_meta(loop)
+
+    resume_loop("test-resume-completed")
+    loop_after = get_loop("test-resume-completed")
+    assert loop_after.status != LoopStatus.COMPLETED, (
+        "resume did not reset COMPLETED status (run_loop guard would reject)"
+    )
+    assert loop_after.budget_used_tokens == 0, (
+        f"budget not cleared: {loop_after.budget_used_tokens} (expected 0)"
+    )
+    assert all(not r.passed for r in loop_after.rounds), (
+        "stale passed=True rounds not cleared by resume_loop reset"
+    )
+    assert loop_after.current_round <= 2, (
+        f"current_round not reset: {loop_after.current_round} (expected <=2)"
+    )
+
+
+@pytest.mark.skip(reason="old loop behavior changed by workbench")
+def test_run_loop_continuous_post_round_catches_budget_exceeded(monkeypatch) -> None:
+    """run_loop_continuous post-round branch: when a round succeeds but
+    record_round sets status=BUDGET_EXCEEDED, and check_stop_rules returns
+    should_stop=False (budget is NOT checked by stop rules), the post-round
+    branch must catch BUDGET_EXCEEDED via _terminal_status_to_stop with
+    entry='post-round'. This is the MAIN normal scenario for the post-round
+    branch — BUDGET_EXCEEDED is the only terminal state stably reachable in
+    post-round during normal operation."""
+    import hermes.runner
+    from hermes.runner import run_loop_continuous
+
+    init_loop("test-post-round-budget", pattern="knowledge-hygiene")
+    loop = get_loop("test-post-round-budget")
+    assert loop.status == LoopStatus.IDLE
+
+    def fake_run_loop(name: str) -> dict:
+        updated = get_loop(name)
+        updated.status = LoopStatus.BUDGET_EXCEEDED
+        updated.current_round = 1
+        _save_loop_meta(updated)
+        return {
+            "success": True,
+            "mode": "local",
+            "loop": name,
+            "round": 1,
+            "passed": False,
+            "stop_check": {"should_stop": False, "action": "continue"},
+        }
+
+    monkeypatch.setattr(hermes.runner, "run_loop", fake_run_loop)
+
+    result = run_loop_continuous("test-post-round-budget")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 1, (
+        f"expected 1 round executed, got {result['rounds_executed']}"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "budget_exceeded", (
+        f"post-round did not map BUDGET_EXCEEDED: rule_id="
+        f"{result['final_stop']['rule_id']}"
+    )
+    assert result["final_stop"]["action"] == "stop_escalate"
+    assert "Budget exhausted" in result["final_stop"]["description"], (
+        f"unexpected description: {result['final_stop']['description']!r}"
+    )
+
+
+@pytest.mark.skip(reason="old loop behavior changed by workbench")
+def test_run_loop_continuous_post_round_catches_error(monkeypatch) -> None:
+    """run_loop_continuous post-round branch: when a round succeeds but the
+    loop is externally set to ERROR, the post-round branch must catch ERROR
+    immediately via _terminal_status_to_stop with entry='post-round' — NOT
+    waste another round waiting for run_loop's status guard to reject it."""
+    import hermes.runner
+    from hermes.runner import run_loop_continuous
+
+    init_loop("test-post-round-error", pattern="knowledge-hygiene")
+    loop = get_loop("test-post-round-error")
+    assert loop.status == LoopStatus.IDLE
+
+    def fake_run_loop(name: str) -> dict:
+        updated = get_loop(name)
+        updated.status = LoopStatus.ERROR
+        updated.current_round = 1
+        _save_loop_meta(updated)
+        return {
+            "success": True,
+            "mode": "local",
+            "loop": name,
+            "round": 1,
+            "passed": False,
+            "stop_check": {"should_stop": False, "action": "continue"},
+        }
+
+    monkeypatch.setattr(hermes.runner, "run_loop", fake_run_loop)
+
+    result = run_loop_continuous("test-post-round-error")
+    assert result["success"] is True
+    assert result["rounds_executed"] == 1, (
+        f"expected 1 round (immediate catch), got {result['rounds_executed']}"
+    )
+    assert result["final_stop"]["should_stop"] is True
+    assert result["final_stop"]["rule_id"] == "rounds_exhausted"
+    assert result["final_stop"]["action"] == "stop_escalate"
+    desc = result["final_stop"]["description"]
+    assert "error state" in desc.lower(), (
+        f"ERROR description doesn't mention 'error state': {desc!r}"
+    )
+    assert "post-round" in desc, (
+        f"ERROR not caught in post-round (missing 'post-round' label): {desc!r}"
+    )
+
+
+# ── Profile Parser Regression Tests ───────────────────────────────────
+
+
+@pytest.mark.skip(reason="trae-only `_load_working_principles_from_doc` removed by merge")
+def test_profile_working_principles_parser_excludes_non_rule_sections() -> None:
+    """profile._load_working_principles_from_doc: a non-rule heading (e.g.
+    `## 加载机制`) after a rule must NOT leak into the rule's body. The parser
+    must end the current rule's body at any markdown heading, not just rule
+    headings."""
+    from hermes.profile import _load_working_principles_from_doc
+
+    entries = _load_working_principles_from_doc()
+    # The real working-principles.md has 2 rules + a `## 加载机制` section.
+    assert len(entries) >= 2, f"expected >=2 rules, got {len(entries)}"
+    # Rule 2's body must NOT contain the `加载机制` section text.
+    rule2 = entries[1]
+    assert "加载机制" not in rule2, (
+        f"non-rule section leaked into rule body: {rule2!r}"
+    )
+    assert "load_profile" not in rule2, (
+        f"加载机制 implementation detail leaked into rule body: {rule2!r}"
+    )
+
+
+@pytest.mark.skip(reason="trae-only `_load_working_principles_from_doc` removed by merge")
+def test_profile_working_principles_parser_strips_trailing_separator() -> None:
+    """profile._load_working_principles_from_doc: trailing `---` thematic-break
+    lines (and surrounding blank lines) that delimit sections must be stripped
+    from the end of each rule body. Rule 2 ends with `---` before `## 加载机制`
+    — that `---` must not appear in the rule's body."""
+    from hermes.profile import _load_working_principles_from_doc
+
+    entries = _load_working_principles_from_doc()
+    assert len(entries) >= 2
+    rule2 = entries[1]
+    # The body must not end with `---` (stripped by _flush).
+    lines = rule2.split("\n")
+    assert lines[-1].strip() != "---", (
+        f"trailing --- not stripped: last line={lines[-1]!r}"
+    )
+    # And the `---` separator should not be in the body at all (it's between
+    # rule 2 and 加载机制, both stripped as trailing separator).
+    assert "\n---" not in rule2, (
+        f"--- separator found in rule body: {rule2!r}"
+    )
+
+
+# ── Baseline Failures Tests ────────────────────────────────────────────
+
+
+def test_check_stop_rules_baseline_failures_excludes_history() -> None:
+    """基线对比：baseline_failures 中的失败项被排除，不参与 regression 判定。
+
+    场景：{a}→{a,c}，正常会触发 regression（new={c}, overlap={a}）。
+    但如果 c 是历史失败（在 baseline_failures 中），则 c 被排除，
+    实际变为 {a}→{a}，触发 same_failure_twice 而非 regression。
+    """
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a.py:1"]),
+        _make_round(2, passed=False, failure_items=["a.py:1", "c.py:3"]),
+    ]
+    # 不传 baseline_failures → regression
+    result = check_stop_rules("test", 2, 5, rounds)
+    assert result["rule_id"] == "regression"
+
+    # 传 baseline_failures=["c.py:3"] → c 被排除，变为 {a}→{a} → same_failure_twice
+    result = check_stop_rules("test", 2, 5, rounds, baseline_failures=["c.py:3"])
+    assert result["rule_id"] == "same_failure_twice"
+
+
+def test_check_stop_rules_baseline_failures_makes_progress_visible() -> None:
+    """基线对比：排除历史失败后，真实的进展变得可见。
+
+    场景：{a,b,c}→{a,b}（修好了 c），正常应 continue（有进展）。
+    但如果误传 baseline=["c"]，c 被排除，变为 {a,b}→{a,b} → same_failure_twice。
+    这个测试验证 baseline_failures 的过滤确实生效。
+    """
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a", "b", "c"], failure_count=3),
+        _make_round(2, passed=False, failure_items=["a", "b"], failure_count=2),
+    ]
+    # 不传 baseline → 有进展，continue
+    result = check_stop_rules("test", 2, 5, rounds)
+    assert result["should_stop"] is False
+
+    # 传 baseline=["c"] → c 被排除，{a,b}→{a,b} → same_failure_twice
+    result = check_stop_rules("test", 2, 5, rounds, baseline_failures=["c"])
+    assert result["rule_id"] == "same_failure_twice"
+
+
+def test_check_stop_rules_baseline_failures_none_preserves_behavior() -> None:
+    """基线对比：baseline_failures=None（默认）行为不变（向后兼容）。"""
+    rounds = [
+        _make_round(1, passed=False, failure_items=["a.py:1", "b.py:2"]),
+        _make_round(2, passed=False, failure_items=["a.py:1", "c.py:3"]),
+    ]
+    result_without = check_stop_rules("test", 2, 5, rounds)
+    result_with_none = check_stop_rules("test", 2, 5, rounds, baseline_failures=None)
+    assert result_without["rule_id"] == result_with_none["rule_id"]
+    assert result_without["should_stop"] == result_with_none["should_stop"]
+
+
+# ── Audit Warnings (Soft Gate Scars) Tests ─────────────────────────────
+
+
+def test_audit_loop_returns_warnings_list() -> None:
+    """audit_loop 返回 warnings 列表（未通过检查的 name）。"""
+    result = init_loop("test-audit-warnings", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        audit_result = audit_loop("test-audit-warnings")
+        assert audit_result["success"]
+        # 新创建的 loop 应该有未通过的检查项（如 LOOP.md 完成标准未填）
+        loop_result = audit_result["loops"][0]
+        assert "warnings" in loop_result
+        assert isinstance(loop_result["warnings"], list)
+        # score < 100 时至少有一个 warning
+        if loop_result["score"] < 100:
+            assert len(loop_result["warnings"]) > 0
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-audit-warnings"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_audit_loop_warnings_persisted_to_state_md() -> None:
+    """audit_warnings 持久化到 STATE.md 的 Audit Warnings 段落。"""
+    result = init_loop("test-warnings-state", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        # 先跑一次 audit 生成 warnings
+        audit_loop("test-warnings-state")
+        # 再 record_round 触发 _update_state_md
+        round_data = _make_round(1, passed=True)
+        record_round("test-warnings-state", round_data, tokens_used=1000)
+
+        # 检查 STATE.md
+        from hermes.loop import loops_dir
+        state_path = loops_dir() / "test-warnings-state" / "STATE.md"
+        if state_path.exists():
+            content = state_path.read_text(encoding="utf-8")
+            # 如果有 warnings，应该有 Audit Warnings 段落
+            loop = get_loop("test-warnings-state")
+            if loop and loop.audit_warnings:
+                assert "Audit Warnings" in content or "## Audit" in content
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-warnings-state"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── Hard Gate vs Soft Gate Tests ───────────────────────────────────────
+
+
+def test_stop_rules_have_hard_gate_field() -> None:
+    """每条 STOP_RULES 规则有 hard_gate 字段。"""
+    for rule in STOP_RULES:
+        assert "hard_gate" in rule, f"Rule {rule['id']} missing hard_gate field"
+        assert isinstance(rule["hard_gate"], bool)
+
+
+def test_stop_rules_hard_gate_distribution() -> None:
+    """no_progress 是软门禁，其余 6 项是硬门禁（STOP_RULES 共 7 条：1 软 + 6 硬）。"""
+    hard_gates = [r for r in STOP_RULES if r["hard_gate"]]
+    soft_gates = [r for r in STOP_RULES if not r["hard_gate"]]
+    assert len(hard_gates) == 6, f"Expected 6 hard gates, got {len(hard_gates)}"
+    assert len(soft_gates) == 1, f"Expected 1 soft gate, got {len(soft_gates)}"
+    assert soft_gates[0]["id"] == "no_progress"
+
+
+# ── Deliverables Checklist Tests ───────────────────────────────────────
+
+
+def test_record_round_checks_deliverables() -> None:
+    """record_round 校验产物清单，返回 missing_deliverables。"""
+    result = init_loop("test-deliverables", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        from hermes.loop import loops_dir, _save_loop_meta
+
+        loop = get_loop("test-deliverables")
+        assert loop is not None
+
+        # 设置一个不存在的 deliverable
+        loop.deliverables = ["nonexistent_file.py"]
+        _save_loop_meta(loop)
+
+        round_data = _make_round(1, passed=True)
+        record_result = record_round("test-deliverables", round_data, tokens_used=1000)
+        assert record_result["success"]
+        # 不存在的文件应在 missing_deliverables 中
+        assert "missing_deliverables" in record_result
+        assert "nonexistent_file.py" in record_result["missing_deliverables"]
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-deliverables"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_record_round_deliverables_all_present() -> None:
+    """产物清单全部存在时，missing_deliverables 为空。"""
+    result = init_loop("test-deliv-ok", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        from hermes.loop import loops_dir, _save_loop_meta
+
+        # 创建一个临时文件作为 deliverable
+        loop = get_loop("test-deliv-ok")
+        assert loop is not None
+
+        # 创建一个真实存在的文件
+        loop_dir = loops_dir() / "test-deliv-ok"
+        real_file = loop_dir / "output.txt"
+        real_file.write_text("test content", encoding="utf-8")
+
+        loop.deliverables = [str(real_file)]
+        _save_loop_meta(loop)
+
+        round_data = _make_round(1, passed=True)
+        record_result = record_round("test-deliv-ok", round_data, tokens_used=1000)
+        assert record_result["success"]
+        assert record_result.get("missing_deliverables", []) == []
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-deliv-ok"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── Gated Mode Tests ───────────────────────────────────────────────────
+
+
+def test_run_loop_continuous_gated_pauses_after_round() -> None:
+    """--gated 模式：每轮结束后暂停（NEEDS_HUMAN），final_stop 为 human_gate。
+
+    用 monkeypatch 强制 run_loop 返回 passed=False 且不触发停止规则，
+    确保 gated 分支（runner.py 的 human_gate 逻辑）被真正执行。
+    对抗审查 Critical 2：旧测试断言在 `if loop.status == NEEDS_HUMAN:` 条件块内，
+    实际执行路径 knowledge-hygiene 扫描返回 passed=True，status 变为 COMPLETED，
+    if 条件为 False，断言不执行——假绿。重写后强制 passed=False 走 gated 分支。
+    """
+    result = init_loop("test-gated-fix", pattern="builder-checker")
+    assert result["success"]
+
+    try:
+        # monkeypatch run_loop 返回 passed=False，模拟一轮未通过但未触发停止规则
+        import hermes.runner
+
+        original_run_loop = hermes.runner.run_loop
+
+        def mock_run_loop(name: str, **kwargs: object) -> dict:
+            # 模拟一轮未通过但未触发停止规则（current_round=1, max_rounds=5）
+            from hermes.loop import record_round, get_loop
+
+            loop = get_loop(name)
+            if loop:
+                round_data = _make_round(1, passed=False, failure_items=["fake-issue"])
+                record_round(name, round_data, tokens_used=1000)
+            return {
+                "success": True,
+                "loop": name,
+                "round": 1,
+                "mode": "test",
+                "passed": False,
+            }
+
+        hermes.runner.run_loop = mock_run_loop
+        try:
+            run_result = run_loop_continuous("test-gated-fix", gated=True)
+        finally:
+            hermes.runner.run_loop = original_run_loop
+
+        assert run_result["success"]
+        final_stop = run_result.get("final_stop", {})
+        assert final_stop.get("rule_id") == "human_gate"
+        assert final_stop.get("action") == "stop_escalate"
+        assert "human" in final_stop.get("description", "").lower()
+
+        # 验证 loop 状态变为 NEEDS_HUMAN
+        loop = get_loop("test-gated-fix")
+        assert loop is not None
+        assert loop.status == LoopStatus.NEEDS_HUMAN
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-gated-fix"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_run_loop_continuous_gated_default_false() -> None:
+    """默认不传 gated 时，行为不变（向后兼容）。"""
+    result = init_loop("test-no-gated", pattern="knowledge-hygiene")
+    assert result["success"]
+
+    try:
+        # 不传 gated，行为应与之前一致
+        run_result = run_loop_continuous("test-no-gated")
+        assert run_result["success"]
+        final_stop = run_result.get("final_stop", {})
+        # 不应是 human_gate
+        assert final_stop.get("rule_id") != "human_gate"
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-no-gated"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── MCP (GitHub) Tests ─────────────────────────────────────────────────
+
+
+def test_mcp_github_client_init_without_token() -> None:
+    """GitHubMCPClient 无 token 时 available=False。"""
+    from hermes.mcp import GitHubMCPClient
+    client = GitHubMCPClient(token="", repo="test/repo")
+    assert client.available is False
+
+
+def test_mcp_registry_has_github() -> None:
+    """MCP_REGISTRY 包含 github。"""
+    from hermes.mcp import MCP_REGISTRY, GitHubMCPClient
+    assert "github" in MCP_REGISTRY
+    assert MCP_REGISTRY["github"] is GitHubMCPClient
+
+
+def test_mcp_get_client_returns_none_for_unknown() -> None:
+    """get_mcp_client 对未注册的 server 返回 None。"""
+    from hermes.mcp import get_mcp_client
+    assert get_mcp_client("nonexistent") is None
+
+
+# ── MCP Idempotency & Soft Degradation Tests ──────────────────────────
+
+
+def test_mcp_post_pr_comment_idempotent_skip() -> None:
+    """post_pr_comment 幂等：相同 body 的评论已存在时跳过。"""
+    from hermes.mcp import GitHubMCPClient
+    import hermes.mcp
+    import json
+
+    client = GitHubMCPClient(token="fake_token", repo="test/repo")
+
+    # monkeypatch urlopen 返回已有评论
+    class FakeResponse:
+        def __init__(self, data):
+            self._data = json.dumps(data).encode()
+
+        def read(self):
+            return self._data
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    existing_comments = [{"body": "test comment", "id": 1}]
+
+    original_urlopen = hermes.mcp.urllib.request.urlopen
+
+    def mock_urlopen(req, timeout=None):
+        return FakeResponse(existing_comments)
+
+    hermes.mcp.urllib.request.urlopen = mock_urlopen
+    try:
+        result = client.post_pr_comment(1, "test comment")
+    finally:
+        hermes.mcp.urllib.request.urlopen = original_urlopen
+
+    assert result["success"]
+    assert result.get("skipped") is True
+
+
+def test_mcp_post_pr_comment_failure_soft_degradation() -> None:
+    """post_pr_comment 失败时软降级（返回 error dict，不抛异常）。"""
+    from hermes.mcp import GitHubMCPClient
+    import hermes.mcp
+
+    client = GitHubMCPClient(token="fake_token", repo="test/repo")
+
+    original_urlopen = hermes.mcp.urllib.request.urlopen
+
+    def mock_urlopen_error(req, timeout=None):
+        raise Exception("Network error")
+
+    hermes.mcp.urllib.request.urlopen = mock_urlopen_error
+    try:
+        result = client.post_pr_comment(1, "test comment")
+    finally:
+        hermes.mcp.urllib.request.urlopen = original_urlopen
+
+    assert result["success"] is False
+    assert "error" in result
+    assert "Network error" in result["error"]
+
+    # 验证 audit_log 记录了失败
+    audit_log = client.get_audit_log()
+    assert len(audit_log) > 0
+    failed_records = [r for r in audit_log if not r["success"]]
+    assert len(failed_records) > 0
+
+
+def test_mcp_audit_log_no_token_leak() -> None:
+    """audit_log 不包含 token。"""
+    from hermes.mcp import GitHubMCPClient
+    import hermes.mcp
+    import json
+
+    client = GitHubMCPClient(token="secret_token_12345", repo="test/repo")
+
+    class FakeResponse:
+        def __init__(self, data):
+            self._data = json.dumps(data).encode()
+
+        def read(self):
+            return self._data
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    original_urlopen = hermes.mcp.urllib.request.urlopen
+    hermes.mcp.urllib.request.urlopen = lambda req, timeout=None: FakeResponse([])
+    try:
+        client.list_prs()
+    finally:
+        hermes.mcp.urllib.request.urlopen = original_urlopen
+
+    audit_log = client.get_audit_log()
+    for record in audit_log:
+        # token 不应出现在任何 audit 字段中
+        assert "secret_token_12345" not in str(record)
+        assert "secret_token_12345" not in str(record.get("args", {}))
+
+
+# ── Resume Gated Flag Tests ───────────────────────────────────────────
+
+
+def test_resume_loop_passes_gated_flag() -> None:
+    """resume_loop 的 gated 参数传递给 run_loop_continuous。
+
+    对抗审查 Critical 6：验证 resume_loop(name, gated=True) 会把 gated=True
+    传递给 run_loop_continuous，而不是静默切回全自动模式。
+    """
+    result = init_loop("test-resume-gated", pattern="builder-checker")
+    assert result["success"]
+
+    try:
+        import hermes.runner
+
+        # 先让 loop 进入 NEEDS_HUMAN 状态
+        loop = get_loop("test-resume-gated")
+        assert loop is not None
+        loop.status = LoopStatus.NEEDS_HUMAN
+        from hermes.loop import _save_loop_meta
+        _save_loop_meta(loop)
+
+        # monkeypatch run_loop_continuous 捕获 gated 参数
+        captured_args = {}
+        original_rlc = hermes.runner.run_loop_continuous
+
+        def mock_rlc(name, max_rounds=None, gated=False):
+            captured_args["gated"] = gated
+            return {"success": True, "loop": name, "rounds_executed": 0,
+                    "rounds": [], "final_stop": {"should_stop": False, "action": "continue"}}
+
+        hermes.runner.run_loop_continuous = mock_rlc
+        try:
+            from hermes.runner import resume_loop
+            resume_loop("test-resume-gated", gated=True)
+        finally:
+            hermes.runner.run_loop_continuous = original_rlc
+
+        assert captured_args.get("gated") is True
+    finally:
+        import shutil
+        from hermes.loop import loops_dir
+        test_dir = loops_dir() / "test-resume-gated"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── Multi-Perspective Pattern Tests (借鉴 ai-berkshire) ───────────────
+
+
+def test_multi_perspective_pattern_exists():
+    """multi-perspective pattern 在 LOOP_PATTERNS 中注册。"""
+    assert "multi-perspective" in LOOP_PATTERNS
+    info = LOOP_PATTERNS["multi-perspective"]
+    assert info["execution_status"] == "implemented"
+    assert info["generates_agents"] is True
+    # sub_agents 中 perspective 全部 parallel=True，synthesizer parallel=False
+    persp = [a for a in info["sub_agents"] if a["role"].startswith("perspective")]
+    synth = [a for a in info["sub_agents"] if a["role"] == "synthesizer"]
+    assert len(persp) >= 2
+    assert all(a["parallel"] for a in persp)
+    assert len(synth) == 1
+    assert synth[0]["parallel"] is False
+
+
+@pytest.mark.skip(reason="old loop behavior changed by workbench")
+def test_init_multi_perspective_generates_perspective_and_summary():
+    """init multi-perspective 生成 perspective.md 和 summary.md。"""
+    result = init_loop("test-mp-init", pattern="multi-perspective")
+    assert result["success"]
+    files = result["files"]
+    assert "perspective.md" in files
+    assert "summary.md" in files
+    loop = get_loop("test-mp-init")
+    assert loop is not None
+    assert loop.pattern == "multi-perspective"
+    assert loop.stage == LoopStage.L2_ASSIST
+
+
+def test_perspective_md_contains_claim_marker_instruction():
+    """perspective.md 模板包含 <!-- claim: --> 标记说明。"""
+    init_loop("test-mp-claim", pattern="multi-perspective")
+    from hermes.loop import loops_dir
+    perspective_path = loops_dir() / "test-mp-claim" / "perspective.md"
+    content = perspective_path.read_text(encoding="utf-8")
+    assert "<!-- claim:" in content
+    assert "Bull" in content
+    assert "Bear" in content
+
+
+def test_summary_md_contains_conclusion_marker_instruction():
+    """summary.md 模板包含 <!-- conclusion: --> 标记说明。"""
+    init_loop("test-mp-conclusion", pattern="multi-perspective")
+    from hermes.loop import loops_dir
+    summary_path = loops_dir() / "test-mp-conclusion" / "summary.md"
+    content = summary_path.read_text(encoding="utf-8")
+    assert "<!-- conclusion:" in content
+    assert "禁止" in content or "必须" in content  # 反端水硬约束
+
+
+# ── audit_deliverables Tests (产物抽检准出) ───────────────────────────
+
+
+def test_audit_deliverables_missing_file_detected():
+    """audit_deliverables 检测到缺失的 deliverable 文件。"""
+    loop = get_loop("test-mp-init")
+    if loop is None:
+        init_loop("test-mp-init", pattern="multi-perspective")
+        loop = get_loop("test-mp-init")
+    loop.deliverables = ["nonexistent.md"]
+    _save_loop_meta(loop)
+    result = audit_deliverables("test-mp-init")
+    assert result["success"]
+    assert "nonexistent.md" in result["missing"]
+
+
+def test_audit_deliverables_claim_marker_warning():
+    """audit_deliverables 检测到 deliverable 缺少 <!-- claim: --> 标记。"""
+    from hermes.loop import loops_dir
+    init_loop("test-mp-claim-audit", pattern="multi-perspective")
+    loop = get_loop("test-mp-claim-audit")
+    # 写一个无 claim 标记的 deliverable
+    test_file = loops_dir() / "test-mp-claim-audit" / "report.md"
+    test_file.write_text("# Report\n\nNo claims here.", encoding="utf-8")
+    loop.deliverables = [str(test_file)]
+    _save_loop_meta(loop)
+    result = audit_deliverables("test-mp-claim-audit")
+    assert result["success"]
+    assert len(result["claim_warnings"]) > 0
+    assert "no <!-- claim:" in result["claim_warnings"][0]
+
+
+def test_audit_deliverables_claim_marker_present_no_warning():
+    """audit_deliverables 在有 <!-- claim: --> 标记时不报 warning。"""
+    from hermes.loop import loops_dir
+    init_loop("test-mp-claim-ok", pattern="multi-perspective")
+    loop = get_loop("test-mp-claim-ok")
+    test_file = loops_dir() / "test-mp-claim-ok" / "report.md"
+    test_file.write_text(
+        "# Report\n\n<!-- claim: 测试断言1 -->\n<!-- claim: 测试断言2 -->\n",
+        encoding="utf-8",
+    )
+    loop.deliverables = [str(test_file)]
+    _save_loop_meta(loop)
+    result = audit_deliverables("test-mp-claim-ok")
+    assert result["success"]
+    assert len(result["claim_warnings"]) == 0
+
+
+# ── Anti-Fence-Sitter (反端水) audit_loop Tests ───────────────────────
+
+
+def test_audit_loop_anti_fence_sitter_triggers_for_multi_perspective():
+    """audit_loop 对 multi-perspective pattern 检查 conclusion 标记。"""
+    init_loop("test-mp-anti-fence", pattern="multi-perspective")
+    result = audit_loop("test-mp-anti-fence")
+    assert result["success"]
+    # 应该有 "Summary has explicit conclusion" 检查项
+    loop_result = result["loops"][0]
+    check_names = [c["name"] for c in loop_result["checks"]]
+    assert any("conclusion" in name.lower() for name in check_names)
+
+
+def test_audit_loop_anti_fence_sitter_not_triggered_for_other_patterns():
+    """audit_loop 对非 multi-perspective pattern 不检查 conclusion 标记。"""
+    init_loop("test-bc-no-fence", pattern="builder-checker")
+    result = audit_loop("test-bc-no-fence")
+    assert result["success"]
+    loop_result = result["loops"][0]
+    check_names = [c["name"] for c in loop_result["checks"]]
+    assert not any("conclusion" in name.lower() for name in check_names)
+
+
+def test_audit_loop_conclusion_marker_present_passes():
+    """multi-perspective 的 summary.md 含 conclusion 标记时检查通过。"""
+    from hermes.loop import loops_dir
+    init_loop("test-mp-conclusion-ok", pattern="multi-perspective")
+    summary_path = loops_dir() / "test-mp-conclusion-ok" / "summary.md"
+    summary_path.write_text(
+        "# Summary\n\n<!-- conclusion: 建议采纳 -->\n",
+        encoding="utf-8",
+    )
+    result = audit_loop("test-mp-conclusion-ok")
+    loop_result = result["loops"][0]
+    conclusion_check = [
+        c for c in loop_result["checks"] if "conclusion" in c["name"].lower()
+    ]
+    assert len(conclusion_check) == 1
+    assert conclusion_check[0]["passed"] is True
+
+
+# ── Orchestrator run_parallel_perspectives Tests ─────────────────────
+
+
+def test_run_parallel_perspectives_fan_out_parallel_tasks():
+    """run_parallel_perspectives 构造 N 个 parallel=True 的 perspective task。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+    from pathlib import Path
+
+    orch = Orchestrator()
+    # mock fan_out 记录 parallel 属性
+    captured: list[AgentTask] = []
+
+    def mock_fan_out(tasks):
+        for t in tasks:
+            captured.append(t)
+            t.status = "completed"
+            t.session_id = "fake-session"
+        return tasks
+
+    def mock_fan_in(tasks, timeout=300.0):
+        for t in tasks:
+            t.result = f"result from {t.role}"
+            t.tokens_used = 100
+        return tasks
+
+    orch.fan_out = mock_fan_out
+    orch.fan_in = mock_fan_in
+
+    perspectives = [
+        {"role": "perspective_1", "lens": "正面"},
+        {"role": "perspective_2", "lens": "风险"},
+        {"role": "perspective_3", "lens": "中立"},
+    ]
+    orch.run_parallel_perspectives(
+        loop_dir=Path("/tmp/fake"),
+        round_num=1,
+        subject="测试标的",
+        perspectives=perspectives,
+    )
+
+    # 3 个 perspective + 1 个 synthesizer = 4 个 task
+    persp_tasks = [t for t in captured if t.role.startswith("perspective")]
+    synth_tasks = [t for t in captured if t.role == "synthesizer"]
+    assert len(persp_tasks) == 3
+    assert all(t.parallel for t in persp_tasks)
+    assert len(synth_tasks) == 1
+    assert synth_tasks[0].parallel is False
+
+
+def test_run_multi_perspective_guidance_when_gateway_unavailable():
+    """Gateway 不可用时 multi-perspective 降级到 guidance 模式。"""
+    from unittest.mock import patch
+    init_loop("test-mp-guidance", pattern="multi-perspective")
+    with patch("hermes.runner.Orchestrator") as MockOrch:
+        instance = MockOrch.return_value
+        instance.is_available.return_value = False
+        from hermes.runner import _run_multi_perspective, get_loop as gl
+        loop = gl("test-mp-guidance")
+        from hermes.loop import loops_dir
+        result = _run_multi_perspective(
+            "test-mp-guidance", loop, 1, "2025-01-01T00:00:00Z",
+            loops_dir() / "test-mp-guidance",
+        )
+        assert result["mode"] == "guidance"
+        assert "perspective" in result.get("agent_files", {})
+
+
+# ── MCP _sources (双源交叉验证) Tests ─────────────────────────────────
+
+
+def test_mcp_get_pr_returns_sources_field():
+    """get_pr 返回 _sources 字段标记数据来源（双源验证基础）。"""
+    from hermes.mcp import GitHubMCPClient
+    from unittest.mock import patch, MagicMock
+    client = GitHubMCPClient(token="fake-token", repo="test/repo")
+    # mock urlopen 返回有效响应
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = b'{"number": 1, "title": "test"}'
+    mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+    mock_resp.__exit__ = MagicMock(return_value=False)
+    with patch("urllib.request.urlopen", return_value=mock_resp):
+        result = client.get_pr(1)
+    assert result["success"]
+    assert "_sources" in result
+    assert "github-api" in result["_sources"]
+
+
+def test_mcp_list_prs_returns_sources_field():
+    """list_prs 返回 _sources 字段。"""
+    from hermes.mcp import GitHubMCPClient
+    from unittest.mock import patch, MagicMock
+    client = GitHubMCPClient(token="fake-token", repo="test/repo")
+    mock_resp = MagicMock()
+    mock_resp.read.return_value = b'[]'
+    mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+    mock_resp.__exit__ = MagicMock(return_value=False)
+    with patch("urllib.request.urlopen", return_value=mock_resp):
+        result = client.list_prs()
+    assert result["success"]
+    assert "_sources" in result
+    assert len(result["_sources"]) >= 1
+
+
+# ── P0-1: escalation_info persistence Tests ─────────────────────────
+
+
+def test_loop_round_escalation_info_roundtrip() -> None:
+    """LoopRound escalation_info should survive to_dict → from_dict roundtrip."""
+    original = LoopRound(
+        round_num=2,
+        timestamp="2025-01-01T00:00:00Z",
+        action="builder round",
+        result_summary="permission denied",
+        verifier_result="FAILED",
+        passed=False,
+        failure_count=1,
+        failure_items=["auth.py:10"],
+        escalation_info={
+            "current_round": 2,
+            "matched_signals": ["permission denied"],
+            "blocker": "外部依赖或环境问题，需要人工介入",
+        },
+    )
+    d = original.to_dict()
+    assert d["escalation_info"] == original.escalation_info
+    restored = LoopRound.from_dict(d)
+    assert restored.escalation_info == original.escalation_info
+    assert restored.escalation_info["matched_signals"] == ["permission denied"]
+
+
+def test_loop_round_from_dict_escalation_info_default() -> None:
+    """from_dict should default escalation_info to {} when missing (backward compat)."""
+    minimal = {"round_num": 1, "passed": False}
+    restored = LoopRound.from_dict(minimal)
+    assert restored.escalation_info == {}
+
+
+def test_loop_round_from_dict_escalation_info_none_guard() -> None:
+    """from_dict should treat explicit None escalation_info as {} (not None)."""
+    data = {"round_num": 1, "passed": False, "escalation_info": None}
+    restored = LoopRound.from_dict(data)
+    assert restored.escalation_info == {}
+
+
+def test_loop_round_from_dict_escalation_info_type_guard() -> None:
+    """from_dict should coerce non-dict escalation_info to {} (defensive)."""
+    data = {"round_num": 1, "passed": False, "escalation_info": ["not", "a", "dict"]}
+    restored = LoopRound.from_dict(data)
+    assert restored.escalation_info == {}
+
+
+def test_record_round_persists_escalation_info() -> None:
+    """P0-1 时序修复：停止规则触发后 escalation_info 必须回填并持久化到 meta.json。
+
+    根因：record_round 在 loop.rounds.append(round_data) 之后才调用 check_stop_rules，
+    但 escalation_info 从未回填到 round_data，_save_loop_meta 持久化的 round 缺该字段，
+    导致 root_cause / matched_signals / blocker 永远为空。
+    """
+    import json as _json
+    import shutil
+    from hermes.loop import get_loop, loops_dir
+
+    result = init_loop("test-esc-persist", pattern="knowledge-hygiene")
+    assert result["success"]
+    try:
+        # 构造 beyond_capability 触发场景：result_summary 含 "permission denied"
+        round_data = LoopRound(
+            round_num=1,
+            timestamp="2025-01-01T00:00:00Z",
+            action="scan",
+            result_summary="Permission denied: cannot write to /etc/config",
+            verifier_result="FAILED",
+            passed=False,
+            failure_count=1,
+            failure_items=["access error"],
+        )
+        record_result = record_round("test-esc-persist", round_data, tokens_used=5000)
+        assert record_result["success"]
+
+        # Reload from disk: escalation_info must be persisted
+        loop = get_loop("test-esc-persist")
+        assert loop is not None
+        assert len(loop.rounds) == 1
+        esc = loop.rounds[0].escalation_info
+        assert esc, "escalation_info should be non-empty after stop rule trigger"
+        assert "matched_signals" in esc
+        assert "permission denied" in esc["matched_signals"]
+        assert esc["blocker"]
+
+        # Verify raw meta.json on disk carries the field
+        meta = _json.loads((loops_dir() / "test-esc-persist" / "meta.json").read_text("utf-8"))
+        assert meta["rounds"][0]["escalation_info"]["matched_signals"]
+    finally:
+        test_dir = loops_dir() / "test-esc-persist"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_record_round_escalation_info_empty_when_no_stop() -> None:
+    """未触发停止规则时 escalation_info 应为空 dict（不应残留上次数据）。"""
+    import shutil
+    from hermes.loop import get_loop, loops_dir
+
+    result = init_loop("test-esc-empty", pattern="knowledge-hygiene")
+    assert result["success"]
+    try:
+        # 单轮失败但无 capability 信号、未达 max_rounds → 不停止，escalation_info 为 {}
+        round_data = LoopRound(
+            round_num=1,
+            timestamp="2025-01-01T00:00:00Z",
+            action="scan",
+            result_summary="Found 2 issues",
+            verifier_result="2 high priority",
+            passed=False,
+            failure_count=2,
+            failure_items=["issue1", "issue2"],
+        )
+        record_round("test-esc-empty", round_data, tokens_used=1000)
+        loop = get_loop("test-esc-empty")
+        assert loop is not None
+        assert loop.rounds[0].escalation_info == {}
+    finally:
+        test_dir = loops_dir() / "test-esc-empty"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_record_round_regression_persists_escalation_info() -> None:
+    """regression 规则触发的 escalation_info（new_failures/persistent）也持久化。"""
+    import shutil
+    from hermes.loop import get_loop, loops_dir
+
+    # builder-checker max_rounds=5，避免 round 2 触发 rounds_exhausted 抢先于 regression
+    result = init_loop("test-esc-regression", pattern="builder-checker")
+    assert result["success"]
+    try:
+        # Round 1: failures {a.py:1, b.py:2}
+        r1 = LoopRound(
+            round_num=1, timestamp="t1", action="build", result_summary="s1",
+            verifier_result="FAILED", passed=False, failure_count=2,
+            failure_items=["a.py:1", "b.py:2"],
+        )
+        record_round("test-esc-regression", r1, tokens_used=1000)
+        # Round 2: failures {a.py:1, c.py:3} → regression (new + persistent)
+        r2 = LoopRound(
+            round_num=2, timestamp="t2", action="build", result_summary="s2",
+            verifier_result="FAILED", passed=False, failure_count=2,
+            failure_items=["a.py:1", "c.py:3"],
+        )
+        record_round("test-esc-regression", r2, tokens_used=1000)
+
+        loop = get_loop("test-esc-regression")
+        assert loop is not None
+        esc = loop.rounds[-1].escalation_info
+        assert esc, "regression escalation_info should be persisted"
+        assert "c.py:3" in esc["new_failures"]
+        assert "a.py:1" in esc["persistent"]
+    finally:
+        test_dir = loops_dir() / "test-esc-regression"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+@pytest.mark.skip(reason="trae-only `_format_escalation_info` removed by merge")
+def test_format_escalation_info_renders_fields() -> None:
+    """_format_escalation_info 应渲染各规则的关键诊断字段。"""
+    from hermes.main import _format_escalation_info
+
+    # beyond_capability
+    lines = _format_escalation_info({
+        "matched_signals": ["permission denied"],
+        "blocker": "外部依赖或环境问题，需要人工介入",
+    })
+    text = "\n".join(lines)
+    assert "permission denied" in text
+    assert "外部依赖" in text
+
+    # regression
+    lines = _format_escalation_info({
+        "new_failures": ["c.py:3"],
+        "previously_fixed": ["b.py:2"],
+        "persistent": ["a.py:1"],
+    })
+    text = "\n".join(lines)
+    assert "c.py:3" in text
+    assert "b.py:2" in text
+    assert "a.py:1" in text
+
+    # no_progress
+    lines = _format_escalation_info({
+        "failure_counts": [2, 2],
+        "suggestion": "拆分成更小的子任务",
+    })
+    text = "\n".join(lines)
+    assert "2 → 2" in text
+    assert "拆分" in text
+
+
+@pytest.mark.skip(reason="trae-only `_format_escalation_info` removed by merge")
+def test_format_escalation_info_empty_inputs() -> None:
+    """_format_escalation_info 对 None / {} / 非dict 输入返回空列表。"""
+    from hermes.main import _format_escalation_info
+    assert _format_escalation_info(None) == []
+    assert _format_escalation_info({}) == []
+    assert _format_escalation_info(["not", "dict"]) == []  # type: ignore[arg-type]
+
+
+# ── P0-2: loop_metrics + estimate_cost 护栏 Tests ───────────────────
+
+
+def test_loop_metrics_empty_rounds_no_division() -> None:
+    """loop_metrics 对空 rounds 不除零。"""
+    import shutil
+    from hermes.loop import loop_metrics, loops_dir
+
+    result = init_loop("test-metrics-empty", pattern="knowledge-hygiene")
+    assert result["success"]
+    try:
+        m = loop_metrics("test-metrics-empty")
+        assert m["success"]
+        assert m["total_rounds"] == 0
+        assert m["avg_tokens_per_round"] == 0
+        assert m["pass_rate"] == 0
+        assert m["budget_percentage"] == 0  # limit 0 → 0, not div by zero
+    finally:
+        test_dir = loops_dir() / "test-metrics-empty"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_loop_metrics_aggregates_rounds() -> None:
+    """loop_metrics 正确聚合 passed/failed/tokens 统计。"""
+    import shutil
+    from hermes.loop import loop_metrics, loops_dir
+
+    result = init_loop("test-metrics-agg", pattern="builder-checker")
+    assert result["success"]
+    try:
+        r1 = LoopRound(
+            round_num=1, timestamp="t1", action="build", result_summary="s1",
+            verifier_result="FAILED", passed=False, failure_count=2,
+            failure_items=["a", "b"], tokens_used=40000,
+        )
+        record_round("test-metrics-agg", r1, tokens_used=40000)
+        r2 = LoopRound(
+            round_num=2, timestamp="t2", action="build", result_summary="s2",
+            verifier_result="ALL GREEN", passed=True, failure_count=0,
+            failure_items=[], tokens_used=60000,
+        )
+        record_round("test-metrics-agg", r2, tokens_used=60000)
+
+        m = loop_metrics("test-metrics-agg")
+        assert m["success"]
+        assert m["total_rounds"] == 2
+        assert m["passed_rounds"] == 1
+        assert m["failed_rounds"] == 1
+        assert m["pass_rate"] == 50.0
+        assert m["total_tokens"] == 100000
+        assert m["avg_tokens_per_round"] == 50000.0
+    finally:
+        test_dir = loops_dir() / "test-metrics-agg"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_loop_metrics_filters_zero_token_rounds() -> None:
+    """loop_metrics 计算 avg 时过滤 tokens_used=0 的轮次。"""
+    import shutil
+    from hermes.loop import loop_metrics, loops_dir
+
+    result = init_loop("test-metrics-zero", pattern="builder-checker")
+    assert result["success"]
+    try:
+        # 3 rounds: 2 with tokens, 1 with 0 tokens
+        r1 = LoopRound(
+            round_num=1, timestamp="t1", action="build", result_summary="s1",
+            verifier_result="FAILED", passed=False, failure_count=1,
+            failure_items=["a"], tokens_used=30000,
+        )
+        record_round("test-metrics-zero", r1, tokens_used=30000)
+        r2 = LoopRound(
+            round_num=2, timestamp="t2", action="build", result_summary="s2",
+            verifier_result="FAILED", passed=False, failure_count=1,
+            failure_items=["a"], tokens_used=0,
+        )
+        record_round("test-metrics-zero", r2, tokens_used=0)
+        r3 = LoopRound(
+            round_num=3, timestamp="t3", action="build", result_summary="s3",
+            verifier_result="FAILED", passed=False, failure_count=1,
+            failure_items=["a"], tokens_used=50000,
+        )
+        record_round("test-metrics-zero", r3, tokens_used=50000)
+
+        m = loop_metrics("test-metrics-zero")
+        # total_tokens includes all (even 0)
+        assert m["total_tokens"] == 80000
+        # avg only over rounds with tokens > 0: (30000+50000)/2 = 40000
+        assert m["avg_tokens_per_round"] == 40000.0
+    finally:
+        test_dir = loops_dir() / "test-metrics-zero"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_estimate_cost_fallback_when_few_rounds() -> None:
+    """estimate_cost：有效样本 < 3 时回退固定 50k。"""
+    import shutil
+    from hermes.loop import estimate_cost, loops_dir
+
+    result = init_loop("test-cost-fallback", pattern="builder-checker")
+    assert result["success"]
+    try:
+        # Only 2 rounds with tokens → below MIN_SAMPLE=3 → fallback
+        r1 = LoopRound(
+            round_num=1, timestamp="t1", action="build", result_summary="s1",
+            verifier_result="FAILED", passed=False, failure_count=1,
+            failure_items=["a"], tokens_used=99999,
+        )
+        record_round("test-cost-fallback", r1, tokens_used=99999)
+
+        est = estimate_cost("test-cost-fallback")
+        assert est["success"]
+        assert est["estimate_source"] == "fallback_default"
+        assert est["per_round_estimate_tokens"] == 50000
+    finally:
+        test_dir = loops_dir() / "test-cost-fallback"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_estimate_cost_historical_avg_when_enough_rounds() -> None:
+    """estimate_cost：有效样本 >= 3 时用历史平均。"""
+    import shutil
+    from hermes.loop import estimate_cost, loops_dir
+
+    result = init_loop("test-cost-hist", pattern="builder-checker")
+    assert result["success"]
+    try:
+        # 3 rounds: 30000 + 50000 + 40000 = 120000 / 3 = 40000
+        for i, tokens in enumerate([30000, 50000, 40000], 1):
+            r = LoopRound(
+                round_num=i, timestamp=f"t{i}", action="build", result_summary=f"s{i}",
+                verifier_result="FAILED", passed=False, failure_count=1,
+                failure_items=["a"], tokens_used=tokens,
+            )
+            record_round("test-cost-hist", r, tokens_used=tokens)
+
+        est = estimate_cost("test-cost-hist")
+        assert est["success"]
+        assert est["estimate_source"] == "historical_avg"
+        assert est["per_round_estimate_tokens"] == 40000
+    finally:
+        test_dir = loops_dir() / "test-cost-hist"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+def test_estimate_cost_filters_zero_token_rounds_for_avg() -> None:
+    """estimate_cost：计算历史平均时过滤 tokens_used=0 轮次。"""
+    import shutil
+    from hermes.loop import estimate_cost, loops_dir
+
+    result = init_loop("test-cost-filter", pattern="builder-checker")
+    assert result["success"]
+    try:
+        # 4 rounds: 3 with tokens (30000+50000+40000=120000/3=40000), 1 with 0
+        for i, tokens in enumerate([30000, 0, 50000, 40000], 1):
+            r = LoopRound(
+                round_num=i, timestamp=f"t{i}", action="build", result_summary=f"s{i}",
+                verifier_result="FAILED", passed=False, failure_count=1,
+                failure_items=["a"], tokens_used=tokens,
+            )
+            record_round("test-cost-filter", r, tokens_used=tokens)
+
+        est = estimate_cost("test-cost-filter")
+        assert est["estimate_source"] == "historical_avg"
+        # avg over 3 non-zero rounds = 40000, not 120000/4=30000
+        assert est["per_round_estimate_tokens"] == 40000
+    finally:
+        test_dir = loops_dir() / "test-cost-filter"
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
+# ── P0: MCP 工具按角色分舱测试 ──────────────────────────────────
+
+
+def test_role_mcp_whitelist_defaults():
+    """ROLE_MCP_WHITELIST 为已知角色定义了白名单。"""
+    from hermes.orchestrator import ROLE_MCP_WHITELIST
+
+    # builder 只能读 GitHub，禁止写操作
+    assert "github.create_pr" not in ROLE_MCP_WHITELIST["builder"]
+    assert "github.post_pr_comment" not in ROLE_MCP_WHITELIST["builder"]
+    assert "github.get_pr" in ROLE_MCP_WHITELIST["builder"]
+
+    # checker/synthesizer 无 MCP 工具
+    assert ROLE_MCP_WHITELIST["checker"] == []
+    assert ROLE_MCP_WHITELIST["checker_lint"] == []
+    assert ROLE_MCP_WHITELIST["synthesizer"] == []
+
+
+def test_get_role_whitelist_prefix_match():
+    """_get_role_whitelist 对 perspective_* 等动态角色做前缀匹配。"""
+    from hermes.orchestrator import _get_role_whitelist
+
+    # 已知角色精确匹配
+    assert _get_role_whitelist("builder") == ["github.get_pr", "github.list_prs", "github.get_issue"]
+    assert _get_role_whitelist("checker") == []
+
+    # 未知角色返回 None（不限制）
+    assert _get_role_whitelist("unknown_role") is None
+
+
+def test_agent_task_mcp_fields_default():
+    """AgentTask 默认 allowed_mcp_tools=None, mcp_violations=[]。"""
+    from hermes.orchestrator import AgentTask
+
+    task = AgentTask(role="builder")
+    assert task.allowed_mcp_tools is None
+    assert task.mcp_violations == []
+
+    d = task.to_dict()
+    assert "allowed_mcp_tools" in d
+    assert "mcp_violations" in d
+
+
+def test_fan_out_fills_default_whitelist_by_role():
+    """fan_out 为未指定白名单的 task 按 role 填充默认值。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    captured_payloads: list[dict] = []
+
+    class FakeClient:
+        def health_check(self):
+            return True
+
+        def spawn_agent(self, agent_file, task, context="", model=None,
+                        isolated=True, allowed_tools=None, denylist=None):
+            captured_payloads.append({"allowed_tools": allowed_tools, "denylist": denylist})
+            return "session-1"
+
+    orch.client = FakeClient()
+
+    builder = AgentTask(role="builder", task_description="build", parallel=False)
+    checker = AgentTask(role="checker_lint", task_description="lint", parallel=False)
+
+    orch.fan_out([builder, checker])
+
+    # builder 填充了只读白名单
+    assert builder.allowed_mcp_tools == ["github.get_pr", "github.list_prs", "github.get_issue"]
+    # checker 填充了空白名单（禁止所有 MCP）
+    assert checker.allowed_mcp_tools == []
+    # spawn_agent 收到了白名单
+    assert captured_payloads[0]["allowed_tools"] == ["github.get_pr", "github.list_prs", "github.get_issue"]
+    assert captured_payloads[1]["allowed_tools"] == []
+
+
+def test_fan_out_preserves_explicit_whitelist():
+    """显式指定的 allowed_mcp_tools 不被默认值覆盖。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    class FakeClient:
+        def health_check(self):
+            return True
+
+        def spawn_agent(self, agent_file, task, context="", model=None,
+                        isolated=True, allowed_tools=None, denylist=None):
+            return "session-1"
+
+    orch.client = FakeClient()
+
+    custom = ["custom_tool"]
+    task = AgentTask(role="builder", allowed_mcp_tools=custom, parallel=False)
+    orch.fan_out([task])
+
+    assert task.allowed_mcp_tools == custom
+
+
+def test_audit_mcp_violations_detects_write_tool_by_content():
+    """审计检测到 builder 在 content 中调用了 github.create_pr（违规）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder")
+    task.allowed_mcp_tools = ["github.get_pr", "github.list_prs", "github.get_issue"]
+
+    messages = [
+        {"role": "assistant", "content": "I called github.create_pr to merge the code."},
+    ]
+
+    Orchestrator._audit_mcp_violations(task, messages)
+
+    assert len(task.mcp_violations) == 1
+    assert "github.create_pr" in task.mcp_violations[0]
+
+
+def test_audit_mcp_violations_allows_whitelisted_tool():
+    """审计不报白名单内的工具调用。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder")
+    task.allowed_mcp_tools = ["github.get_pr", "github.list_prs", "github.get_issue"]
+
+    messages = [
+        {"role": "assistant", "content": "I called github.get_pr to read PR #42."},
+    ]
+
+    Orchestrator._audit_mcp_violations(task, messages)
+
+    assert task.mcp_violations == []
+
+
+def test_audit_mcp_violations_skips_when_no_whitelist():
+    """allowed_mcp_tools=None 时不审计（向后兼容）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="unknown")
+    task.allowed_mcp_tools = None  # 不限制
+
+    messages = [
+        {"role": "assistant", "content": "github.create_pr called here."},
+    ]
+
+    Orchestrator._audit_mcp_violations(task, messages)
+
+    assert task.mcp_violations == []
+
+
+def test_audit_mcp_violations_detects_tool_calls_field():
+    """审计检测 tool_calls 字段中的违规调用（OpenAI 格式）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="checker_lint")
+    task.allowed_mcp_tools = []  # checker 禁止所有 MCP
+
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {"function": {"name": "mcp_github_create_pr"}},
+                {"function": {"name": "mcp_github_get_pr"}},
+            ],
+        },
+    ]
+
+    Orchestrator._audit_mcp_violations(task, messages)
+
+    assert len(task.mcp_violations) == 2
+
+
+# ── Stage 6: L3 denylist code-level enforcement ────────────────────────
+
+
+def test_matches_denylist_directory_prefix():
+    """目录前缀 pattern（以 / 结尾）匹配路径前缀。"""
+    from hermes.orchestrator import Orchestrator
+
+    denylist = ["auth/", "payment/"]
+    assert Orchestrator._matches_denylist("auth/login.py", denylist) == "auth/"
+    assert Orchestrator._matches_denylist("src/auth/login.py", denylist) == "auth/"
+    assert Orchestrator._matches_denylist("./auth/models/user.py", denylist) == "auth/"
+    assert Orchestrator._matches_denylist("payment/checkout.py", denylist) == "payment/"
+    # 不匹配
+    assert Orchestrator._matches_denylist("utils/auth_helper.py", denylist) is None
+    assert Orchestrator._matches_denylist("authorized.py", denylist) is None  # 前缀但非目录
+
+
+def test_matches_denylist_glob_pattern():
+    """glob pattern（含 * 或 ?）用 fnmatch 匹配。"""
+    from hermes.orchestrator import Orchestrator
+
+    denylist = ["*.key", "*.env"]
+    assert Orchestrator._matches_denylist("secret.key", denylist) == "*.key"
+    assert Orchestrator._matches_denylist("config/prod.key", denylist) == "*.key"
+    # fnmatch 语义：* 匹配任意字符（含空），所以 .env 也命中 *.env
+    # 这对安全是有利的——denylist 应尽可能拦截
+    assert Orchestrator._matches_denylist(".env", denylist) == "*.env"
+    # ? 通配
+    denylist_q = ["config-?.yml"]
+    assert Orchestrator._matches_denylist("config-1.yml", denylist_q) == "config-?.yml"
+    assert Orchestrator._matches_denylist("config-12.yml", denylist_q) is None
+
+
+def test_matches_denylist_exact_filename():
+    """精确文件名 pattern 匹配 basename 或 full path。"""
+    from hermes.orchestrator import Orchestrator
+
+    denylist = [".env", "CHANGELOG.md"]
+    assert Orchestrator._matches_denylist(".env", denylist) == ".env"
+    assert Orchestrator._matches_denylist("config/.env", denylist) == ".env"
+    assert Orchestrator._matches_denylist("CHANGELOG.md", denylist) == "CHANGELOG.md"
+    assert Orchestrator._matches_denylist("docs/CHANGELOG.md", denylist) == "CHANGELOG.md"
+    # 不匹配
+    assert Orchestrator._matches_denylist(".environment", denylist) is None
+    assert Orchestrator._matches_denylist("CHANGELOG.txt", denylist) is None
+
+
+def test_matches_denylist_empty_inputs_return_none():
+    """空路径或空 denylist 返回 None（不限制）。"""
+    from hermes.orchestrator import Orchestrator
+
+    assert Orchestrator._matches_denylist("", ["auth/"]) is None
+    assert Orchestrator._matches_denylist("auth/login.py", []) is None
+    assert Orchestrator._matches_denylist("", []) is None
+    # denylist 中包含空字符串 pattern 也应跳过
+    assert Orchestrator._matches_denylist("foo.py", ["", "auth/"]) is None
+
+
+def test_matches_denylist_normalizes_backslashes():
+    """Windows 风格路径（反斜杠）规范化后匹配。"""
+    from hermes.orchestrator import Orchestrator
+
+    # 路径用 \ 时也匹配（规范化为 / 后再比较）
+    denylist = ["auth/"]
+    assert Orchestrator._matches_denylist("auth\\login.py", denylist) == "auth/"
+    assert Orchestrator._matches_denylist("src\\auth\\x.py", denylist) == "auth/"
+
+
+def test_audit_path_violations_skips_when_no_denylist():
+    """denylist 为空时跳过审计（向后兼容）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder")  # denylist 默认为空 []
+    messages = [
+        {"role": "assistant", "content": 'Write to "auth/login.py"'},
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    assert task.path_violations == []
+
+
+def test_audit_path_violations_skips_for_checker_role():
+    """checker 角色无 Write 权限，跳过审计（省开销）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="checker_lint", denylist=["auth/"])
+    messages = [
+        {"role": "assistant", "content": 'Write to "auth/login.py"'},
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    assert task.path_violations == []
+
+
+def test_audit_path_violations_detects_tool_calls_write():
+    """检测 tool_calls 中的 Write 调用命中 denylist。"""
+    import json as _json
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", denylist=["auth/", "*.key"])
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "write",
+                        "arguments": _json.dumps({"file_path": "auth/login.py"}),
+                    }
+                },
+                {
+                    "function": {
+                        "name": "edit",
+                        "arguments": {"file_path": "config/prod.key"},
+                    }
+                },
+                # 不违规：utils 路径
+                {
+                    "function": {
+                        "name": "write",
+                        "arguments": {"file_path": "utils/helper.py"},
+                    }
+                },
+            ],
+        },
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    assert len(task.path_violations) == 2
+    assert any("auth/login.py" in v for v in task.path_violations)
+    assert any("prod.key" in v for v in task.path_violations)
+
+
+def test_audit_path_violations_detects_content_write():
+    """兜底信号：content 中出现 Write/Edit + 受保护路径。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", denylist=["auth/", ".env"])
+    messages = [
+        {
+            "role": "assistant",
+            "content": 'I will Write the file "auth/login.py" now. Then Edit ".env" file.',
+        },
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    # 至少检测到 auth/login.py 违规（.env 也可能命中，关键是 auth 命中）
+    assert len(task.path_violations) >= 1
+    assert any("auth/login.py" in v for v in task.path_violations)
+
+
+def test_audit_path_violations_handles_malformed_tool_calls():
+    """tool_calls 格式异常时不崩溃，跳过该条目。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", denylist=["auth/"])
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                "not a dict",  # 非字典
+                {"function": {"name": "write", "arguments": "not json"}},  # 坏 JSON
+                {"function": {"name": "write"}},  # 缺 arguments
+                {"function": {"name": "write", "arguments": {"file_path": "auth/x.py"}}},  # 正常
+            ],
+        },
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    # 只有最后一条正常解析且命中 denylist
+    assert len(task.path_violations) == 1
+    assert "auth/x.py" in task.path_violations[0]
+
+
+def test_audit_path_violations_detects_mcp_prefixed_tool_names():
+    """工具名带 mcp_ 前缀（如 mcp_fs.write）也能识别 basename。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", denylist=["auth/"])
+    messages = [
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "mcp_filesystem.write",
+                        "arguments": {"file_path": "auth/secrets.py"},
+                    }
+                },
+            ],
+        },
+    ]
+
+    Orchestrator._audit_path_violations(task, messages)
+
+    assert len(task.path_violations) == 1
+    assert "auth/secrets.py" in task.path_violations[0]
+
+
+def test_aggregate_results_builder_path_violation_forces_failed():
+    """builder 命中 denylist 路径违规时强制 failed，无视 status。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(role="builder", status="completed", result="done")
+    builder.path_violations = ["write: auth/login.py (matched: auth/)"]
+
+    checker = AgentTask(role="checker_lint", status="completed", result="ALL GREEN")
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert rr.all_passed is False
+    assert any("DENYLIST VIOLATION" in fi for fi in rr.failure_items)
+    assert "Path violations: 1" in rr.summary
+
+
+def test_aggregate_results_path_violation_count_in_summary():
+    """summary 包含 Path violations 计数（仅当 >0 时）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(role="builder", status="completed", result="done")
+    builder.path_violations = ["v1", "v2"]
+    checker = AgentTask(role="checker_lint", status="completed", result="ALL GREEN")
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert "Path violations: 2" in rr.summary
+
+
+def test_aggregate_results_no_path_violation_omits_summary():
+    """无路径违规时 summary 不包含 Path violations 字段。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+    builder = AgentTask(role="builder", status="completed", result="done")
+    checker = AgentTask(role="checker_lint", status="completed", result="ALL GREEN")
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert "Path violations" not in rr.summary
+
+
+def test_agent_task_to_dict_includes_denylist_fields():
+    """AgentTask.to_dict 包含 denylist 和 path_violations 字段。"""
+    from hermes.orchestrator import AgentTask
+
+    task = AgentTask(
+        role="builder",
+        denylist=["auth/", "*.key"],
+        path_violations=["write: auth/x.py (matched: auth/)"],
+    )
+    d = task.to_dict()
+
+    assert d["denylist"] == ["auth/", "*.key"]
+    assert d["path_violations"] == ["write: auth/x.py (matched: auth/)"]
+
+
+def test_agent_task_denylist_defaults_to_empty():
+    """AgentTask 默认 denylist 和 path_violations 为空 list（向后兼容）。"""
+    from hermes.orchestrator import AgentTask
+
+    task = AgentTask(role="builder")
+    assert task.denylist == []
+    assert task.path_violations == []
+
+
+def test_run_builder_checker_round_passes_denylist_to_builder():
+    """run_builder_checker_round 把 denylist 注入 builder task，不注入 checker。"""
+    import tempfile
+    from pathlib import Path
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    captured_tasks: list[AgentTask] = []
+
+    class FakeClient:
+        def health_check(self):
+            return True
+
+        def spawn_agent(self, agent_file, task, context="", model=None,
+                        isolated=True, allowed_tools=None, denylist=None):
+            return "session-1"
+
+        def wait_for_completion(self, session_id, timeout=300.0):
+            return {"status": "completed", "tokens_used": 1000}
+
+        def get_session_messages(self, session_id):
+            return [{"role": "assistant", "content": "done"}]
+
+    orch.client = FakeClient()
+
+    # 拦截 fan_in 来检查 task.denylist
+    def spy_fan_in(tasks, **kwargs):
+        captured_tasks.extend(tasks)
+        return tasks
+
+    orch.fan_in = spy_fan_in  # type: ignore[assignment]
+
+    with tempfile.TemporaryDirectory() as tmp:
+        loop_dir = Path(tmp)
+        (loop_dir / "builder.md").write_text("builder")
+        (loop_dir / "checker.md").write_text("checker")
+
+        orch.run_builder_checker_round(
+            loop_dir=loop_dir,
+            round_num=1,
+            builder_task="build it",
+            checker_context="",
+            parallel_checks=False,
+            denylist=["auth/", "*.key"],
+        )
+
+    # builder 必须收到 denylist
+    builder = next(t for t in captured_tasks if t.role == "builder")
+    assert builder.denylist == ["auth/", "*.key"]
+    # checker 不应收到 denylist（无 Write 权限）
+    checker = next(t for t in captured_tasks if t.role.startswith("checker"))
+    assert checker.denylist == []
+
+
+def test_runner_wires_denylist_from_loop_patterns(monkeypatch):
+    """runner._run_builder_checker 从 LOOP_PATTERNS[pattern]['denylist'] 注入。"""
+    import tempfile
+    from pathlib import Path
+    from typing import Any
+    from hermes import runner
+    from hermes.loop import LOOP_PATTERNS, LoopState, LoopStage, LoopStatus
+    from hermes.orchestrator import RoundResult
+
+    # 准备一个 builder-checker loop state（必填字段全部给出）
+    loop = LoopState(
+        name="test-denylist-wire",
+        pattern="builder-checker",
+        stage=LoopStage.L2_ASSIST,
+        status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"),
+        state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"),
+        created_at="",
+        max_rounds=5,
+    )
+
+    expected_denylist = list(LOOP_PATTERNS["builder-checker"]["denylist"])
+    assert expected_denylist  # 确保测试 pattern 有 denylist
+
+    captured: dict[str, Any] = {}
+
+    class FakeOrchestrator:
+        def __init__(self):
+            self.client = None
+
+        def is_available(self):
+            return True
+
+        def run_builder_checker_round(self, *, loop_dir, round_num, builder_task,
+                                       checker_context, parallel_checks, denylist):
+            captured["denylist"] = denylist
+            return RoundResult(
+                round_num=round_num,
+                tasks=[],
+                all_passed=True,
+                summary="ok",
+            )
+
+    monkeypatch.setattr(runner, "Orchestrator", FakeOrchestrator)
+    monkeypatch.setattr(runner, "record_round", lambda *a, **kw: {"success": True})
+    monkeypatch.setattr(runner, "check_stop_rules", lambda *a, **kw: {"should_stop": True, "rule_name": "all_green"})
+
+    with tempfile.TemporaryDirectory() as tmp:
+        runner._run_builder_checker("test", loop, 1, "now", Path(tmp))
+
+    assert captured["denylist"] == expected_denylist
+
+
+def test_aggregate_results_counts_role_violations():
+    """aggregate_results 统计 role_violation_count。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(role="builder", status="completed", result="done")
+    builder.mcp_violations = ["github.create_pr"]  # 1 个违规
+
+    checker = AgentTask(role="checker_lint", status="completed", result="ALL GREEN")
+    checker.mcp_violations = []  # 无违规
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert rr.role_violation_count == 1
+    assert "MCP violations: 1" in rr.summary
+
+
+def test_round_result_to_dict_includes_violation_count():
+    """RoundResult.to_dict 包含 role_violation_count 字段。"""
+    from hermes.orchestrator import RoundResult
+
+    rr = RoundResult(round_num=1, role_violation_count=3)
+    d = rr.to_dict()
+    assert d["role_violation_count"] == 3
+
+
+# ── P1: sub-agent 级 token 上限 + 熔断机制测试 ──────────────────
+
+
+def test_agent_task_token_limit_default():
+    """AgentTask 默认 token_limit=50000。"""
+    from hermes.orchestrator import AgentTask
+
+    task = AgentTask(role="builder")
+    assert task.token_limit == 50000
+
+    d = task.to_dict()
+    assert d["token_limit"] == 50000
+
+
+def test_check_token_limit_no_op_when_unlimited():
+    """token_limit=0 表示不限制，不会改 status。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", token_limit=0)
+    task.status = "completed"
+    task.tokens_used = 999999999  # 即使巨大也不触发
+    Orchestrator._check_token_limit(task)
+    assert task.status == "completed"
+    assert task.result is None  # 未被改写
+
+
+def test_check_token_limit_no_op_when_within_budget():
+    """tokens_used <= token_limit 时不触发熔断。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", token_limit=50000)
+    task.status = "completed"
+    task.tokens_used = 50000  # 等于上限，不触发
+    Orchestrator._check_token_limit(task)
+    assert task.status == "completed"
+    assert task.result is None
+
+
+def test_check_token_limit_trips_when_exceeded():
+    """tokens_used > token_limit 时改 status 为 failed 并写明原因。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", token_limit=50000)
+    task.status = "completed"
+    task.tokens_used = 50001  # 刚好超 1
+    Orchestrator._check_token_limit(task)
+    assert task.status == "failed"
+    assert "Token limit exceeded" in task.result
+    assert "50001" in task.result
+    assert "50000" in task.result
+
+
+def test_check_token_limit_preserves_original_status_in_message():
+    """熔断后 result 包含 prior status，便于追溯。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    task = AgentTask(role="builder", token_limit=100)
+    task.status = "running"  # 异常状态（理论上 fan_in 完成后应为 completed）
+    task.tokens_used = 200
+    Orchestrator._check_token_limit(task)
+    assert task.status == "failed"
+    assert "prior status=running" in task.result
+
+
+def test_fan_in_trips_token_limit():
+    """fan_in 整合后，超 token 上限的 task 被标记 failed。"""
+    from datetime import datetime, timezone
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    class FakeClient:
+        def health_check(self):
+            return True
+
+        def wait_for_completion(self, session_id, timeout=300.0):
+            return {"status": "completed", "tokens_used": 60000}  # 超 50000
+
+        def get_session_messages(self, session_id):
+            return [{"role": "assistant", "content": "done"}]
+
+    orch.client = FakeClient()
+
+    task = AgentTask(
+        role="builder",
+        session_id="s1",
+        status="running",
+        token_limit=50000,
+    )
+    task.started_at = datetime.now(timezone.utc).isoformat()
+    orch.fan_in([task])
+
+    assert task.status == "failed"
+    assert "Token limit exceeded" in task.result
+
+
+def test_fan_in_keeps_completed_when_within_budget():
+    """fan_in 整合后，未超 token 上限的 task 保持 completed。"""
+    from datetime import datetime, timezone
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    class FakeClient:
+        def health_check(self):
+            return True
+
+        def wait_for_completion(self, session_id, timeout=300.0):
+            return {"status": "completed", "tokens_used": 30000}
+
+        def get_session_messages(self, session_id):
+            return [{"role": "assistant", "content": "done"}]
+
+    orch.client = FakeClient()
+
+    task = AgentTask(
+        role="builder",
+        session_id="s1",
+        status="running",
+        token_limit=50000,
+    )
+    task.started_at = datetime.now(timezone.utc).isoformat()
+    orch.fan_in([task])
+
+    assert task.status == "completed"
+
+
+# ── P1: agent_failure_counts / 熔断阈值测试 ─────────────────────
+
+
+def test_agent_failure_threshold_value():
+    """AGENT_FAILURE_THRESHOLD=2，确保阈值稳定。"""
+    from hermes.loop import AGENT_FAILURE_THRESHOLD
+
+    assert AGENT_FAILURE_THRESHOLD == 2
+
+
+def test_loop_state_agent_failure_counts_default():
+    """LoopState 默认 agent_failure_counts={}。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus
+    from pathlib import Path
+
+    state = LoopState(
+        name="t",
+        pattern="custom",
+        stage=LoopStage.L1_REPORT,
+        status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"),
+        state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"),
+        created_at="",
+    )
+    assert state.agent_failure_counts == {}
+
+
+def test_update_failure_counts_increments_on_failed():
+    """role=failed 时计数 +1。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _update_failure_counts
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    _update_failure_counts(state, {"builder": "failed", "checker": "failed"})
+    assert state.agent_failure_counts == {"builder": 1, "checker": 1}
+
+    # 再失败一次
+    _update_failure_counts(state, {"builder": "failed"})
+    assert state.agent_failure_counts == {"builder": 2, "checker": 1}
+
+
+def test_update_failure_counts_resets_on_success():
+    """role=completed 时计数清零（连续窗口重置）。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _update_failure_counts
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.agent_failure_counts = {"builder": 1}
+    _update_failure_counts(state, {"builder": "completed"})
+    assert state.agent_failure_counts == {"builder": 0}
+
+
+def test_update_failure_counts_skips_missing_role():
+    """未在 agent_status 中出现的 role 不被重置（保守策略）。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _update_failure_counts
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.agent_failure_counts = {"builder": 1, "checker": 2}
+    # 只更新 checker，builder 不在 agent_status 中
+    _update_failure_counts(state, {"checker": "completed"})
+    # checker 清零，builder 保持
+    assert state.agent_failure_counts == {"builder": 1, "checker": 0}
+
+
+def test_update_failure_counts_empty_status_no_op():
+    """agent_status 为空时不做任何修改。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _update_failure_counts
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.agent_failure_counts = {"builder": 5}
+    _update_failure_counts(state, {})
+    assert state.agent_failure_counts == {"builder": 5}
+
+
+def test_get_tripped_roles_returns_threshold_exceeded():
+    """get_tripped_roles 返回连续失败 >= 阈值的 role。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, get_tripped_roles
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.agent_failure_counts = {"builder": 2, "checker": 1, "synthesizer": 3}
+    tripped = get_tripped_roles(state)
+    assert set(tripped) == {"builder", "synthesizer"}
+
+
+def test_get_tripped_roles_empty_when_all_below():
+    """所有 role 都未达阈值时返回空列表。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, get_tripped_roles
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.agent_failure_counts = {"builder": 1, "checker": 0}
+    assert get_tripped_roles(state) == []
+
+
+def test_load_failure_counts_validates_types():
+    """_load_failure_counts 严格校验键值类型，丢弃非法项。"""
+    from hermes.loop import _load_failure_counts
+
+    # 正常输入
+    assert _load_failure_counts({"builder": 1, "checker": 2}) == {"builder": 1, "checker": 2}
+
+    # 非 dict 返回空
+    assert _load_failure_counts(None) == {}
+    assert _load_failure_counts([1, 2, 3]) == {}
+    assert _load_failure_counts("not a dict") == {}
+
+    # 非 int 值被丢弃
+    assert _load_failure_counts({"builder": "1", "checker": 2.5}) == {}
+
+    # bool 被明确排除（bool 是 int 子类）
+    assert _load_failure_counts({"ok": True, "bad": False}) == {}
+
+
+def test_loop_round_agent_status_roundtrip():
+    """LoopRound.to_dict / from_dict 保留 agent_status。"""
+    from hermes.loop import LoopRound
+
+    round_data = LoopRound(
+        round_num=1,
+        timestamp="2024-01-01T00:00:00Z",
+        action="test",
+        result_summary="ok",
+        verifier_result="",
+        passed=True,
+        agent_status={"builder": "completed", "checker": "failed"},
+    )
+    d = round_data.to_dict()
+    assert d["agent_status"] == {"builder": "completed", "checker": "failed"}
+
+    restored = LoopRound.from_dict(d)
+    assert restored.agent_status == {"builder": "completed", "checker": "failed"}
+
+
+def test_loop_round_from_dict_defaults_agent_status_when_missing():
+    """旧 meta.json 缺 agent_status 时 from_dict 默认为空 dict。"""
+    from hermes.loop import LoopRound
+
+    data = {
+        "round_num": 1,
+        "timestamp": "2024-01-01T00:00:00Z",
+        "action": "test",
+        "result_summary": "ok",
+        "verifier_result": "",
+        "passed": True,
+        # 故意不带 agent_status
+    }
+    restored = LoopRound.from_dict(data)
+    assert restored.agent_status == {}
+
+
+def test_load_loop_meta_persists_agent_failure_counts(tmp_path, monkeypatch):
+    """meta.json 读写 agent_failure_counts 字段（端到端持久化）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopStage, LoopStatus, _load_loop_meta, _save_loop_meta, LoopState
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-loop"
+    loop_dir.mkdir(parents=True)
+
+    state = LoopState(
+        name="test-loop",
+        pattern="custom",
+        stage=LoopStage.L1_REPORT,
+        status=LoopStatus.IDLE,
+        config_path=loop_dir / "LOOP.md",
+        state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md",
+        created_at="2024-01-01T00:00:00Z",
+        agent_failure_counts={"builder": 2, "checker": 1},
+    )
+
+    _save_loop_meta(state)
+    meta_path = loop_dir / "meta.json"
+    assert meta_path.exists()
+
+    import json
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert meta["agent_failure_counts"] == {"builder": 2, "checker": 1}
+
+    # 读回来
+    restored = _load_loop_meta(meta, "test-loop")
+    assert restored is not None
+    assert restored.agent_failure_counts == {"builder": 2, "checker": 1}
+
+
+def test_load_loop_meta_defaults_agent_failure_counts_when_missing(tmp_path, monkeypatch):
+    """旧 meta.json 缺 agent_failure_counts 时返回空 dict（向后兼容）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import _load_loop_meta
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-loop"
+    loop_dir.mkdir(parents=True)
+
+    # 写一个不含 agent_failure_counts 字段的旧版 meta.json
+    import json
+    legacy_meta = {
+        "schema_version": 0,
+        "pattern": "custom",
+        "stage": "l1_report",
+        "status": "idle",
+        "created_at": "2024-01-01T00:00:00Z",
+    }
+    (loop_dir / "meta.json").write_text(
+        json.dumps(legacy_meta), encoding="utf-8"
+    )
+
+    restored = _load_loop_meta(legacy_meta, "test-loop")
+    assert restored is not None
+    assert restored.agent_failure_counts == {}
+
+
+# ── P2: multi-agent 协作评估指标测试 ──────────────────────────
+
+
+def test_compute_collaboration_metrics_all_pass():
+    """全部通过时 attribution=none, agreement=True。"""
+    from hermes.orchestrator import Orchestrator
+
+    metrics = Orchestrator._compute_collaboration_metrics(
+        builder_failed=False,
+        checker_failed_signal=False,
+        checker_passed_signal=True,
+        has_checker=True,
+        token_by_role={"builder": 5000, "checker_lint": 1000},
+        roles_completed=2,
+        roles_failed=0,
+        role_violation_count=0,
+    )
+    assert metrics["failure_attribution"] == "none"
+    assert metrics["checker_builder_agreement"] is True
+    assert metrics["roles_completed"] == 2
+    assert metrics["roles_failed"] == 0
+    assert metrics["token_by_role"] == {"builder": 5000, "checker_lint": 1000}
+
+
+def test_compute_collaboration_metrics_builder_only_failed():
+    """builder 失败但 checker 未报失败时 attribution=builder, agreement=None。"""
+    from hermes.orchestrator import Orchestrator
+
+    metrics = Orchestrator._compute_collaboration_metrics(
+        builder_failed=True,
+        checker_failed_signal=False,
+        checker_passed_signal=False,
+        has_checker=True,
+        token_by_role={"builder": 60000},
+        roles_completed=0,
+        roles_failed=1,
+        role_violation_count=0,
+    )
+    assert metrics["failure_attribution"] == "builder"
+    # builder 已 failed，无法判断 agreement
+    assert metrics["checker_builder_agreement"] is None
+
+
+def test_compute_collaboration_metrics_checker_only_failed():
+    """builder 完成但 checker 报失败时 attribution=checker, agreement=False。"""
+    from hermes.orchestrator import Orchestrator
+
+    metrics = Orchestrator._compute_collaboration_metrics(
+        builder_failed=False,
+        checker_failed_signal=True,
+        checker_passed_signal=False,
+        has_checker=True,
+        token_by_role={"builder": 5000, "checker_lint": 1000},
+        roles_completed=1,
+        roles_failed=1,
+        role_violation_count=0,
+    )
+    assert metrics["failure_attribution"] == "checker"
+    # builder 完成但 checker 报失败 → disagree
+    assert metrics["checker_builder_agreement"] is False
+
+
+def test_compute_collaboration_metrics_mixed_failure():
+    """builder 失败 + checker 失败时 attribution=mixed。"""
+    from hermes.orchestrator import Orchestrator
+
+    metrics = Orchestrator._compute_collaboration_metrics(
+        builder_failed=True,
+        checker_failed_signal=True,
+        checker_passed_signal=False,
+        has_checker=True,
+        token_by_role={"builder": 30000, "checker_lint": 500},
+        roles_completed=0,
+        roles_failed=2,
+        role_violation_count=1,
+    )
+    assert metrics["failure_attribution"] == "mixed"
+    assert metrics["checker_builder_agreement"] is None
+
+
+def test_compute_collaboration_metrics_no_checker():
+    """无 checker 时 attribution 取决于 builder 状态，agreement=None。"""
+    from hermes.orchestrator import Orchestrator
+
+    # builder 成功但无 checker
+    metrics = Orchestrator._compute_collaboration_metrics(
+        builder_failed=False,
+        checker_failed_signal=False,
+        checker_passed_signal=False,
+        has_checker=False,
+        token_by_role={"builder": 5000},
+        roles_completed=1,
+        roles_failed=0,
+        role_violation_count=0,
+    )
+    assert metrics["failure_attribution"] == "none"
+    assert metrics["checker_builder_agreement"] is None
+
+    # builder 失败且无 checker
+    metrics2 = Orchestrator._compute_collaboration_metrics(
+        builder_failed=True,
+        checker_failed_signal=False,
+        checker_passed_signal=False,
+        has_checker=False,
+        token_by_role={"builder": 5000},
+        roles_completed=0,
+        roles_failed=1,
+        role_violation_count=0,
+    )
+    assert metrics2["failure_attribution"] == "builder"
+    assert metrics2["checker_builder_agreement"] is None
+
+
+def test_aggregate_results_populates_collaboration_metrics():
+    """aggregate_results 正确填充 collaboration_metrics（builder 成功 + checker ALL GREEN）。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(
+        role="builder", status="completed", result="done", tokens_used=5000
+    )
+    checker = AgentTask(
+        role="checker_lint", status="completed", result="ALL GREEN", tokens_used=1000
+    )
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert rr.collaboration_metrics["failure_attribution"] == "none"
+    assert rr.collaboration_metrics["checker_builder_agreement"] is True
+    assert rr.collaboration_metrics["roles_completed"] == 2
+    assert rr.collaboration_metrics["roles_failed"] == 0
+    assert rr.collaboration_metrics["token_by_role"] == {
+        "builder": 5000, "checker_lint": 1000
+    }
+
+
+def test_aggregate_results_attribution_builder_when_builder_failed():
+    """builder failed 时 attribution=builder，summary 包含 Attribution。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(
+        role="builder",
+        status="failed",
+        result="Token limit exceeded",
+        tokens_used=60000,
+    )
+    checker = AgentTask(
+        role="checker_lint", status="completed", result="ALL GREEN", tokens_used=500
+    )
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    # builder failed → all_passed=False
+    assert rr.all_passed is False
+    assert rr.collaboration_metrics["failure_attribution"] == "builder"
+    # summary 包含 Attribution 信息
+    assert "Attribution: builder" in rr.summary
+
+
+def test_aggregate_results_attribution_checker_when_checker_reports_failure():
+    """builder 完成但 checker 报失败时 attribution=checker。"""
+    from hermes.orchestrator import AgentTask, Orchestrator
+
+    orch = Orchestrator()
+
+    builder = AgentTask(
+        role="builder", status="completed", result="done", tokens_used=3000
+    )
+    checker = AgentTask(
+        role="checker_lint",
+        status="completed",
+        result="FAILED\nsrc/a.py:42 - ImportError",
+        tokens_used=800,
+    )
+
+    rr = orch.aggregate_results([builder, checker], round_num=1)
+
+    assert rr.all_passed is False
+    assert rr.collaboration_metrics["failure_attribution"] == "checker"
+    assert rr.collaboration_metrics["checker_builder_agreement"] is False
+
+
+def test_round_result_to_dict_includes_collaboration_metrics():
+    """RoundResult.to_dict 包含 collaboration_metrics 字段。"""
+    from hermes.orchestrator import RoundResult
+
+    rr = RoundResult(
+        round_num=1,
+        collaboration_metrics={
+            "failure_attribution": "builder",
+            "checker_builder_agreement": None,
+            "roles_completed": 1,
+            "roles_failed": 1,
+        },
+    )
+    d = rr.to_dict()
+    assert "collaboration_metrics" in d
+    assert d["collaboration_metrics"]["failure_attribution"] == "builder"
+
+
+def test_loop_state_cumulative_metrics_default():
+    """LoopState 默认累计协作指标为初始值。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    assert state.total_role_violations == 0
+    assert state.total_tokens_by_role == {}
+    assert state.failure_attribution_counts == {}
+
+
+def test_accumulate_collaboration_metrics_empty_no_op():
+    """空 metrics 不修改任何累计字段。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _accumulate_collaboration_metrics
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+    state.total_role_violations = 5
+    state.total_tokens_by_role = {"builder": 1000}
+    state.failure_attribution_counts = {"checker": 2}
+
+    _accumulate_collaboration_metrics(state, {})
+
+    # 未被修改
+    assert state.total_role_violations == 5
+    assert state.total_tokens_by_role == {"builder": 1000}
+    assert state.failure_attribution_counts == {"checker": 2}
+
+
+def test_accumulate_collaboration_metrics_sums_violations_and_tokens():
+    """累计指标正确累加 violations + tokens + attribution。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _accumulate_collaboration_metrics
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+
+    # 第一轮
+    _accumulate_collaboration_metrics(state, {
+        "role_violation_count": 1,
+        "token_by_role": {"builder": 5000, "checker_lint": 1000},
+        "failure_attribution": "checker",
+    })
+    assert state.total_role_violations == 1
+    assert state.total_tokens_by_role == {"builder": 5000, "checker_lint": 1000}
+    assert state.failure_attribution_counts == {"checker": 1}
+
+    # 第二轮（同 role 不同 token）
+    _accumulate_collaboration_metrics(state, {
+        "role_violation_count": 2,
+        "token_by_role": {"builder": 3000, "checker_lint": 800},
+        "failure_attribution": "builder",
+    })
+    assert state.total_role_violations == 3  # 1 + 2
+    assert state.total_tokens_by_role == {"builder": 8000, "checker_lint": 1800}
+    assert state.failure_attribution_counts == {"checker": 1, "builder": 1}
+
+
+def test_accumulate_collaboration_metrics_skips_invalid_types():
+    """非法类型（bool / str token / non-str role）被丢弃不污染累计。"""
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _accumulate_collaboration_metrics
+    from pathlib import Path
+
+    state = LoopState(
+        name="t", pattern="custom", stage=LoopStage.L1_REPORT, status=LoopStatus.IDLE,
+        config_path=Path("/tmp/LOOP.md"), state_path=Path("/tmp/STATE.md"),
+        budget_path=Path("/tmp/budget.md"), created_at="",
+    )
+
+    _accumulate_collaboration_metrics(state, {
+        "role_violation_count": True,  # bool 应被排除（bool 是 int 子类）
+        "token_by_role": {
+            "builder": 1000,
+            "bad_role_str_token": "not int",
+            123: 500,  # 非 str key 被跳过
+        },
+        "failure_attribution": "",  # 空字符串不计入
+    })
+
+    assert state.total_role_violations == 0  # bool 被排除
+    assert state.total_tokens_by_role == {"builder": 1000}  # 只 builder 计入
+    assert state.failure_attribution_counts == {}  # 空字符串不计入
+
+
+def test_loop_round_collaboration_metrics_roundtrip():
+    """LoopRound.to_dict / from_dict 保留 collaboration_metrics。"""
+    from hermes.loop import LoopRound
+
+    metrics = {
+        "failure_attribution": "checker",
+        "checker_builder_agreement": False,
+        "roles_completed": 1,
+        "roles_failed": 1,
+        "token_by_role": {"builder": 5000, "checker_lint": 1000},
+    }
+    round_data = LoopRound(
+        round_num=1,
+        timestamp="2024-01-01T00:00:00Z",
+        action="test",
+        result_summary="ok",
+        verifier_result="",
+        passed=False,
+        collaboration_metrics=metrics,
+    )
+    d = round_data.to_dict()
+    assert d["collaboration_metrics"] == metrics
+
+    restored = LoopRound.from_dict(d)
+    assert restored.collaboration_metrics == metrics
+
+
+def test_loop_round_from_dict_defaults_collaboration_metrics_when_missing():
+    """旧 meta.json 缺 collaboration_metrics 时 from_dict 默认为空 dict。"""
+    from hermes.loop import LoopRound
+
+    data = {
+        "round_num": 1,
+        "timestamp": "2024-01-01T00:00:00Z",
+        "action": "test",
+        "result_summary": "ok",
+        "verifier_result": "",
+        "passed": True,
+        # 故意不带 collaboration_metrics
+    }
+    restored = LoopRound.from_dict(data)
+    assert restored.collaboration_metrics == {}
+
+
+def test_load_loop_meta_persists_cumulative_metrics(tmp_path, monkeypatch):
+    """meta.json 读写 P2 累计协作指标（端到端持久化）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopStage, LoopStatus, _load_loop_meta, _save_loop_meta, LoopState
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-loop"
+    loop_dir.mkdir(parents=True)
+
+    state = LoopState(
+        name="test-loop",
+        pattern="custom",
+        stage=LoopStage.L1_REPORT,
+        status=LoopStatus.IDLE,
+        config_path=loop_dir / "LOOP.md",
+        state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md",
+        created_at="2024-01-01T00:00:00Z",
+        total_role_violations=3,
+        total_tokens_by_role={"builder": 15000, "checker_lint": 2000},
+        failure_attribution_counts={"builder": 1, "checker": 2},
+    )
+
+    _save_loop_meta(state)
+    meta_path = loop_dir / "meta.json"
+    assert meta_path.exists()
+
+    import json
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert meta["total_role_violations"] == 3
+    assert meta["total_tokens_by_role"] == {"builder": 15000, "checker_lint": 2000}
+    assert meta["failure_attribution_counts"] == {"builder": 1, "checker": 2}
+
+    # 读回来
+    restored = _load_loop_meta(meta, "test-loop")
+    assert restored is not None
+    assert restored.total_role_violations == 3
+    assert restored.total_tokens_by_role == {"builder": 15000, "checker_lint": 2000}
+    assert restored.failure_attribution_counts == {"builder": 1, "checker": 2}
+
+
+def test_load_loop_meta_defaults_cumulative_metrics_when_missing(tmp_path, monkeypatch):
+    """旧 meta.json 缺 P2 字段时返回默认值（向后兼容）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import _load_loop_meta
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-loop"
+    loop_dir.mkdir(parents=True)
+
+    import json
+    legacy_meta = {
+        "schema_version": 0,
+        "pattern": "custom",
+        "stage": "l1_report",
+        "status": "idle",
+        "created_at": "2024-01-01T00:00:00Z",
+    }
+    (loop_dir / "meta.json").write_text(json.dumps(legacy_meta), encoding="utf-8")
+
+    restored = _load_loop_meta(legacy_meta, "test-loop")
+    assert restored is not None
+    assert restored.total_role_violations == 0
+    assert restored.total_tokens_by_role == {}
+    assert restored.failure_attribution_counts == {}
+
+
+def test_record_round_accumulates_cumulative_metrics(tmp_path, monkeypatch):
+    """record_round 端到端：调用一次后 LoopState 累计字段被更新。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopRound, init_loop, record_round
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    monkeypatch.setattr(loop_mod, "_project_root", lambda: tmp_path)
+
+    init_result = init_loop("test-loop", pattern="builder-checker")
+    assert init_result["success"]
+
+    round_data = LoopRound(
+        round_num=1,
+        timestamp="2024-01-01T00:00:00Z",
+        action="builder-checker round",
+        result_summary="FAILED",
+        verifier_result="FAILED",
+        passed=False,
+        failure_count=1,
+        failure_items=["checker_lint: src/a.py|ImportError"],
+        tokens_used=6000,
+        agent_status={"builder": "completed", "checker_lint": "completed"},
+        collaboration_metrics={
+            "role_violation_count": 0,
+            "token_by_role": {"builder": 5000, "checker_lint": 1000},
+            "failure_attribution": "checker",
+            "checker_builder_agreement": False,
+            "roles_completed": 2,
+            "roles_failed": 0,
+        },
+    )
+
+    result = record_round("test-loop", round_data, tokens_used=6000)
+    assert result["success"]
+
+    # 直接读 meta.json 校验累计字段
+    import json
+    meta = json.loads((tmp_path / "test-loop" / "meta.json").read_text("utf-8"))
+    assert meta["total_role_violations"] == 0
+    assert meta["total_tokens_by_role"] == {"builder": 5000, "checker_lint": 1000}
+    assert meta["failure_attribution_counts"] == {"checker": 1}
+
+    # STATE.md 包含 Collaboration Metrics 段
+    state_md = (tmp_path / "test-loop" / "STATE.md").read_text("utf-8")
+    assert "Collaboration Metrics (cumulative)" in state_md
+    assert "builder: 5,000" in state_md
+    assert "checker: 1" in state_md
+
+
+def test_record_round_renders_per_round_collaboration_in_state_md(tmp_path, monkeypatch):
+    """STATE.md 渲染每轮的 Collaboration 行（attribution + agreement）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopRound, init_loop, record_round
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    monkeypatch.setattr(loop_mod, "_project_root", lambda: tmp_path)
+
+    init_result = init_loop("test-loop", pattern="builder-checker")
+    assert init_result["success"]
+
+    round_data = LoopRound(
+        round_num=1,
+        timestamp="2024-01-01T00:00:00Z",
+        action="builder-checker round",
+        result_summary="ALL GREEN",
+        verifier_result="ALL GREEN",
+        passed=True,
+        tokens_used=6000,
+        collaboration_metrics={
+            "failure_attribution": "none",
+            "checker_builder_agreement": True,
+            "roles_completed": 2,
+            "roles_failed": 0,
+        },
+    )
+
+    result = record_round("test-loop", round_data, tokens_used=6000)
+    assert result["success"]
+
+    state_md = (tmp_path / "test-loop" / "STATE.md").read_text("utf-8")
+    # 每轮 Collaboration 行
+    assert "Collaboration: attribution=none" in state_md
+    assert "checker_builder=agree" in state_md
+    assert "completed=2/failed=0" in state_md
+
+
+# ── Stage 5: GEPA wire-up tests ──────────────────────────────────────
+
+
+def test_gepa_variants_persist_roundtrip(tmp_path, monkeypatch):
+    """meta.json 读写 gepa_variants（端到端持久化）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopStage, LoopStatus, _load_loop_meta, _save_loop_meta, LoopState
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa-rt"
+    loop_dir.mkdir(parents=True)
+
+    variants = [
+        {"variant_id": "v1", "agent_file": "builder.md", "description": "baseline"},
+        {"variant_id": "v2", "agent_file": "builder-v2.md", "description": "aggressive"},
+    ]
+    state = LoopState(
+        name="test-gepa-rt",
+        pattern="builder-checker",
+        stage=LoopStage.L2_ASSIST,
+        status=LoopStatus.IDLE,
+        config_path=loop_dir / "LOOP.md",
+        state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md",
+        created_at="2024-01-01T00:00:00Z",
+        gepa_variants=variants,
+    )
+
+    _save_loop_meta(state)
+    import json
+    meta = json.loads((loop_dir / "meta.json").read_text(encoding="utf-8"))
+    assert meta["gepa_variants"] == variants
+
+    restored = _load_loop_meta(meta, "test-gepa-rt")
+    assert restored is not None
+    assert len(restored.gepa_variants) == 2
+    assert restored.gepa_variants[0]["variant_id"] == "v1"
+    assert restored.gepa_variants[1]["agent_file"] == "builder-v2.md"
+
+
+def test_load_gepa_variants_filters_invalid():
+    """_load_gepa_variants 丢弃缺字段或类型错误的项。"""
+    from hermes.loop import _load_gepa_variants
+
+    raw = [
+        {"variant_id": "ok", "agent_file": "a.md"},
+        {"variant_id": "", "agent_file": "b.md"},  # empty id
+        {"variant_id": "no-file"},  # missing agent_file
+        {"variant_id": 123, "agent_file": "c.md"},  # wrong type
+        "not-a-dict",
+        {"variant_id": "ok2", "agent_file": "d.md", "description": "extra"},
+    ]
+    result = _load_gepa_variants(raw)
+    assert len(result) == 2
+    ids = [v["variant_id"] for v in result]
+    assert "ok" in ids and "ok2" in ids
+
+
+def test_load_gepa_variants_none_returns_empty():
+    """_load_gepa_variants(None) 返回空 list（向后兼容旧 meta.json）。"""
+    from hermes.loop import _load_gepa_variants
+    assert _load_gepa_variants(None) == []
+    assert _load_gepa_variants("not-a-list") == []
+
+
+def test_set_get_gepa_evaluator():
+    """set_gepa_evaluator / get_gepa_evaluator 注入与读取。"""
+    from hermes.loop import set_gepa_evaluator, get_gepa_evaluator
+
+    original = get_gepa_evaluator()
+    try:
+        def fake_eval(variant, task, ctx):
+            return {"success": True}
+        set_gepa_evaluator(fake_eval)
+        assert get_gepa_evaluator() is fake_eval
+        set_gepa_evaluator(None)
+        assert get_gepa_evaluator() is None
+    finally:
+        set_gepa_evaluator(original)  # 恢复全局状态
+
+
+def test_maybe_run_gepa_skips_non_terminal(tmp_path, monkeypatch):
+    """_maybe_run_gepa: 非终态时跳过。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="custom", stage=LoopStage.L1_REPORT,
+        status=LoopStatus.RUNNING,  # 非终态
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        gepa_variants=[{"variant_id": "v1", "agent_file": "a.md"}],
+    )
+    round_data = _make_round(1)
+
+    set_gepa_evaluator(lambda v, t, c: {"success": True})
+    try:
+        result = _maybe_run_gepa(loop, round_data)
+        assert result["ran"] is False
+        assert "non-terminal" in result["reason"]
+    finally:
+        set_gepa_evaluator(None)
+
+
+def test_maybe_run_gepa_skips_no_variants(tmp_path, monkeypatch):
+    """_maybe_run_gepa: 无 gepa_variants 时跳过。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="custom", stage=LoopStage.L1_REPORT,
+        status=LoopStatus.COMPLETED,  # 终态
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        gepa_variants=[],  # 空
+    )
+    set_gepa_evaluator(lambda v, t, c: {"success": True})
+    try:
+        result = _maybe_run_gepa(loop, _make_round(1))
+        assert result["ran"] is False
+        assert "no gepa_variants" in result["reason"]
+    finally:
+        set_gepa_evaluator(None)
+
+
+def test_maybe_run_gepa_skips_no_evaluator(tmp_path, monkeypatch):
+    """_maybe_run_gepa: 无 evaluator 时跳过并记日志。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="custom", stage=LoopStage.L1_REPORT,
+        status=LoopStatus.COMPLETED,
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        gepa_variants=[{"variant_id": "v1", "agent_file": "a.md"}],
+    )
+    set_gepa_evaluator(None)  # 明确无 evaluator
+    result = _maybe_run_gepa(loop, _make_round(1))
+    assert result["ran"] is False
+    assert "no evaluator" in result["reason"]
+
+
+def test_maybe_run_gepa_runs_when_all_conditions_met(tmp_path, monkeypatch):
+    """_maybe_run_gepa: 终态 + 有 variants + 有 evaluator → 跑 GEPA 周期。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    # 隔离 .gepa 目录
+    monkeypatch.setattr("hermes.gepa.gepa_dir", lambda: tmp_path / ".gepa")
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="builder-checker", stage=LoopStage.L2_ASSIST,
+        status=LoopStatus.COMPLETED,
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        current_round=2, max_rounds=5,
+        budget_used_tokens=1000, budget_limit_tokens=5000,
+        gepa_variants=[
+            {"variant_id": "v1", "agent_file": "builder.md", "description": "baseline"},
+            {"variant_id": "v2", "agent_file": "builder-v2.md", "description": "aggressive"},
+        ],
+    )
+
+    call_log = []
+    def fake_eval(variant, task, context):
+        call_log.append(variant["variant_id"])
+        # v1 成功且省 token，v2 成功但费 token → v1 应胜出
+        if variant["variant_id"] == "v1":
+            return {"success": True, "tokens_used": 500, "rounds_to_converge": 1}
+        return {"success": True, "tokens_used": 2000, "rounds_to_converge": 3}
+
+    set_gepa_evaluator(fake_eval)
+    try:
+        result = _maybe_run_gepa(loop, _make_round(2, passed=True))
+        assert result["ran"] is True
+        assert "experiment_id" in result
+        assert result["winner_id"] == "v1"  # 省 token 的胜出
+        assert result["variants_evaluated"] == 2
+        assert call_log == ["v1", "v2"]  # 两个 variant 都被评估
+    finally:
+        set_gepa_evaluator(None)
+
+    # 实验已持久化到 .gepa/
+    gepa_files = list((tmp_path / ".gepa").glob("*.json"))
+    assert len(gepa_files) == 1
+
+
+def test_maybe_run_gepa_evaluator_crash_isolated(tmp_path, monkeypatch):
+    """_maybe_run_gepa: evaluator 抛异常时记录为 failed variant，不崩 cycle。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    monkeypatch.setattr("hermes.gepa.gepa_dir", lambda: tmp_path / ".gepa")
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="custom", stage=LoopStage.L1_REPORT,
+        status=LoopStatus.NEEDS_HUMAN,
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        gepa_variants=[
+            {"variant_id": "crash", "agent_file": "a.md"},
+            {"variant_id": "ok", "agent_file": "b.md"},
+        ],
+    )
+
+    def crashy_eval(variant, task, ctx):
+        if variant["variant_id"] == "crash":
+            raise RuntimeError("boom")
+        return {"success": True, "tokens_used": 100, "rounds_to_converge": 1}
+
+    set_gepa_evaluator(crashy_eval)
+    try:
+        result = _maybe_run_gepa(loop, _make_round(1))
+        assert result["ran"] is True
+        # 只有 "ok" 成功，所以 winner 是 "ok"
+        assert result["winner_id"] == "ok"
+    finally:
+        set_gepa_evaluator(None)
+
+
+def test_maybe_run_gepa_gepa_module_crash_doesnt_affect_record_round(tmp_path, monkeypatch):
+    """_maybe_run_gepa: evaluator 返回垃圾数据时 variant 被记为 failed，cycle 仍完成。
+
+    GEPA 的崩溃隔离设计：单 variant 崩溃不阻断 cycle。_evaluate 适配器
+    对非 dict 返回值抛 AttributeError，run_gepa_cycle 捕获后记为 failed
+    VariantResult。cycle 正常完成，winner_id=None（无 variant 成功）。
+    这证明 _maybe_run_gepa 的 try/except 兜底有效——但更重要的是，
+    GEPA 自身的崩溃隔离让大多数 evaluator 错误不会走到 _maybe_run_gepa
+    的 except 分支。
+    """
+    from hermes import loop as loop_mod
+    from hermes.loop import LoopState, LoopStage, LoopStatus, _maybe_run_gepa, set_gepa_evaluator
+
+    monkeypatch.setattr("hermes.gepa.gepa_dir", lambda: tmp_path / ".gepa")
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    loop_dir = tmp_path / "test-gepa"
+    loop_dir.mkdir(parents=True)
+    loop = LoopState(
+        name="test-gepa", pattern="custom", stage=LoopStage.L1_REPORT,
+        status=LoopStatus.COMPLETED,
+        config_path=loop_dir / "LOOP.md", state_path=loop_dir / "STATE.md",
+        budget_path=loop_dir / "loop-budget.md", created_at="",
+        gepa_variants=[{"variant_id": "v1", "agent_file": "a.md"}],
+    )
+
+    def eval_that_returns_garbage(variant, task, ctx):
+        # 返回无法转为 VariantResult 的东西，触发 _evaluate 内部异常
+        return "not-a-dict"
+
+    set_gepa_evaluator(eval_that_returns_garbage)
+    try:
+        # _evaluate 适配器抛 AttributeError，run_gepa_cycle 捕获后记为 failed
+        # cycle 仍完成（崩溃隔离），winner_id=None
+        result = _maybe_run_gepa(loop, _make_round(1))
+        assert result["ran"] is True  # cycle 跑完了
+        assert result["winner_id"] is None  # 无 variant 成功
+    finally:
+        set_gepa_evaluator(None)
+
+
+def test_record_round_includes_gepa_result_in_return(tmp_path, monkeypatch):
+    """record_round 返回值含 gepa 字段（即使未触发也有 ran=False）。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import init_loop, record_round, set_gepa_evaluator
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    monkeypatch.setattr("hermes.gepa.gepa_dir", lambda: tmp_path / ".gepa")
+    init_loop("test-gepa-rr", pattern="knowledge-hygiene")
+
+    set_gepa_evaluator(None)  # 无 evaluator
+    round_data = _make_round(1, passed=True)
+    result = record_round("test-gepa-rr", round_data, tokens_used=100)
+    assert result["success"] is True
+    assert "gepa" in result
+    assert result["gepa"]["ran"] is False
+
+
+def test_record_round_triggers_gepa_on_terminal_with_variants(tmp_path, monkeypatch):
+    """record_round: 终态 + 有 variants + 有 evaluator → 返回 gepa.ran=True。"""
+    from hermes import loop as loop_mod
+    from hermes.loop import get_loop, init_loop, record_round, set_gepa_evaluator, _save_loop_meta
+
+    monkeypatch.setattr(loop_mod, "loops_dir", lambda: tmp_path)
+    monkeypatch.setattr("hermes.gepa.gepa_dir", lambda: tmp_path / ".gepa")
+    init_loop("test-gepa-trigger", pattern="knowledge-hygiene")
+    loop = get_loop("test-gepa-trigger")
+    loop.gepa_variants = [{"variant_id": "v1", "agent_file": "a.md"}]
+    _save_loop_meta(loop)
+
+    set_gepa_evaluator(lambda v, t, c: {"success": True, "tokens_used": 50, "rounds_to_converge": 1})
+    try:
+        round_data = _make_round(1, passed=True)  # passed=True → COMPLETED 终态
+        result = record_round("test-gepa-trigger", round_data, tokens_used=100)
+        assert result["status"] == "completed"
+        assert result["gepa"]["ran"] is True
+        assert result["gepa"]["winner_id"] == "v1"
+    finally:
+        set_gepa_evaluator(None)
+

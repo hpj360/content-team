@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+src/*.egg-info/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Lint / Type check caches
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Hermes runtime state
+.state/
+.cache/
+.loops/
+.gepa/
+
+# User profile (contains personal data, do not commit)
+data/profile.json
+
+# 生成媒体与临时产物
+tmp/
+
+# wine-video：前端依赖与生成产物（保留源码）
+wine-video/node_modules/
+wine-video/frames/
+wine-video/*.mp4
+
+# Agent 会话历史（保留 artifacts/specs 文档）
+.claude/*
+!.claude/artifacts/
+.trae/*
+!.trae/specs/
