@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-30",
+  "review_cadence_days": 180,
+  "sources_note": "平台规则随政策/算法频繁变动；本文件为结构化快照，需按 review_cadence_days 定期复核。",
+  "platforms": {
+    "番茄小说": {
+      "form": "web-novel",
+      "chapter_words": [2000, 3000],
+      "cadence": "章章有钩子，前 3 章定生死",
+      "review_redlines": ["涉政", "涉黄", "涉暴", "擦边"],
+      "monetization": "全勤 + 广告分成；断更掉权重"
+    },
+    "起点中文网": {
+      "form": "web-novel",
+      "chapter_words": [2500, 4000],
+      "cadence": "黄金三章；前期养读者",
+      "review_redlines": ["涉政", "涉黄", "抄袭"],
+      "monetization": "付费订阅；太监/烂尾伤口碑"
+    },
+    "红果短剧": {
+      "form": "short-drama",
+      "episode_seconds": [30, 90],
+      "cadence": "3/30/60 公式；付费卡点放钩子峰值",
+      "review_redlines": ["低俗擦边", "婚姻焦虑贩卖"],
+      "monetization": "卡点付费"
+    },
+    "抖音": {
+      "form": "short-video",
+      "duration_seconds": [15, 60],
+      "cadence": "前 3 秒定生死；完播率优先",
+      "review_redlines": ["站外引流", "绝对化用语"],
+      "monetization": "带货 + 流量分成"
+    },
+    "小红书": {
+      "form": "post",
+      "body_words": [300, 800],
+      "cadence": "前 2 行给承诺；封面前置",
+      "review_redlines": ["站外引流限流", "功效宣称"],
+      "monetization": "商单 + 带货"
+    },
+    "微信公众号": {
+      "form": "article",
+      "body_words": [1500, 3000],
+      "cadence": "前 300 字留人",
+      "review_redlines": ["诱导分享", "标题党过度"],
+      "monetization": "广告 + 赞赏 + 私域"
+    },
+    "微信视频号": {
+      "form": "short-video",
+      "duration_seconds": [30, 90],
+      "cadence": "社交推荐，求转发价值",
+      "review_redlines": ["诱导分享"],
+      "monetization": "带货 + 直播"
+    }
+  }
+}

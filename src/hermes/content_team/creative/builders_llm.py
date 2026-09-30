@@ -20,6 +20,7 @@ from typing import Any
 
 from hermes.content_team.creative.gates import AI_CLICHE_TOKENS
 from hermes.content_team.creative.planners import RETRIEVAL_KEY
+from hermes.content_team.creative.prompts import drafter_contract
 from hermes.content_team.creative.style_fingerprint import (
     fingerprint_to_prompt,
     StyleFingerprint,
@@ -45,16 +46,6 @@ _REFERENCE_BY_STAGE = {
 }
 
 _DEFAULT_SKILLS_ROOT = Path(__file__).resolve().parents[4] / "skills"
-
-# 输出契约（追加在 SKILL.md 之后，优先级最高，避免模型照搬文档里的示例 schema）
-_OUTPUT_CONTRACT = (
-    "\n\n---\n\n"
-    "## 输出契约（最高优先级，覆盖上文示例）\n"
-    "你只输出一个 JSON 对象，且只含两个字段：\n"
-    '{"title": "本段标题", "body": "完整正文纯文本"}\n'
-    "- body 必须是可直接使用的正文纯文本（剧本要包含场次标题、动作与台词）；\n"
-    "- 不要输出 scenes/characters/logline 等其它结构；不要输出解释或 markdown 围栏。"
-)
 
 
 def _load_skill_prompt(stage: CreationStage, skills_root: Path) -> str:
@@ -118,9 +109,15 @@ def make_llm_drafter(
     client: Any,
     *,
     skills_root: Path | None = None,
+    prompt_variant: str | None = None,
 ) -> StageDrafter:
-    """构造 LLM 草稿生成器（可注入 fake client 测试）。"""
+    """构造 LLM 草稿生成器（可注入 fake client 测试）。
+
+    ``prompt_variant`` 选择输出契约版本（见 ``prompts.DRAFTER_CONTRACTS``）；
+    None 表示用默认（调优后确定）版本。
+    """
     root = skills_root or _DEFAULT_SKILLS_ROOT
+    contract = drafter_contract(prompt_variant)
 
     async def drafter(
         stage: CreationStage, ctx: dict[str, Any]
@@ -131,7 +128,7 @@ def make_llm_drafter(
         if not system:
             return {}
         messages = [
-            LlmMessage(role="system", content=system + _OUTPUT_CONTRACT),
+            LlmMessage(role="system", content=system + contract),
             LlmMessage(
                 role="user",
                 content=json.dumps(
@@ -218,10 +215,15 @@ def _chat_json_bounded(client: Any, messages: list[Any]) -> dict[str, Any]:
 
 
 def make_script_drafter(
-    client: Any, *, skills_root: Path | None = None
+    client: Any,
+    *,
+    skills_root: Path | None = None,
+    prompt_variant: str | None = None,
 ) -> StageDrafter:
     """便捷：仅对 SCRIPT 阶段启用 LLM 草稿（其余阶段走模板）。"""
-    inner = make_llm_drafter(client, skills_root=skills_root)
+    inner = make_llm_drafter(
+        client, skills_root=skills_root, prompt_variant=prompt_variant
+    )
 
     async def drafter(
         stage: CreationStage, ctx: dict[str, Any]

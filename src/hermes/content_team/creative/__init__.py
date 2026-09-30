@@ -35,6 +35,11 @@ from hermes.content_team.creative.pipeline import (
     build_default_pipeline,
     run_creation,
 )
+from hermes.content_team.creative.content_freshness import (
+    check_freshness,
+    load_platform_rules,
+    update_rules,
+)
 from hermes.content_team.creative.cost import (
     BudgetExceeded,
     UsageTracker,
@@ -54,6 +59,12 @@ from hermes.content_team.creative.planners import (
     make_beat_sheet_planner,
     make_retrieval_planner,
     render_retrieval_block,
+)
+from hermes.content_team.creative.prompts import (
+    DEFAULT_VARIANT,
+    DRAFTER_CONTRACTS,
+    available_variants,
+    drafter_contract,
 )
 from hermes.content_team.creative.templates import (
     get_template,
@@ -105,6 +116,8 @@ __all__ = [
     "DEFAULT_STAGES",
     "DIMENSION_WEIGHTS",
     "DraftMetrics",
+    "DRAFTER_CONTRACTS",
+    "DEFAULT_VARIANT",
     "GOAL_LEVELS",
     "MAX_LOGLINE_CHARS",
     "MIN_SCENES",
@@ -130,9 +143,11 @@ __all__ = [
     "StyleFingerprint",
     "apply_de_ai_pass",
     "assemble_content_body",
+    "available_variants",
     "build_default_pipeline",
     "build_llm_revise_fn",
     "build_writing_desk",
+    "check_freshness",
     "compare_fingerprints",
     "compare_variants",
     "compose_planners",
@@ -141,6 +156,7 @@ __all__ = [
     "de_ai_report",
     "default_reviser",
     "derive_query",
+    "drafter_contract",
     "export_novel_epub",
     "export_novel_txt",
     "export_short_drama_script",
@@ -157,6 +173,7 @@ __all__ = [
     "get_template",
     "judge_report",
     "list_templates",
+    "load_platform_rules",
     "load_quality_evals",
     "make_beat_sheet_planner",
     "make_checklist_critic",
@@ -175,6 +192,7 @@ __all__ = [
     "score_reports",
     "set_tracker",
     "summarize",
+    "update_rules",
     "validate_shot_durations",
     "compare_variants",
 ]

@@ -65,6 +65,7 @@ description: 编导。当用户需要统筹整部/整季内容的策略与节奏
 - `references/episode-rhythm-examples.md` — 分集节奏实例：12 集节奏总表（含钩子式排布与付费卡点布防）、单集情绪配比、题材爽点替换表。
 - `references/acceptance-checklists.md` — 各阶段验收清单实例：AC-N/S/B/D 四套（与门禁编码对齐）+ 编导侧全局验收。
 - `references/platform-playbooks.md` — 平台特色库：番茄/起点/红果/抖音/小红书/公众号/视频号的格式×字数×节奏×审核×变现 + 发布前检查清单。
+- `references/platform-rule-maintenance.md` — 平台规则维护机制：版本化快照、新鲜度检查（`GET /api/platform-rules`）、更新流程与变更日志模板。
 
 在规划分集节奏、分派验收或组织审查时读取。
 

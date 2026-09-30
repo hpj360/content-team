@@ -37,6 +37,7 @@
 | **Round 16** | 成本治理：UsageTracker（contextvar）+ token 记账落库 + 预算护栏自动降级 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 17** | 默认多角色：节奏规划 planner（beat-sheet）+ 清单评议 critic，默认运行 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 18** | 内容模板系统（内置 4 模板 + content-creation 文档索引 + 渲染 API） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 19** | R15 调优 pass（v1/v2/v3 实网对比→选定 v2）+ R19 语料案例（公版拆解×2 + 失败案例集 + 平台规则时效机制） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 
 > 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
 
@@ -103,6 +104,15 @@ Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/�
 | R18 模板系统 | 内置 4 模板（黄金三章/单集 8 拍/对话戏分镜/风格包起点）+ `content-creation/` 文档索引 + `GET /api/templates`、渲染接口 | 补上原 tasks.md Phase 9 遗留项 |
 
 **测试**：content_team + skill-lint **413 passed**（6 skipped 为实网 opt-in）；全量 1571 passed。
+
+### Round 19：调优 pass 与语料案例
+
+- **提示词调优（数据驱动）**：变体 v1/v2/v3 实网对比（2 选题 × 3 变体）→ 选定默认 **v2**
+  （平均 625 字、配额显式、达标率 100%）；详见 `knowledge/creative-tuning-report.md`。
+- **语料案例**：`knowledge/corpus/` 收录公版作品结构化拆解（契诃夫《变色龙》/鲁迅《孔乙己》）
+  + 跨阶段失败案例集；`failure-casebook.md` 扩容至 F10。
+- **平台规则时效机制**：`data/platform_rules.json`（版本化快照）+ `content_freshness.py`
+  （新鲜度检查 / 更新盖章）+ `GET /api/platform-rules`；过期规则可被工作台与编导方案提示。
 
 ### 内容深耕 D（C1 补齐）
 新增 4 份深度库（技能文档 23→27）：

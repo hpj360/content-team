@@ -1251,3 +1251,20 @@ async def render_content_template(
     if rendered is None:
         raise HTTPException(status_code=404, detail="Template not found")
     return {"id": template_id, "rendered": rendered}
+
+
+# ---------------------------------------------------------------------------
+# 平台规则与时效性（R19）
+# ---------------------------------------------------------------------------
+
+
+@templates_router.get("/platform-rules")
+async def get_platform_rules() -> dict[str, Any]:
+    """平台规则快照 + 新鲜度检查（stale=True 表示需复核）。"""
+    from hermes.content_team.creative.content_freshness import (
+        check_freshness,
+        load_platform_rules,
+    )
+
+    data = load_platform_rules()
+    return {"rules": data, "freshness": check_freshness().to_dict()}
