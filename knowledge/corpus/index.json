@@ -52,6 +52,36 @@
       "genres": ["复仇打脸", "都市"],
       "tags": ["3/30/60", "卡点", "单集钩子", "题材模板"],
       "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。"
+    },
+    {
+      "id": "chapter-form-wukong",
+      "file": "deconstruction-chapter-form-wukong.md",
+      "title": "章回体动作叙事范式",
+      "author": "范式分析（参考《黑神话：悟空》）",
+      "form": "structure-analysis",
+      "genres": ["玄幻", "仙侠", "西游"],
+      "tags": ["章回体", "档案式世界观", "对手即主题", "多结局"],
+      "summary": "章回体多卷结构：卷内独立小世界 + 世界内散落档案拼主线 + 多结局。"
+    },
+    {
+      "id": "comedy-sketch",
+      "file": "deconstruction-comedy-sketch.md",
+      "title": "中文商业素描喜剧结构",
+      "author": "范式分析（参考喜人奇妙夜式素描）",
+      "form": "sketch",
+      "genres": ["喜剧", "综艺"],
+      "tags": ["高概念前提", "升级三拍", "怪人直人", "回调", "笑中带泪"],
+      "summary": "强设定先行 + 同一结构三次加码 + 回调 + 情绪收尾的素描范式。"
+    },
+    {
+      "id": "mystery-game",
+      "file": "deconstruction-mystery-game.md",
+      "title": "剧本杀高分机制",
+      "author": "范式分析（Murder Mystery）",
+      "form": "mystery-game",
+      "genres": ["悬疑", "推理"],
+      "tags": ["视角分割", "时间线碰撞", "线索链", "信息公平", "反转重估"],
+      "summary": "信息不对称拼图：视角分割 + 线索链 + 反转重估 + 情感还原。"
     }
   ]
 }

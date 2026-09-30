@@ -250,7 +250,15 @@ def test_list_templates_includes_builtins():
     templates = list_templates()
     ids = {t.id for t in templates}
     assert {"novel-golden-three", "short-drama-episode-8beat",
-            "storyboard-dialogue-scene", "directing-style-pack-starter"} <= ids
+            "storyboard-dialogue-scene", "directing-style-pack-starter",
+            "comedy-sketch-structure", "mystery-game-outline"} <= ids
+
+
+def test_render_new_templates():
+    sketch = render_template("comedy-sketch-structure", {"前提": "全公司必须微笑"})
+    assert "全公司必须微笑" in sketch and "升级一" in sketch
+    mystery = render_template("mystery-game-outline", {"故事名": "雾港"})
+    assert "《雾港》" in mystery and "信息公平自检" in mystery
 
 
 def test_get_and_render_template():

@@ -122,10 +122,11 @@ def test_corpus_index_shape_and_files():
     from hermes.content_team.creative.corpus import CORPUS_DIR, load_corpus_index
 
     cases = load_corpus_index()
-    assert len(cases) >= 5
+    assert len(cases) >= 8
     ids = {c.id for c in cases}
     assert {"chekhov-chameleon", "luxun-kongyiji", "ohenry-gift",
-            "ibsen-dollhouse", "shortdrama-waimai-example"} <= ids
+            "ibsen-dollhouse", "shortdrama-waimai-example",
+            "chapter-form-wukong", "comedy-sketch", "mystery-game"} <= ids
     for case in cases:
         assert case.file and (CORPUS_DIR / case.file).is_file(), f"缺文件 {case.file}"
         assert case.genres and case.tags and case.summary
@@ -180,3 +181,29 @@ async def test_beat_planner_includes_corpus_refs():
     plan = await make_beat_sheet_planner()(CreationStage.SCRIPT, {"topic": T()})
     assert "corpus_refs" in plan
     assert "shortdrama-waimai-example" in plan["corpus_refs"]
+
+
+def test_corpus_new_paradigm_cases_indexed():
+    """范式分析类案例（章回体/素描/剧本杀）已入库并可被题材引用。"""
+    from hermes.content_team.creative.corpus import corpus_refs_for, find_cases, get_case
+
+    for case_id in ("chapter-form-wukong", "comedy-sketch", "mystery-game"):
+        case = get_case(case_id)
+        assert case is not None and case.summary and case.tags
+
+    # 题材/标签可命中
+    assert find_cases(tag="章回体")
+    assert find_cases(tag="视角分割")
+    assert "mystery-game" in corpus_refs_for("悬疑 推理 剧本杀")
+
+
+def test_corpus_paradigm_files_have_copyleft_notice():
+    """范式分析文件须含版权声明（只做方法论迁移）。"""
+    from hermes.content_team.creative.corpus import CORPUS_DIR
+
+    for name in ("deconstruction-chapter-form-wukong.md",
+                 "deconstruction-comedy-sketch.md",
+                 "deconstruction-mystery-game.md"):
+        text = (CORPUS_DIR / name).read_text(encoding="utf-8")
+        assert "版权声明" in text
+        assert "不复制" in text

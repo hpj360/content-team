@@ -39,6 +39,7 @@
 | **Round 18** | 内容模板系统（内置 4 模板 + content-creation 文档索引 + 渲染 API） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 19** | R15 调优 pass（v1/v2/v3 实网对比→选定 v2）+ R19 语料案例（公版拆解×2 + 失败案例集 + 平台规则时效机制） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 20** | 扩大调优样本（5 选题 × 3 变体 + judge 语义分 → v2 以 89.0 显著领先）+ 语料扩充（公版拆解再 +2、短剧原创示例、机器可读索引与 planner 引用、`GET /api/corpus`） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 21** | 语料范式拓展：章回体动作叙事（参考黑神话悟空）/ 中文商业素描（参考喜人奇妙夜式）/ 剧本杀高分机制；新增素描与悬疑 2 个模板（均方法论级，不复制任何剧本台词） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 
 > 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
 
@@ -117,6 +118,9 @@ Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/�
 - **语料可引用**：机器可读 `corpus/index.json` + `creative/corpus.py`；beat-sheet planner
   自动把命中案例写入 `plan.corpus_refs`（随 `CreationRun.stage_results` 留痕）；
   `GET /api/corpus` 可按题材/技法标签筛选。
+- **范式拓展（Round 21）**：章回体多卷叙事、中文商业素描（高概念+升级三拍+回调）、
+  剧本杀高分机制（视角分割/线索链/信息公平）——**均为方法论级**，不复制任何剧本或台词；
+  配套新增 `comedy-sketch-structure`、`mystery-game-outline` 两个可渲染模板。
 - **平台规则时效机制**：`data/platform_rules.json`（版本化快照）+ `content_freshness.py`
   （新鲜度检查 / 更新盖章）+ `GET /api/platform-rules`；过期规则可被工作台与编导方案提示。
 
