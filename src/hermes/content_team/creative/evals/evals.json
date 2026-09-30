@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "name": "creative-gates",
+  "description": "创作质量门行为契约：给定规范化输入，断言审查结论（通过/问题编码）。行为契约式 evals，参照公开导演/分镜 skill 的 evals/evals.json 模式。",
+  "cases": [
+    {
+      "id": "novel-ok",
+      "stage": "NOVEL",
+      "input": {
+        "title": "山海纪",
+        "logline": "少年为寻父闯入妖域",
+        "chapters": [{"body": "第一章正文……", "word_count": 3000}]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "novel-no-chapter",
+      "stage": "NOVEL",
+      "input": {"title": "山海纪", "logline": "少年寻父", "chapters": []},
+      "expect": {"passed": false, "error_codes": ["N004"], "warn_codes": []}
+    },
+    {
+      "id": "novel-short-chapter-warn",
+      "stage": "NOVEL",
+      "input": {
+        "title": "山海纪",
+        "logline": "少年寻父",
+        "chapters": [{"body": "很短的一章", "word_count": 10}]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": ["N006"]}
+    },
+    {
+      "id": "script-ok",
+      "stage": "SCRIPT",
+      "input": {
+        "logline": "外卖员逆袭",
+        "body": "第一场 内景/日\n动作。\n第二场 外景/夜\n动作。\n第三场 内景/日\n动作。"
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "script-few-scenes",
+      "stage": "SCRIPT",
+      "input": {"logline": "外卖员逆袭", "body": "第一场 内景/日\n动作。"},
+      "expect": {"passed": false, "error_codes": ["S004"], "warn_codes": []}
+    },
+    {
+      "id": "script-compliance-block",
+      "stage": "SCRIPT",
+      "input": {
+        "logline": "外卖员逆袭",
+        "body": "第一场 内景/日\n代开发票。\n第二场 外景/夜\n动作。\n第三场 内景/日\n动作。"
+      },
+      "expect": {"passed": false, "error_codes": ["S007"], "warn_codes": []}
+    },
+    {
+      "id": "script-ai-cliche-warn",
+      "stage": "SCRIPT",
+      "input": {
+        "logline": "外卖员逆袭",
+        "body": "第一场 内景/日\n他不由得停下。\n第二场 外景/夜\n动作。\n第三场 内景/日\n动作。"
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": ["S006"]}
+    },
+    {
+      "id": "script-psych-narration-warn",
+      "stage": "SCRIPT",
+      "input": {
+        "logline": "外卖员逆袭",
+        "body": "第一场 内景/日\n他心里很痛苦。\n第二场 外景/夜\n动作。\n第三场 内景/日\n动作。"
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": ["S005"]}
+    },
+    {
+      "id": "storyboard-ok",
+      "stage": "STORYBOARD",
+      "input": {
+        "shots": [
+          {"shot_number": 1, "description": "建置", "shot_size": "WIDE", "duration_seconds": 3.0},
+          {"shot_number": 2, "description": "推进", "shot_size": "MEDIUM", "duration_seconds": 3.0},
+          {"shot_number": 3, "description": "强调", "shot_size": "CLOSE", "duration_seconds": 3.0}
+        ]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "storyboard-bad-duration",
+      "stage": "STORYBOARD",
+      "input": {
+        "shots": [
+          {"shot_number": 1, "description": "过长", "shot_size": "WIDE", "duration_seconds": 10.0}
+        ]
+      },
+      "expect": {"passed": false, "error_codes": ["B004"], "warn_codes": []}
+    },
+    {
+      "id": "storyboard-nonconsecutive",
+      "stage": "STORYBOARD",
+      "input": {
+        "shots": [
+          {"shot_number": 1, "description": "甲", "shot_size": "WIDE", "duration_seconds": 3.0},
+          {"shot_number": 3, "description": "乙", "shot_size": "CLOSE", "duration_seconds": 3.0}
+        ]
+      },
+      "expect": {"passed": false, "error_codes": ["B003"], "warn_codes": []}
+    },
+    {
+      "id": "storyboard-adjacent-same-warn",
+      "stage": "STORYBOARD",
+      "input": {
+        "shots": [
+          {"shot_number": 1, "description": "甲", "shot_size": "WIDE", "duration_seconds": 3.0},
+          {"shot_number": 2, "description": "乙", "shot_size": "WIDE", "duration_seconds": 3.0}
+        ]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": ["B005"]}
+    },
+    {
+      "id": "directing-ok",
+      "stage": "DIRECTING",
+      "input": {
+        "style": "写实",
+        "tone": "克制",
+        "pacing": "中速",
+        "director_notes": "调度总纲"
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "directing-missing-tone",
+      "stage": "DIRECTING",
+      "input": {"style": "写实", "tone": "", "pacing": "中速", "director_notes": "总纲"},
+      "expect": {"passed": false, "error_codes": ["D002"], "warn_codes": []}
+    },
+    {
+      "id": "story-state-ok",
+      "stage": "STORY_STATE",
+      "input": {
+        "tracking": {
+          "position": "第1章",
+          "recent_summary": "近5章摘要",
+          "active_characters": "主角",
+          "pending_foreshadowing": "无",
+          "volume_goal": "完成首卷",
+          "global_rules": "合规红线",
+          "next_step": "推进第二章"
+        },
+        "characters": [
+          {"name": "主角", "ability": "初始", "psychology": "目标驱动", "relations": "对立", "goals": "完成主线"}
+        ],
+        "foreshadowing": [],
+        "goals": {"global": "一致", "volume": "冲突闭环", "chapter": "抛钩子"}
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "story-state-missing-tracking",
+      "stage": "STORY_STATE",
+      "input": {
+        "tracking": {"position": "第1章"},
+        "characters": [{"name": "主角", "ability": "初始", "psychology": "目标", "relations": "对立", "goals": "主线"}],
+        "foreshadowing": [],
+        "goals": {"global": "一致", "volume": "首卷", "chapter": "钩子"}
+      },
+      "expect": {
+        "passed": false,
+        "error_codes": ["T001"],
+        "warn_codes": []
+      }
+    },
+    {
+      "id": "story-state-no-characters",
+      "stage": "STORY_STATE",
+      "input": {
+        "tracking": {
+          "position": "第1章",
+          "recent_summary": "摘要",
+          "active_characters": "无",
+          "pending_foreshadowing": "无",
+          "volume_goal": "首卷",
+          "global_rules": "红线",
+          "next_step": "第二章"
+        },
+        "characters": [],
+        "foreshadowing": [],
+        "goals": {"global": "g", "volume": "v", "chapter": "c"}
+      },
+      "expect": {"passed": false, "error_codes": ["T002"], "warn_codes": []}
+    },
+    {
+      "id": "foreshadowing-planted-chapter-miss",
+      "stage": "STORY_FORESHADOWING",
+      "input": {
+        "foreshadowing": [
+          {"id": "F1", "content": "神秘信件来了", "planted_at": "第1章",
+           "planned_resolution": "第3章回收", "status": "planted", "keyword": "信件"}
+        ],
+        "chapter_bodies": [
+          {"chapter_number": 1, "body": "与研究无关的章节。"},
+          {"chapter_number": 2, "body": "他收到一封信件。"}
+        ]
+      },
+      "expect": {"passed": false, "error_codes": ["L004"], "warn_codes": []}
+    },
+    {
+      "id": "foreshadowing-planted-chapter-hit",
+      "stage": "STORY_FORESHADOWING",
+      "input": {
+        "foreshadowing": [
+          {"id": "F1", "content": "神秘信件来了", "planted_at": "第1章",
+           "planned_resolution": "第3章回收", "status": "planted", "keyword": "信件"}
+        ],
+        "chapter_bodies": [
+          {"chapter_number": 1, "body": "桌上有一封信件。"}
+        ]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    },
+    {
+      "id": "foreshadowing-resolved-chapter-miss",
+      "stage": "STORY_FORESHADOWING",
+      "input": {
+        "foreshadowing": [
+          {"id": "F2", "content": "玉佩来历", "planted_at": "第1章",
+           "planned_resolution": "第2章揭晓", "status": "resolved", "keyword": "玉佩"}
+        ],
+        "chapter_bodies": [
+          {"chapter_number": 1, "body": "他摩挲着玉佩。"},
+          {"chapter_number": 2, "body": "本章讲别的。"}
+        ]
+      },
+      "expect": {"passed": false, "error_codes": ["L005"], "warn_codes": []}
+    },
+    {
+      "id": "foreshadowing-resolved-chapter-pending-skip",
+      "stage": "STORY_FORESHADOWING",
+      "input": {
+        "foreshadowing": [
+          {"id": "F2", "content": "玉佩来历", "planted_at": "第1章",
+           "planned_resolution": "第3章揭晓", "status": "planted", "keyword": "玉佩"}
+        ],
+        "chapter_bodies": [
+          {"chapter_number": 1, "body": "他摩挲着玉佩。"}
+        ]
+      },
+      "expect": {"passed": true, "error_codes": [], "warn_codes": []}
+    }
+  ]
+}

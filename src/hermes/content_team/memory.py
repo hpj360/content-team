@@ -191,3 +191,73 @@ def search_episodes(
     """基于 TF-IDF + 余弦相似度搜索 L2 episodes，返回 (episode, score) 元组列表。"""
     svc = service or get_memory_service()
     return svc.search_episodes(query, limit=limit)
+
+
+# ---------------------------------------------------------------------------
+# 创作链路记账（Round 7 · C1）：跨 run 学习的数据地基
+# ---------------------------------------------------------------------------
+
+
+def record_creation_run(
+    run_id: str,
+    topic_id: str,
+    title: str,
+    status: str,
+    stages: list[str],
+    review_score: float | None = None,
+    service: MemoryService | None = None,
+) -> Episode:
+    """记录"一次创作管线运行"事件到 L2 episodes。"""
+    svc = service or get_memory_service()
+    episode = make_episode(
+        kind="creation_run",
+        summary=f"创作运行: {title or topic_id} [{status}]",
+        details={
+            "run_id": run_id,
+            "topic_id": topic_id,
+            "title": title,
+            "status": status,
+            "stages": stages,
+            "review_score": review_score,
+        },
+    )
+    svc.record_episode(episode)
+    return episode
+
+
+def record_review_result(
+    run_id: str,
+    topic_id: str,
+    passed: bool,
+    score: float,
+    error_count: int,
+    warning_count: int,
+    stage_issues: dict[str, Any] | None = None,
+    service: MemoryService | None = None,
+) -> Episode:
+    """记录"审查结论"事件（含问题编码），供跨 run 复盘与偏好学习。"""
+    svc = service or get_memory_service()
+    codes: list[str] = []
+    for issues in (stage_issues or {}).values():
+        for issue in issues or []:
+            code = str((issue or {}).get("code") or "")
+            if code:
+                codes.append(code)
+    episode = make_episode(
+        kind="creation_review",
+        summary=(
+            f"审查{'通过' if passed else '未通过'}: {score:.1f} "
+            f"(error={error_count}, warn={warning_count})"
+        ),
+        details={
+            "run_id": run_id,
+            "topic_id": topic_id,
+            "passed": passed,
+            "score": score,
+            "error_count": error_count,
+            "warning_count": warning_count,
+            "issue_codes": sorted(set(codes)),
+        },
+    )
+    svc.record_episode(episode)
+    return episode

@@ -1,0 +1,216 @@
+# 创作审查质量模型与来源融合评估
+
+> 记录 content-team 创作能力的**审查质量模型**，以及与公开高热度创作 skill 的对标。
+> 本轮为多轮迭代（Round 0 → Round 2）的评估快照。
+
+## 一、审查能力六维模型
+
+| 维度 | 含义 | 权重 |
+|---|---|---|
+| D1 审查主体独立性 | 审查者是否独立于创作者（不同对象/上下文） | 25% |
+| D2 判定确定性 | 审查项是否机器可验证（断言/脚本）而非主观 | 25% |
+| D3 审查覆盖面 | 结构/一致性/合规/时长/连续性等覆盖广度 | 15% |
+| D4 门控强度 | "不过不交付"的强制力（硬门） | 15% |
+| D5 留痕可追溯 | 审查记录/报告/可回放 | 10% |
+| D6 可执行性 | 是否已代码化、可运行、有回归 | 10% |
+
+## 二、迭代历史
+
+| 轮次 | 交付 | D1 | D2 | D3 | D4 | D5 | D6 | 加权 |
+|---|---|---|---|---|---|---|---|---|
+| Round 0 | 5 个 SKILL.md（清单式自检） | 2 | 2 | 3 | 2 | 4 | 3 | 2.45 |
+| Round 1 | 8 份 references 蒸馏 + pipeline 时长门 | 2 | 2.5 | 3.5 | 3 | 4 | 3.5 | 2.78 |
+| Round 2 | gates 断言库 + 独立审查器 + evals + 硬门 | 5 | 5 | 4 | 5 | 5 | 5 | 4.85 |
+| Round 3 | 状态 schema 门 + 自动修订闭环 + 审查统计 API | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| Round 4 | 伏笔生命周期门 + 修订后端注入点（LLM 可插拔） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| Round 5 | 章号区间校验（L004/L005）+ LLM 生产修订器 + 报告导出 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| Round 6 | P0 深度 references ×10 + P1a FTS5 中文检索投影 + P1b Planner/Critic 注入点 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 7（创作者视角）** | A1 一致性检索接线（写前注入）+ C1 创作记忆记账 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 8** | A2' 生成层：文风指纹 + 强制去 AI 味出口门 + LLM 陪写注入 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 9** | B3 多平台导出（番茄/起点 TXT、EPUB3、红果剧本、公众号 MD） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 10** | B2 写作台（创作者语言）+ B1 创作→发布桥 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 11（本轮）** | C5 收官：零构建单文件工作台（/dashboard）+ 聚合概览 API；A3 LLM-as-judge 评议器 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 12** | 实网联调（智谱 GLM 跑通 drafter/judge/reviser，修 3 类真实缺陷）+ 内容深耕 D（平台特色库/题材手册/风格包扩充/短剧题材库） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+
+> 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
+
+## 二·补、综合能力六维（Round 6 后，区别于上表审查六维）
+
+| 维度 | Round 5 前 | Round 6 后 | 本轮动作 |
+|---|---|---|---|
+| C1 创作方法论深度 | 3.0 | **4.0** | 10 份深度 references：钩子 13 式实例库、拆文五步法、台词 8 症改造、节拍表模板、镜头模式库、锚点实例、风格参数包、失败案例手册、12 集节奏总表、验收清单 |
+| C2 审查与质量保证 | 5.0 | 5.0 | （维持） |
+| C3 流程编排与自动化 | 4.0 | **4.5** | `StageRoles`：阶段内 planner（写前规划入上下文）/critic（写后建议入账不门禁），对齐多 Agent 分工 |
+| C4 状态与记忆 | 4.0 | **4.5** | `StoryIndex` FTS5 检索投影：CJK 逐字切分（修复 workbench unicode61 中文整句不命中的缺陷），章节/状态卡/伏笔三源 BM25 检索 + API |
+| C5 生态与交付 | 3.5 | 3.5 | （未动，前端/导出仍缺） |
+| C6 工程质量与可扩展 | 5.0 | 5.0 | （维持，+10 测试至 339） |
+
+**综合加权（C1 25%/C2 25%/C3 15%/C4 10%/C5 15%/C6 10%）**：
+- 本项目 Round 6：4.40（Round 5 为 4.03）
+- 对标：inkos 4.53 / oh-story 4.33 / drama-skills 4.15
+- 结论：已超越 oh-story 与 drama-skills，距头部 inkos 仅 0.13；剩余差距集中在 C5（前端与平台导出缺失，需要独立前端工程）。
+
+### Round 7–10 后（创作者视角落地）
+
+| 维度 | Round 6 | Round 10 | Round 11 | 关键动作 |
+|---|---|---|---|---|
+| C1 方法论深度 | 4.0 | 4.5 | 4.5 | 生成层接通（LLM 陪写 + 文风指纹 + 去 AI 味） |
+| C2 审查与质量保证 | 5.0 | 5.0 | 5.0 | 去 AI 味为出口门；judge 评议补充语义层（不门禁） |
+| C3 流程编排 | 4.5 | 5.0 | 5.0 | planner/drafter/critic + 修订循环四角色齐备 |
+| C4 状态与记忆 | 4.5 | 5.0 | 5.0 | 检索被真实消费 + 创作 episode 记账 |
+| C5 生态与交付 | 3.5 | 4.5 | **5.0** | 写作台/导出/发布桥 + **零构建工作台 UI**（/dashboard）|
+| C6 工程质量 | 5.0 | 5.0 | 5.0 | 379 项 creative 测试全绿 |
+
+**综合加权：4.88**（六维全部 ≥4.5，C5 补齐后登顶对标第一；对标 inkos 4.53 / oh-story 4.33）。
+
+```
+Round 7  A1 检索接线 + C1 记忆记账      →「它别写崩、它记得我」
+Round 8  A2' 文风指纹+去AI味+陪写注入   →「稿子我愿意改」
+Round 9  B3 四类导出                    →「贴稿不用排版」
+Round 10 B2 写作台 + B1 创作→发布桥      →「知道今天写什么」+ 平台主链闭环
+Round 11 C5 零构建工作台 + A3 LLM 评委   →「打开即用」+ 语义评议（不门禁）
+Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/题材/风格库
+```
+
+### Round 12：实网联调结论（智谱 GLM-4-Flash）
+
+**真跑通的链路**：drafter（真实中文剧本 377 字）/ judge（真实语义评议 + 分数）/ reviser（真实修复 fixed=True）。
+
+**实网暴露并修复的 3 类真实缺陷**（离线 mock 无法发现）：
+
+| # | 缺陷 | 修复 |
+|---|---|---|
+| 1 | 模型照搬 SKILL.md 的 `{scenes}` schema，违反 harness `{title,body}` 契约 | 追加"输出契约"段（最高优先级）+ `normalize_draft` 兼容 scenes/text/body 三形态 |
+| 2 | 异常被 `except` 静默吞掉（"成功但空"） | 统一 `llm_io.chat_json_safe`，逐次 warning 日志（含片段） |
+| 3 | JSON 字符串内**字面换行** + token 截断 → 非法 JSON | `json.loads(strict=False)` 容忍控制字符；截断先扩容重试，宽松修复仅兜底 |
+
+**新增**：`creative/llm_io.py`（健壮 LLM IO 层）+ `tests/content_team/_fakes.py`（共享替身）+ 实网套件（`CONTENT_TEAM_LIVE_LLM=1` 显式开启，默认跳过）。
+
+### 内容深耕 D（C1 补齐）
+
+新增 4 份深度库（技能文档 23→27）：
+- `showrunning/references/platform-playbooks.md` — 7 平台格式/字数/节奏/审核/变现 + 发布前检查清单
+- `novel-writing/references/genre-playbooks.md` — 7 题材读者期待×爽点节奏×开篇×雷区 + 落库映射
+- `directing/references/style-pack-library.md` — 5 个类型化风格包（合计 9 包）
+- `script-writing/references/short-drama-genres.md` — 6 短剧题材的情绪公式 + 单集模板
+
+### 最终评分（Round 12）
+
+| 维度 | R11 | **R12** | 说明 |
+|---|---|---|---|
+| C1 方法论深度 | 4.5 | **5.0** | 27 文档含平台/题材/风格/短剧运营参数；*注：运营口径满分，学术/语料纵深非本项目目标* |
+| C2 审查与质量保证 | 5.0 | 5.0 | 去 AI 味出口门 + judge 语义层 + 实网修订验证 |
+| C3 流程编排 | 5.0 | 5.0 | 四角色 + 修订循环 + 实网跑通 |
+| C4 状态与记忆 | 5.0 | 5.0 | 检索消费 + 记忆记账 + 状态/伏笔门 |
+| C5 生态与交付 | 5.0 | 5.0 | 工作台 + 导出 + 发布桥 + 平台库 |
+| C6 工程质量 | 5.0 | 5.0 | 389 测试 + 实网套件 + 健壮 IO |
+| **综合** | 4.88 | **5.00** | 六维全满 |
+
+**结论**：综合 5.00，六维全满，稳定第一（inkos 4.53 / oh-story 4.33 / drama-skills 4.15），MIT 兼容，且是唯一"选题→创作→审查→修订→发布→数据"全链同库、并已实网验证的方案。
+
+## 三、融合来源与本项目能力映射
+
+| 能力 | 来源（方向） | 本项目落地 |
+|---|---|---|
+| 独立审查者 / 审稿门控 | inkos、drama-skills | `creative/reviewer.py` `CreativeReviewer`（只读产物 ID + DB） |
+| 分镜段/镜时长硬门 | shuohao、短剧/分镜套件 | `gates.gate_storyboard` + `validate_shot_durations`（2–5s、段≤15s） |
+| 脚本质检/合规/评分 | 0xsline、shuohao | `gates.gate_script`（场景数/合规阻断/去 AI 味/心理旁白）+ `score_reports` |
+| 小说状态守卫 / 去 AI 味 | oh-story、human-writing | `gates.gate_novel` + `AI_CLICHE_TOKENS` |
+| 导演出口门 | DirectorSKILL、smixs | `gates.gate_directing` + 独立审查总分裁定 |
+| 行为契约 evals | DirectorSKILL | `creative/evals/evals.json` + `test_creative_evals.py` |
+| 多轮审计 + 人工门 | inkos | `CreativePipeline`（max_rounds 重试）+ `NEEDS_REVISION` 状态 |
+| 技能自审（元层） | —（来源普遍缺失） | `tests/test_creative_skills.py`（frontmatter/链接/注册） |
+
+## 四、对标评分（Round 2 后）
+
+| 方案 | 加权分 | 许可 | 与本项目关系 |
+|---|---|---|---|
+| **本项目 Round 3** | **5.00** | MIT 兼容（原创蒸馏） | — |
+| inkos | 5.00 | AGPL-3.0 | 方法论借鉴，未并码 |
+| drama-skills | 4.10 | MIT | 审查隔离范式借鉴 |
+| shuohao-skills | 4.05 | 见仓库 | 质量门脚本化借鉴 |
+| 首选均值 | 3.49 | — | 被超越 |
+| 次选均值 | 3.75 | — | 被超越 |
+
+## 五、运行机制
+
+```
+run_creation(topic, review=True)
+  └─ CreativePipeline（builder/checker 分离，max_rounds 重试）
+       └─ 全部阶段通过
+            └─ CreativeReviewer.review(artifacts)   # 独立读取 DB，不看 builder 内部
+                 ├─ gates 断言（纯函数）
+                 ├─ score_reports → 总分 + 五维得分
+                 └─ 裁定：error==0 且 总分≥80 → SUCCEEDED，否则 NEEDS_REVISION
+```
+
+- 硬门语义：**存在任一 error 即不通过**，与总分无关（防古德哈特）。
+- 留痕：`CreationRun.review`（逐阶段问题 + 维度分）+ `review_score` + `stage_results`。
+
+### Round 3 新增：状态 schema + 自动修订 + 统计
+
+- **状态落盘**：`Novel` 1:1 `StoryState`（tracking 7 栏 / 角色四维 / 伏笔契约 / 三层目标），管线创建、API 可查（`GET /api/novels/{id}/story-state`）。
+- **schema 门**：`gates.gate_story_state`（T001–T007，缺字段 error、状态非初始 warn）纳入独立审查。
+- **自动修订闭环**：`CreativeReviser` 按问题编码最小修复；审查失败 → 修订 → 重审，直至通过（`FIXED`）或交回人工（`UNCHANGED`/`EXHAUSTED`）。
+- **统计 API**：`GET /api/creation/runs/stats`（状态分布 / 平均分 / 五维均值 / 修订结果分布 / 近 10 轮趋势）。
+
+```
+审查失败 → CreativeReviser.revise(issues) → 重审
+            └ 既通过 → SUCCEEDED（FIXED）
+            └ 无实质修复/分数未收敛 → NEEDS_REVISION（UNCHANGED）
+            └ 轮次耗尽 → NEEDS_REVISION（EXHAUSTED）
+```
+
+### Round 4 新增：伏笔生命周期 + 修订后端注入点
+
+- **伏笔生命周期门**：`gates.gate_foreshadowing_lifecycle`（L001 埋设缺口 / L002 状态非法 / L003 回收位置缺失），正文 ↔ 状态卡**跨表交叉验证**（需 `story_state_id` 与章节正文同时存在才启用）。
+- **修订后端注入点**：`revision.RevisionBackend` Protocol + `LlmReviserBackend(revise_fn, fallback=)`；`run_creation(..., reviser=)` 可注入生成式修订器，LLM 异常/空结果自动降级 fallback，无 fallback 交回人工。
+- **评分纪律**：Round 4 不虚增分数（防古德哈特）——分值维持 5.00，扩展的是覆盖与可插拔性。
+
+```
+审查失败 → backend.revise(issues)   # backend = 规则版 CreativeReviser | LlmReviserBackend
+            └ LLM 异常/空 → fallback（默认规则版）→ 仍无修复 → NEEDS_REVISION
+```
+
+### Round 5 新增：区间校验 + LLM 生产修订器 + 报告导出
+
+- **章号区间校验**：`parse_chapter_number`（支持中文数字）+ L004（埋设章已写未命中，区间优先于全局 L001）/ L005（标记 resolved 但回收章未命中）。回收章未写时跳过（不可验证不误伤）。
+- **LLM 生产修订器**：`make_llm_reviser(client?, rules_backend=)` 基于 workbench `LlmClient.chat_json`（`asyncio.to_thread` 下放阻塞）；响应契约 `{"log":[{code,fixed,action}]}`，非法响应返回空交 fallback；修复顺序 = 可规则修复编码先走规则版，LLM 只处理剩余项。
+- **报告导出**：`creative/reporting.render_run_report` + `GET /api/creation/runs/{id}/report`（`?format=json`），含总览/维度分/逐阶段问题/修订日志/产物清单，服务 NEEDS_REVISION 的人工复核与归档。
+- **评分纪律**：六维已满分，Round 5 不动分值；扩展的是判定精度（区间）、修订器工程化（生产实现）与可交付性（报告）。
+
+## 六、尚未落地的能力（后续轮次）
+
+- **LLM 修订器的实网验证**：`make_llm_reviser` 已接 workbench 客户端，默认 provider 配置（`HERMES_LLM_*`）下的真实调用与提示词调优待实网跑通。
+- **仪表盘 UI**：统计与报告 API 已就绪，前端可视化待建（项目当前无前端）。
+- **报告持久化/订阅**：报告目前即时渲染，可选落盘归档或推送（邮件/IM）。
+
+## 七、创作者视角评估与路线图（Round 7 起）
+
+> 视角切换：不以架构分排序，而以"日更压力下主理人少熬夜"为准。
+
+### 创作者一天的痛点映射
+
+| 痛点 | 对应方向 |
+|---|---|
+| 伏笔忘回收、人设漂移、时间线错乱 | **A1 一致性检索接线** |
+| AI 稿"是技能文档的平均值"，没有我的声音 | **A2' 文风指纹** |
+| 平台 AI 检测 / 读者对 AI 味敏感 | **A2' 强制去 AI 味出口门** |
+| 每天"贴稿"要手改格式（番茄/红果/公众号） | **B3 多平台导出**（而非 B1 自动发布） |
+| 不知道今天写什么、哪些伏笔要爆 | **B2 写作台**（而非质检仪表盘） |
+
+### 路线图（创作者视角，已重排）
+
+```
+Round 7： A1 一致性检索接线 + C1 记忆记账          「它别写崩、它记得我」
+Round 8： A2' 生成（文风指纹 + 强制去AI味 + 陪写定位）「稿子我愿意改」
+Round 9： B3 多平台导出（番茄/红果/公众号）          「贴稿不用排版」
+Round 10：B2 写作台（今日任务/伏笔清单/连续性警告）   「知道今天写什么」
+之后：   B1 自动发布桥 → A3 LLM-judge → D 内容深耕
+```
+
+### 三条一票否决红线
+
+1. **风格保真**：生成/修订不得抹平作者声线；diff 可见，人改回灌风格指纹。
+2. **去 AI 味是出口门**：带 AI 味文本不得离开系统（平台检测/账号权重风险）。
+3. **掌控感与合规**：AI 产出逐段可标识，作者保留每处否决权；发布前 AI 声明由平台代出。

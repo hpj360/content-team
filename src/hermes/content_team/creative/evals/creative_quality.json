@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "name": "creative-quality",
+  "description": "创意质量评测集：固定选题 × 变体，衡量生成稿的结构达标与可改性（Round 14）。",
+  "topics": [
+    {
+      "id": "waimai-counterattack",
+      "title": "外卖员逆袭",
+      "description": "外卖员在庆功宴被主管当众羞辱，被迫签下七天总裁协议，最终亮出集团董事身份",
+      "genre": "都市",
+      "min_scenes": 3,
+      "chars_range": [180, 4000]
+    },
+    {
+      "id": "deepsea-mystery",
+      "title": "深海科考队失踪",
+      "description": "深海科考队在万米海沟集体失踪，唯一幸存者带回一段无法解释的录音",
+      "genre": "悬疑",
+      "min_scenes": 3,
+      "chars_range": [180, 4000]
+    },
+    {
+      "id": "craft-beer-heiress",
+      "title": "精酿厂千金",
+      "description": "精酿厂老厂长病倒，留学归来的女儿接手酒厂，与老技师在配方上针锋相对",
+      "genre": "都市",
+      "min_scenes": 3,
+      "chars_range": [180, 4000]
+    }
+  ],
+  "variants": [
+    {"id": "baseline", "label": "基线（无风格样本）", "options": {}},
+    {
+      "id": "style-anchored",
+      "label": "风格锚定（注入作者旧稿指纹）",
+      "options": {
+        "style_samples": [
+          "雨点砸在铁皮屋顶。他数到三。门开了。\n\n「你迟到了。」她说。他把伞收起来，水顺着伞骨滴在门槛上。",
+          "灯灭了。整条街只剩一盏。李默没回头。他知道后面是谁。\n\n「东西呢？」\n「没有。」"
+        ]
+      }
+    }
+  ]
+}

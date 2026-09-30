@@ -67,6 +67,12 @@ logs/
 # User profile (contains personal data, do not commit)
 data/profile.json
 
+# content-team 运行时数据（记忆 / 作业 / 触发器 / 本地库）
+data/content_team_memory/
+data/content_team_jobs/
+data/content_team_triggers/
+content_team.db
+
 # 生成媒体与临时产物
 tmp/
 
