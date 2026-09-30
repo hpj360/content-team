@@ -91,6 +91,7 @@ class NovelResponse(BaseModel):
     status: NovelStatus
     target_word_count: int
     word_count: int
+    style_fingerprint: dict[str, Any] | None = None
     author_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
@@ -302,6 +303,7 @@ class CreationRunRequest(BaseModel):
     review: bool = True
     auto_revise: bool = True
     max_revise_rounds: int = Field(default=2, ge=0, le=5)
+    budget_tokens: int | None = Field(default=None, ge=0)
 
 
 class CreationRunResponse(BaseModel):
@@ -323,6 +325,8 @@ class CreationRunResponse(BaseModel):
     revise_rounds: int = 0
     revision_outcome: str | None = None
     revise_log: list[dict[str, Any]] = Field(default_factory=list)
+    llm_usage: dict[str, Any] = Field(default_factory=dict)
+    token_total: int = 0
     error_message: str | None = None
     created_at: datetime
     updated_at: datetime
@@ -801,6 +805,7 @@ async def start_creation_run(
         "review": payload.review,
         "auto_revise": payload.auto_revise,
         "max_revise_rounds": payload.max_revise_rounds,
+        "budget_tokens": payload.budget_tokens,
     }
     if payload.stages:
         kwargs["stages"] = tuple(payload.stages)
@@ -1162,3 +1167,87 @@ async def publish_creation_run_endpoint(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return tasks
+
+
+# ---------------------------------------------------------------------------
+# 文风指纹（R15）与内容模板（R18）
+# ---------------------------------------------------------------------------
+
+
+class StyleFingerprintPut(BaseModel):
+    """写入文风指纹请求体。"""
+
+    samples: list[str] = Field(..., min_length=1)
+
+
+@novels_router.put("/{novel_id}/style-fingerprint", response_model=NovelResponse)
+async def set_novel_style_fingerprint(
+    novel_id: UUID,
+    payload: StyleFingerprintPut,
+    db: AsyncSession = Depends(get_db),
+) -> Novel:
+    """从作者旧稿样本提取并持久化文风指纹（后续 run 可复用）。"""
+    from hermes.content_team.creative.style_fingerprint import extract_fingerprint
+
+    novel = await db.get(Novel, novel_id)
+    if novel is None:
+        raise HTTPException(status_code=404, detail="Novel not found")
+    fingerprint = extract_fingerprint(payload.samples)
+    if fingerprint.sample_chars <= 0:
+        raise HTTPException(status_code=400, detail="样本为空，无法提取指纹")
+    novel.style_fingerprint = fingerprint.to_dict()
+    await db.commit()
+    await db.refresh(novel)
+    return novel
+
+
+class TemplateResponse(BaseModel):
+    """模板响应体。"""
+
+    id: str
+    name: str
+    category: str
+    description: str
+    body: str
+    variables: list[str]
+
+
+class TemplateRenderRequest(BaseModel):
+    """模板渲染请求体。"""
+
+    variables: dict[str, Any] = Field(default_factory=dict)
+
+
+templates_router = APIRouter()
+
+
+@templates_router.get("/templates", response_model=list[TemplateResponse])
+async def list_content_templates() -> list[dict[str, Any]]:
+    """列出可用写作模板（内置 + content-creation/ 文档）。"""
+    from hermes.content_team.creative.templates import list_templates
+
+    return [t.to_dict() for t in list_templates()]
+
+
+@templates_router.get("/templates/{template_id}", response_model=TemplateResponse)
+async def get_content_template(template_id: str) -> dict[str, Any]:
+    """获取单个模板。"""
+    from hermes.content_team.creative.templates import get_template
+
+    template = get_template(template_id)
+    if template is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return template.to_dict()
+
+
+@templates_router.post("/templates/{template_id}/render")
+async def render_content_template(
+    template_id: str, payload: TemplateRenderRequest
+) -> dict[str, Any]:
+    """按变量渲染模板（缺省变量保留占位符）。"""
+    from hermes.content_team.creative.templates import render_template
+
+    rendered = render_template(template_id, payload.variables)
+    if rendered is None:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"id": template_id, "rendered": rendered}

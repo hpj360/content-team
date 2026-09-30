@@ -73,3 +73,67 @@ def render_retrieval_block(hits: list[dict[str, Any]]) -> str:
     for hit in hits:
         lines.append(f"- {hit.get('title', '')}：{hit.get('snippet', '')}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# 默认节奏规划器（R17）：把选题信息映射为可执行写作参数
+# ---------------------------------------------------------------------------
+
+_GENRE_SCENE_HINTS: tuple[tuple[str, int, str], ...] = (
+    ("短剧", 3, "快节奏：3/30/60 公式，单集强钩子"),
+    ("微短剧", 3, "快节奏：3/30/60 公式，单集强钩子"),
+    ("悬疑", 3, "中速：线索分层，每场留信息缺口"),
+    ("言情", 3, "中速：关系位移驱动，冲突快解"),
+    ("甜宠", 3, "中速：心动信号每 2–3 场一次"),
+    ("都市", 3, "偏快：打脸密度优先"),
+    ("玄幻", 4, "偏快：升级与打脸交替"),
+    ("仙侠", 4, "偏快：境界推进可见"),
+    ("科幻", 4, "中速：设定自洽优先"),
+    ("历史", 4, "中速：布局—见效—扬名循环"),
+)
+
+
+def make_beat_sheet_planner():
+    """默认节奏规划器：依据选题题材给出剧本类型/场景数/节奏提示。
+
+    纯规则、零成本；LLM 版规划器可另行注入覆盖。
+    """
+
+    async def planner(
+        stage: CreationStage, ctx: dict[str, Any]
+    ) -> dict[str, Any]:
+        if stage is not CreationStage.SCRIPT:
+            return {}
+        topic = ctx.get("topic")
+        text = (
+            f"{getattr(topic, 'title', '')} {getattr(topic, 'description', '')}"
+            f" {ctx.get('genre', '')} {ctx.get('script_type', '')}"
+        )
+        target_scenes, pacing = 3, "中速：冲突递进，每场价值转折"
+        for keyword, scenes, hint in _GENRE_SCENE_HINTS:
+            if keyword and keyword in text:
+                target_scenes, pacing = scenes, hint
+                break
+        return {
+            "target_scenes": target_scenes,
+            "pacing_hint": pacing,
+            "beat_sheet": "三幕：建置→对抗→转折",
+        }
+
+    return planner
+
+
+def compose_planners(*planners) -> Any:
+    """把多个 planner 组合为一个（后者覆盖前者的同名字段）。"""
+    active = [p for p in planners if p is not None]
+
+    async def planner(
+        stage: CreationStage, ctx: dict[str, Any]
+    ) -> dict[str, Any]:
+        merged: dict[str, Any] = {}
+        for item in active:
+            result = await item(stage, ctx) or {}
+            merged.update(result)
+        return merged
+
+    return planner

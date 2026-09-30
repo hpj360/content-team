@@ -151,6 +151,9 @@ class Novel(Base):
         sa.Integer, nullable=False, default=0
     )
     word_count: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
+    style_fingerprint: Mapped[Optional[dict]] = mapped_column(
+        sa.JSON, nullable=True
+    )
     author_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True), nullable=False, default=_utcnow
@@ -396,6 +399,8 @@ class CreationRun(Base):
     revise_log: Mapped[list[dict]] = mapped_column(
         sa.JSON, nullable=False, default=list
     )
+    llm_usage: Mapped[dict] = mapped_column(sa.JSON, nullable=False, default=dict)
+    token_total: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
     error_message: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True), nullable=False, default=_utcnow

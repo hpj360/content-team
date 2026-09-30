@@ -214,7 +214,7 @@ def _chat_json_bounded(client: Any, messages: list[Any]) -> dict[str, Any]:
     """稳健调用（显式 max_tokens + 截断修复 + 扩容重试），失败返回 {}。"""
     from hermes.content_team.creative.llm_io import chat_json_safe
 
-    return chat_json_safe(client, messages, max_tokens=2048, retries=3)
+    return chat_json_safe(client, messages, max_tokens=2048, retries=3, role="drafter")
 
 
 def make_script_drafter(

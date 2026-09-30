@@ -14,6 +14,7 @@ from hermes.content_team.api.creative import (
     novels_router,
     scripts_router,
     storyboards_router,
+    templates_router,
 )
 from hermes.content_team.api.members import router as members_router
 from hermes.content_team.api.publish import router as publish_router
@@ -49,3 +50,5 @@ api_router.include_router(
 )
 # 工作台（零构建单文件 HTML + 聚合概览）：/dashboard, /api/dashboard/overview
 api_router.include_router(dashboard_router, tags=["dashboard"])
+# 内容模板（R18）：/api/templates
+api_router.include_router(templates_router, prefix="/api", tags=["templates"])

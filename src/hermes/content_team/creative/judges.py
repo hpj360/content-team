@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from typing import Any
 
 from hermes.content_team.models.creative import CreationStage
@@ -106,8 +107,65 @@ def judge_report(notes: list[str]) -> dict[str, Any]:
     return {"judge_notes": list(notes), "count": len(notes)}
 
 
+# ---------------------------------------------------------------------------
+# 默认清单评议器（R17）：规则版 critic，零成本，产出可执行建议（不门禁）
+# ---------------------------------------------------------------------------
+
+_DIALOGUE_RE = re.compile(r"^\[?[^，。！？\n]{1,12}\]?$", re.MULTILINE)
+
+
+def make_checklist_critic(max_notes: int = 5):
+    """默认 critic：按可测量指标给出写作建议（不门禁）。
+
+    - 对话行占比过低 → 建议增加对话推进；
+    - 场景数偏少 → 建议拆场；
+    - 平均句长过长 → 建议短句提速；
+    - 缺少钩子词 → 建议强化章尾钩子。
+    """
+
+    async def critic(
+        stage: CreationStage, output: dict[str, Any], ctx: dict[str, Any]
+    ) -> list[str]:
+        content = str(output.get("preview") or "").strip()
+        if not content:
+            draft = ctx.get("draft") or {}
+            content = str(draft.get("body") or "").strip()
+        if not content:
+            return []
+
+        notes: list[str] = []
+
+        lines = [ln for ln in content.splitlines() if ln.strip()]
+        dialogue_lines = len(_DIALOGUE_RE.findall("\n".join(lines)))
+        dialogue_ratio = dialogue_lines / max(1, len(lines))
+        if dialogue_ratio < 0.2:
+            notes.append(
+                f"[critic] 对话行占比 {dialogue_ratio:.0%} 偏低，建议增加对话推进"
+            )
+
+        sentences = [
+            s for s in re.split(r"[。！？!?…]+", content) if s.strip()
+        ]
+        avg_len = (sum(len(s) for s in sentences) / len(sentences)) if sentences else 0
+        if avg_len > 40:
+            notes.append(f"[critic] 平均句长 {avg_len:.0f} 字偏长，建议短句提速")
+
+        scenes = len(
+            [ln for ln in lines if ln.strip().startswith(("第", "INT.", "EXT.", "内景", "外景"))]
+        )
+        if scenes and scenes < 3:
+            notes.append(f"[critic] 场景数 {scenes} 偏少，建议按节拍拆场")
+
+        if not any(token in content for token in ("？", "……", "!", "！")):
+            notes.append("[critic] 未见悬念/钩子标志（问号、省略号），建议强化章尾钩子")
+
+        return notes[:max_notes]
+
+    return critic
+
+
 def _judge_call(client: Any, messages: list[Any]) -> dict[str, Any]:
     """稳健调用（实网联调产出：显式 max_tokens + 截断修复）。"""
     from hermes.content_team.creative.llm_io import chat_json_safe
 
-    return chat_json_safe(client, messages, max_tokens=1024, retries=2)
+    return chat_json_safe(client, messages, max_tokens=1024, retries=2, role="judge")

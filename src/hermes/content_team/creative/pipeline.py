@@ -56,9 +56,17 @@ from hermes.content_team.models.creative import (
     StoryState,
     Storyboard,
 )
+from hermes.content_team.creative.cost import (
+    UsageTracker,
+    reset_tracker,
+    set_tracker,
+)
 from hermes.content_team.creative.deai import apply_de_ai_pass
+from hermes.content_team.creative.judges import make_checklist_critic
 from hermes.content_team.creative.planners import (
     RETRIEVAL_KEY,
+    compose_planners,
+    make_beat_sheet_planner,
     make_retrieval_planner,
     render_retrieval_block,
 )
@@ -278,6 +286,7 @@ async def _build_novel(
         logline=topic.description[:200],
         synopsis=topic.description,
         target_word_count=int(ctx.get("target_word_count") or 0),
+        style_fingerprint=ctx.get("style_fingerprint") or None,
     )
     db.add(novel)
     await db.flush()
@@ -355,6 +364,27 @@ def _script_body_with_retrieval(
     if block:
         body = f"{body}\n\n{block}"
     return body, []
+
+
+async def _resolve_style_fingerprint(
+    db: AsyncSession, context: dict[str, Any]
+) -> None:
+    """解析文风指纹：现场样本优先，否则复用（options.novel_id）已有小说指纹。
+
+    结果写入 ``context['style_fingerprint']``（供 drafter 注入 prompt）。
+    """
+    samples = context.pop("style_samples", None)
+    if samples:
+        fingerprint = extract_fingerprint(list(samples))
+        if fingerprint.sample_chars > 0:
+            context["style_fingerprint"] = fingerprint.to_dict()
+        return
+    novel_id = context.get("novel_id")
+    if not novel_id:
+        return
+    novel = await db.get(Novel, uuid.UUID(str(novel_id)))
+    if novel is not None and novel.style_fingerprint:
+        context["style_fingerprint"] = dict(novel.style_fingerprint)
 
 
 def _novel_chapter_body(topic: Topic, ctx: dict[str, Any]) -> tuple[str, list[str]]:
@@ -566,24 +596,39 @@ async def run_creation(
     roles: StageRoles | None = None,
     retrieval: bool = True,
     memory: Any | None = None,
+    budget_tokens: int | None = None,
+    default_roles: bool = True,
 ) -> CreationRun:
     """执行创作管线并在提供 ``memory`` 时记账（C1 · 跨 run 学习地基）。
 
-    最终状态：SUCCEEDED / NEEDS_REVISION / STOPPED / FAILED 见 ``_execute_creation``。
+    成本治理（R16）：``budget_tokens`` 限制本次运行的 LLM token 总预算，
+    超限自动降级（LLM 角色返回空 → 模板兜底），用量落 ``run.llm_usage``。
     """
-    run = await _execute_creation(
-        db,
-        topic_id,
-        max_rounds=max_rounds,
-        stages=stages,
-        options=options,
-        review=review,
-        auto_revise=auto_revise,
-        max_revise_rounds=max_revise_rounds,
-        reviser=reviser,
-        roles=roles,
-        retrieval=retrieval,
-    )
+    tracker = UsageTracker(budget_tokens=budget_tokens)
+    token = set_tracker(tracker)
+    try:
+        run = await _execute_creation(
+            db,
+            topic_id,
+            max_rounds=max_rounds,
+            stages=stages,
+            options=options,
+            review=review,
+            auto_revise=auto_revise,
+            max_revise_rounds=max_revise_rounds,
+            reviser=reviser,
+            roles=roles,
+            retrieval=retrieval,
+            default_roles=default_roles,
+        )
+    finally:
+        reset_tracker(token)
+
+    run.llm_usage = tracker.to_dict()
+    run.token_total = tracker.total_tokens
+    await db.commit()
+    await db.refresh(run)
+
     if memory is not None:
         _record_creation_memory(memory, run)
     return run
@@ -635,6 +680,7 @@ async def _execute_creation(
     reviser: RevisionBackend | None = None,
     roles: StageRoles | None = None,
     retrieval: bool = True,
+    default_roles: bool = True,
 ) -> CreationRun:
     """执行一次创作管线并落库为 ``CreationRun``。
 
@@ -661,17 +707,19 @@ async def _execute_creation(
     context: dict[str, Any] = {"db": db, "topic": topic}
     context.update(options or {})
 
-    # A2'：从作者旧稿提取文风指纹（options.style_samples），供 drafter 注入
-    style_samples = context.pop("style_samples", None)
-    if style_samples:
-        fingerprint = extract_fingerprint(list(style_samples))
-        if fingerprint.sample_chars > 0:
-            context["style_fingerprint"] = fingerprint.to_dict()
+    # A2'：文风指纹（options.style_samples 现场提取；否则从 options.novel_id 复用）
+    await _resolve_style_fingerprint(db, context)
 
-    # 默认角色组：启用 A1 一致性检索接线（写前把既有设定注入 builder 上下文）
+    # 默认角色组：节奏规划（R17）+ 一致性检索（A1）+ 清单评议（R17）
     effective_roles = roles
-    if effective_roles is None and retrieval:
-        effective_roles = StageRoles(planner=make_retrieval_planner(db))
+    if effective_roles is None and default_roles:
+        planner_fns = [make_beat_sheet_planner()]
+        if retrieval:
+            planner_fns.append(make_retrieval_planner(db))
+        effective_roles = StageRoles(
+            planner=compose_planners(*planner_fns),
+            critic=make_checklist_critic(),
+        )
 
     pipeline = CreativePipeline(
         builder=default_builder,

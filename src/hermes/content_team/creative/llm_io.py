@@ -151,6 +151,7 @@ def chat_json_safe(
     *,
     max_tokens: int = DEFAULT_MAX_TOKENS,
     retries: int = DEFAULT_RETRIES,
+    role: str = "",
 ) -> dict[str, Any]:
     """调用 LLM 并稳健解析 JSON。
 
@@ -158,15 +159,30 @@ def chat_json_safe(
       1. **严格解析**成功 → 直接返回；
       2. 因 token 截断（``finish_reason == "length"``）且仍有重试 → **扩容重试**；
       3. 最后才用宽松修复兜底；仍失败返回 {}（并记 warning）。
+
+    成本治理：调用前后经 ``cost.current_tracker()`` 记账与预算守卫（超限抛
+    ``BudgetExceeded``，由调用方降级）。
     """
+    from hermes.content_team.creative.cost import current_tracker, extract_usage
+
+    tracker = current_tracker()
     attempt_tokens = max_tokens
     fallback: dict[str, Any] | None = None
     for attempt in range(1, retries + 1):
+        if tracker is not None:
+            tracker.check(role=role)
         try:
             response = client.chat(messages, max_tokens=attempt_tokens)
         except Exception as exc:  # noqa: BLE001
             logger.warning("llm chat failed (attempt %s): %s", attempt, exc)
             continue
+        if tracker is not None:
+            prompt_tokens, completion_tokens = extract_usage(response)
+            tracker.record(
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                role=role,
+            )
         content = getattr(response, "content", "") or ""
         finish = getattr(response, "finish_reason", "")
 

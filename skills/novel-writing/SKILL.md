@@ -74,6 +74,7 @@ description: 小说创作。当用户要构思、写作、续写、改写或评�
 - 质量门已代码化：上述清单由 `creative/gates.py` 的断言执行，并由独立审查器 `CreativeReviewer` 复核；接口返回 `review_score`。
 - 连续性已落地：管线生成 `StoryState`（状态卡/角色/伏笔/目标分层），`gate_story_state` 做 schema 校验；审查未通过时由 `CreativeReviser` 自动修订并重审。
 - 伏笔一致性已落地：`gate_foreshadowing_lifecycle` 做"正文 ↔ 状态卡"跨表校验（埋设缺口/状态非法/回收位置缺失均为硬门）；Round 5 起支持章号区间校验（L004 埋设章未命中 / L005 回收章未命中，支持中文数字章号）。
+- 声线持久化：`PUT /api/novels/{id}/style-fingerprint` 从作者旧稿提取并落库；后续 run 以 `options.novel_id` 引用时自动注入 drafter（越用越像你）。
 
 ## 异常处理
 

@@ -33,6 +33,10 @@
 | **Round 12** | 实网联调（智谱 GLM 跑通 drafter/judge/reviser，修 3 类真实缺陷）+ 内容深耕 D（平台特色库/题材手册/风格包扩充/短剧题材库） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 13** | 工程固化：CI workflow（lint + skill-lint + content_team 测试 + 实网开关）+ runtime 目录忽略 + 首次全量入库 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 14** | 创意质量评测集（固定选题×变体 + 指标聚合）+ 全链路实网套件（真实管线/审查/质量对比） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 15** | 文风指纹持久化与复用（`PUT /novels/{id}/style-fingerprint`，跨 run 注入 drafter） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 16** | 成本治理：UsageTracker（contextvar）+ token 记账落库 + 预算护栏自动降级 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 17** | 默认多角色：节奏规划 planner（beat-sheet）+ 清单评议 critic，默认运行 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 18** | 内容模板系统（内置 4 模板 + content-creation 文档索引 + 渲染 API） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 
 > 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
 
@@ -88,8 +92,19 @@ Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/�
 
 **新增**：`creative/llm_io.py`（健壮 LLM IO 层）+ `tests/content_team/_fakes.py`（共享替身）+ 实网套件（`CONTENT_TEAM_LIVE_LLM=1` 显式开启，默认跳过）。
 
-### 内容深耕 D（C1 补齐）
+### Round 15–18：闭环收尾（调优基础设施 + 成本 + 多角色 + 模板）
 
+| 项 | 落地 | 备注 |
+|---|---|---|
+| R15 文风指纹 | `Novel.style_fingerprint` 落库；`PUT /api/novels/{id}/style-fingerprint`；run 以 `options.novel_id` 复用时自动注入 drafter | "越用越像你"从"每 run 重算"变为**持久复用** |
+| R15 提示词调优 | 评测集（R14）+ 指纹注入已就绪，构成**数据驱动调优**的地基 | 变体 A/B 调优 pass 待实网执行（`CONTENT_TEAM_LIVE_LLM=1`） |
+| R16 成本治理 | `cost.UsageTracker`（contextvar，跨 `to_thread` 生效）；token 记账落 `CreationRun.llm_usage/token_total`；`budget_tokens` 超限抛 `BudgetExceeded` → LLM 角色自动降级模板 | 日更成本可预算、可熔断 |
+| R17 默认多角色 | `make_beat_sheet_planner`（题材→场景数/节奏）+ `make_checklist_critic`（可测量建议）；`compose_planners` 组合检索规划；默认启用（`default_roles`） | planner/drafter/critic/checker **四角色默认运行** |
+| R18 模板系统 | 内置 4 模板（黄金三章/单集 8 拍/对话戏分镜/风格包起点）+ `content-creation/` 文档索引 + `GET /api/templates`、渲染接口 | 补上原 tasks.md Phase 9 遗留项 |
+
+**测试**：content_team + skill-lint **413 passed**（6 skipped 为实网 opt-in）；全量 1571 passed。
+
+### 内容深耕 D（C1 补齐）
 新增 4 份深度库（技能文档 23→27）：
 - `showrunning/references/platform-playbooks.md` — 7 平台格式/字数/节奏/审核/变现 + 发布前检查清单
 - `novel-writing/references/genre-playbooks.md` — 7 题材读者期待×爽点节奏×开篇×雷区 + 落库映射

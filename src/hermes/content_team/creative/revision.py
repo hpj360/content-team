@@ -472,7 +472,7 @@ def _revise_json_call(client: Any, messages: list[Any]) -> dict[str, Any]:
     """稳健调用（实网联调产出：显式 max_tokens + 截断修复）。"""
     from hermes.content_team.creative.llm_io import chat_json_safe
 
-    return chat_json_safe(client, messages, max_tokens=1536, retries=2)
+    return chat_json_safe(client, messages, max_tokens=1536, retries=2, role="reviser")
 
 
 def make_llm_reviser(

@@ -35,10 +35,30 @@ from hermes.content_team.creative.pipeline import (
     build_default_pipeline,
     run_creation,
 )
+from hermes.content_team.creative.cost import (
+    BudgetExceeded,
+    UsageTracker,
+    current_tracker,
+    set_tracker,
+)
 from hermes.content_team.creative.judges import (
     RUBRICS,
     judge_report,
+    make_checklist_critic,
     make_llm_judge,
+)
+from hermes.content_team.creative.planners import (
+    RETRIEVAL_KEY,
+    compose_planners,
+    derive_query,
+    make_beat_sheet_planner,
+    make_retrieval_planner,
+    render_retrieval_block,
+)
+from hermes.content_team.creative.templates import (
+    get_template,
+    list_templates,
+    render_template,
 )
 from hermes.content_team.creative.quality_eval import (
     DraftMetrics,
@@ -63,12 +83,6 @@ from hermes.content_team.creative.style_fingerprint import (
     extract_fingerprint,
     fingerprint_to_prompt,
 )
-from hermes.content_team.creative.planners import (
-    RETRIEVAL_KEY,
-    derive_query,
-    make_retrieval_planner,
-    render_retrieval_block,
-)
 from hermes.content_team.creative.reviewer import (
     CreativeReviewer,
     ReviewReport,
@@ -86,6 +100,7 @@ from hermes.content_team.creative.reporting import render_run_report
 
 __all__ = [
     "AI_CLICHE_TOKENS",
+    "BudgetExceeded",
     "COMPLIANCE_BLOCKLIST",
     "DEFAULT_STAGES",
     "DIMENSION_WEIGHTS",
@@ -100,6 +115,7 @@ __all__ = [
     "SHOT_MIN_SECONDS",
     "STAGE_GATES",
     "TRACKING_FIELDS",
+    "UsageTracker",
     "CreativePipeline",
     "CreativeReviewer",
     "CreativeReviser",
@@ -118,7 +134,10 @@ __all__ = [
     "build_llm_revise_fn",
     "build_writing_desk",
     "compare_fingerprints",
+    "compare_variants",
+    "compose_planners",
     "count_scenes",
+    "current_tracker",
     "de_ai_report",
     "default_reviser",
     "derive_query",
@@ -135,8 +154,12 @@ __all__ = [
     "gate_script",
     "gate_story_state",
     "gate_storyboard",
+    "get_template",
     "judge_report",
+    "list_templates",
     "load_quality_evals",
+    "make_beat_sheet_planner",
+    "make_checklist_critic",
     "make_llm_drafter",
     "make_llm_judge",
     "make_llm_reviser",
@@ -146,9 +169,11 @@ __all__ = [
     "publish_creation_run",
     "render_retrieval_block",
     "render_run_report",
+    "render_template",
     "review_creation",
     "run_creation",
     "score_reports",
+    "set_tracker",
     "summarize",
     "validate_shot_durations",
     "compare_variants",
