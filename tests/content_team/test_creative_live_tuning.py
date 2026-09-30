@@ -15,12 +15,16 @@ import pytest
 
 import hermes.content_team.creative.pipeline as pipeline_module
 from hermes.content_team.creative.builders_llm import make_script_drafter
+from hermes.content_team.creative.judges import make_llm_judge
 from hermes.content_team.creative.pipeline import StageRoles
 from hermes.content_team.creative.prompts import available_variants
+from hermes.content_team.models.creative import CreationStage
 from hermes.content_team.creative.quality_eval import (
     compare_variants,
     load_quality_evals,
     measure_draft,
+    parse_judge_score,
+    summarize_judge,
 )
 
 LIVE = os.environ.get("CONTENT_TEAM_LIVE_LLM") == "1"
@@ -29,8 +33,9 @@ pytestmark = pytest.mark.skipif(
     not LIVE, reason="set CONTENT_TEAM_LIVE_LLM=1 to run live tuning"
 )
 
-# 调优采样规模（控制成本）：选题数 × 变体数
-_TOPIC_LIMIT = int(os.environ.get("CONTENT_TEAM_TUNING_TOPICS", "2"))
+# 调优采样规模（控制成本）：默认 5 选题 × 3 变体
+_TOPIC_LIMIT = int(os.environ.get("CONTENT_TEAM_TUNING_TOPICS", "5"))
+_ENABLE_JUDGE = os.environ.get("CONTENT_TEAM_TUNING_JUDGE", "1") != "0"
 
 
 def _client():
@@ -63,6 +68,7 @@ async def test_live_variant_tuning():
 
     engine, factory = await _session()
     rows = []
+    judge_scores: dict[str, list[float]] = {}
     try:
         async with factory() as session:
             from hermes.content_team.models.creative import Script
@@ -75,6 +81,8 @@ async def test_live_variant_tuning():
                 await session.commit()
                 await session.refresh(topic)
                 topic_rows.append((spec, topic))
+
+            judge = make_llm_judge(_client()) if _ENABLE_JUDGE else None
 
             for spec, topic in topic_rows:
                 for variant in variants:
@@ -96,19 +104,42 @@ async def test_live_variant_tuning():
                         logline=script.logline,
                     )
                     rows.append(metrics)
+
+                    judge_score = None
+                    if judge is not None:
+                        notes = await judge(
+                            CreationStage.SCRIPT,
+                            {"script_title": script.title, "preview": script.body},
+                            {"topic": topic},
+                        )
+                        judge_score = parse_judge_score(notes)
+                        judge_scores.setdefault(variant, []).append(
+                            judge_score if judge_score is not None else -1.0
+                        )
+
                     print(
                         f"[tuning] topic={spec['id'][:14]} variant={variant} "
                         f"chars={metrics.draft_chars} scenes={metrics.scene_count} "
-                        f"gate={metrics.gate_passed} deai={metrics.deai_hits_before}"
+                        f"gate={metrics.gate_passed} deai={metrics.deai_hits_before} "
+                        f"judge={judge_score}"
                     )
     finally:
         await engine.dispose()
 
     summary = compare_variants(rows)
-    print("\n[tuning] summary=", json.dumps(summary, ensure_ascii=False, indent=2))
+    print("\n[tuning] structural=", json.dumps(summary, ensure_ascii=False, indent=2))
+
+    if judge_scores:
+        # -1.0 为"未返回分数"的哨兵，聚合时剔除
+        cleaned = {
+            variant: [v for v in values if v >= 0] for variant, values in judge_scores.items()
+        }
+        print(
+            "\n[tuning] semantic=",
+            json.dumps(summarize_judge(cleaned), ensure_ascii=False, indent=2),
+        )
 
     # 变体对比必须产出完整矩阵
     assert set(summary) == set(variants)
     assert all(v["n"] == len(topics) for v in summary.values())
-    # 至少一个变体产出非空稿
     assert any(v["avg_chars"] > 0 for v in summary.values())

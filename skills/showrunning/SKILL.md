@@ -79,6 +79,7 @@ description: 编导。当用户需要统筹整部/整季内容的策略与节奏
 - 修订器可插拔：`RevisionBackend` 注入点支持 LLM 生成式修订（`LlmReviserBackend`，异常自动降级规则版），`run_creation(..., reviser=)` 注入；生产版 `make_llm_reviser` 已接 workbench LLM（规则可修项先行，LLM 只处理剩余）。
 - 报告可导出：`GET /api/creation/runs/{id}/report`（默认 Markdown，`?format=json`），含总览/维度分/逐阶段问题/修订日志/产物清单，供人工复核与归档。
 - 模板与成本：`GET /api/templates`（黄金三章/单集 8 拍/对话戏分镜/风格包起点）供开书开集预填；`POST /api/creation/runs` 支持 `budget_tokens`，超预算自动降级（LLM 角色→模板）。
+- 语料与规则：`GET /api/corpus`（公版拆解案例，可按题材/技法标签引用，规划器自动写入 `plan.corpus_refs`）；`GET /api/platform-rules`（平台规则快照 + `stale` 新鲜度，过期需复核）。
 
 ## 异常处理
 

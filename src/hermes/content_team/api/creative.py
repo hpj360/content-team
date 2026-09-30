@@ -1268,3 +1268,36 @@ async def get_platform_rules() -> dict[str, Any]:
 
     data = load_platform_rules()
     return {"rules": data, "freshness": check_freshness().to_dict()}
+
+
+# ---------------------------------------------------------------------------
+# 语料库（R19 续）
+# ---------------------------------------------------------------------------
+
+
+@templates_router.get("/corpus")
+async def list_corpus(
+    genre: str | None = Query(None),
+    tag: str | None = Query(None),
+    form: str | None = Query(None),
+) -> dict[str, Any]:
+    """列出语料案例（可按题材/技法标签/形态筛选）。"""
+    from hermes.content_team.creative.corpus import find_cases, load_corpus_index
+
+    cases = find_cases(genre=genre, tag=tag, form=form)
+    return {
+        "total": len(load_corpus_index()),
+        "matched": len(cases),
+        "cases": [c.to_dict() for c in cases],
+    }
+
+
+@templates_router.get("/corpus/{case_id}")
+async def get_corpus_case(case_id: str) -> dict[str, Any]:
+    """获取单个语料案例条目。"""
+    from hermes.content_team.creative.corpus import get_case
+
+    case = get_case(case_id)
+    if case is None:
+        raise HTTPException(status_code=404, detail="Corpus case not found")
+    return case.to_dict()

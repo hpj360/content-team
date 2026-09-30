@@ -89,3 +89,21 @@ def test_summarize_empty():
 def test_draft_metrics_serializable():
     m = DraftMetrics(topic_id="t", variant_id="v")
     assert m.to_dict()["topic_id"] == "t"
+
+
+def test_parse_judge_score():
+    from hermes.content_team.creative.quality_eval import parse_judge_score
+
+    assert parse_judge_score(["[judge] score=82 verdict=REVISE"]) == 82.0
+    assert parse_judge_score(["建议加强钩子", "[judge] score=89.5 verdict=PASS"]) == 89.5
+    assert parse_judge_score(["没有分数"]) is None
+    assert parse_judge_score([]) is None
+
+
+def test_summarize_judge_averages():
+    from hermes.content_team.creative.quality_eval import summarize_judge
+
+    out = summarize_judge({"v1": [80.0, 70.0], "v2": [90.0], "v3": []})
+    assert out["v1"] == {"n": 2, "avg_judge_score": 75.0}
+    assert out["v2"] == {"n": 1, "avg_judge_score": 90.0}
+    assert out["v3"] == {"n": 0, "avg_judge_score": None}

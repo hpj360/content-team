@@ -111,3 +111,72 @@ async def test_platform_rules_api(client):
     assert "rules" in data and "freshness" in data
     assert data["freshness"]["platforms"]
     assert isinstance(data["freshness"]["stale"], bool)
+
+
+# ---------------------------------------------------------------------------
+# R19 续：语料库索引与引用
+# ---------------------------------------------------------------------------
+
+
+def test_corpus_index_shape_and_files():
+    from hermes.content_team.creative.corpus import CORPUS_DIR, load_corpus_index
+
+    cases = load_corpus_index()
+    assert len(cases) >= 5
+    ids = {c.id for c in cases}
+    assert {"chekhov-chameleon", "luxun-kongyiji", "ohenry-gift",
+            "ibsen-dollhouse", "shortdrama-waimai-example"} <= ids
+    for case in cases:
+        assert case.file and (CORPUS_DIR / case.file).is_file(), f"缺文件 {case.file}"
+        assert case.genres and case.tags and case.summary
+
+
+def test_find_cases_filters():
+    from hermes.content_team.creative.corpus import find_cases
+
+    genting = find_cases(genre="言情")
+    assert any(c.id == "ohenry-gift" for c in genting)
+
+    drama = find_cases(form="short-drama")
+    assert {c.id for c in drama} == {"shortdrama-waimai-example"}
+
+    tagged = find_cases(tag="结尾反转")
+    assert any(c.id == "ohenry-gift" for c in tagged)
+    assert find_cases(genre="不存在") == []
+
+
+def test_corpus_refs_for_text():
+    from hermes.content_team.creative.corpus import corpus_refs_for, get_case
+
+    refs = corpus_refs_for("复仇打脸 都市 短剧 外卖员")
+    assert "shortdrama-waimai-example" in refs
+    assert corpus_refs_for("") == []
+    assert get_case("ohenry-gift") is not None
+    assert get_case("nope") is None
+
+
+async def test_corpus_api(client):
+    resp = await client.get("/api/corpus")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] >= 5 and data["matched"] >= 5
+
+    filtered = await client.get("/api/corpus", params={"genre": "言情"})
+    assert filtered.json()["matched"] >= 1
+
+    one = await client.get("/api/corpus/ibsen-dollhouse")
+    assert one.status_code == 200 and one.json()["form"] == "stage-play"
+    assert (await client.get("/api/corpus/nope")).status_code == 404
+
+
+async def test_beat_planner_includes_corpus_refs():
+    from hermes.content_team.creative.planners import make_beat_sheet_planner
+    from hermes.content_team.models.creative import CreationStage
+
+    class T:
+        title = "外卖员逆袭"
+        description = "复仇打脸，都市短剧"
+
+    plan = await make_beat_sheet_planner()(CreationStage.SCRIPT, {"topic": T()})
+    assert "corpus_refs" in plan
+    assert "shortdrama-waimai-example" in plan["corpus_refs"]

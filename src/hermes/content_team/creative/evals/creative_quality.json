@@ -26,6 +26,22 @@
       "genre": "都市",
       "min_scenes": 3,
       "chars_range": [180, 4000]
+    },
+    {
+      "id": "mecha-trial",
+      "title": "机甲试炼",
+      "description": "军校吊车尾学员在机甲试炼中意外唤醒上古机体，被全班嘲笑后反杀夺冠",
+      "genre": "科幻",
+      "min_scenes": 3,
+      "chars_range": [180, 4000]
+    },
+    {
+      "id": "divorce-lawyer",
+      "title": "离婚律师",
+      "description": "专打离婚官司的女律师，接下前夫委托人的案子，在法庭上揭开对方伪证",
+      "genre": "都市",
+      "min_scenes": 3,
+      "chars_range": [180, 4000]
     }
   ],
   "variants": [

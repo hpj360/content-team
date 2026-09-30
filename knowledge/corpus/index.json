@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-01",
+  "note": "语料库索引：供 planner/模板按题材与技法标签引用；文件均为公版作品的结构化拆解或原创示例。",
+  "cases": [
+    {
+      "id": "chekhov-chameleon",
+      "file": "deconstruction-chekhov-chameleon.md",
+      "title": "变色龙",
+      "author": "契诃夫",
+      "form": "short-story",
+      "genres": ["讽刺", "悬疑", "都市"],
+      "tags": ["单场景", "立场翻转", "对话驱动", "冷收"],
+      "summary": "同一事件在不同信息下被反复重新评价，立场随权力信号三次翻转。"
+    },
+    {
+      "id": "luxun-kongyiji",
+      "file": "deconstruction-luxun-kongyiji.md",
+      "title": "孔乙己",
+      "author": "鲁迅",
+      "form": "short-story",
+      "genres": ["现实主义", "悲剧"],
+      "tags": ["旁观者视角", "识别符复沓", "悲剧留白"],
+      "summary": "用旁观者视角与可重复识别符串起长跨度时间线，终章剥夺识别符完成打击。"
+    },
+    {
+      "id": "ohenry-gift",
+      "file": "deconstruction-ohenry-gift.md",
+      "title": "麦琪的礼物",
+      "author": "欧·亨利",
+      "form": "short-story",
+      "genres": ["言情", "都市"],
+      "tags": ["双向牺牲", "误会反转", "结尾反转"],
+      "summary": "双方各自牺牲最珍视之物为对方买礼物，用结尾反转把'损失'翻成'深情'。"
+    },
+    {
+      "id": "ibsen-dollhouse",
+      "file": "deconstruction-ibsen-dollhouse.md",
+      "title": "玩偶之家",
+      "author": "易卜生",
+      "form": "stage-play",
+      "genres": ["家庭伦理", "现实主义"],
+      "tags": ["三幕结构", "突转", "门响收尾", "觉醒"],
+      "summary": "家庭表象下的债务秘密被揭穿，主角在觉醒中出走；以'关门声'作为终局标点。"
+    },
+    {
+      "id": "shortdrama-waimai-example",
+      "file": "short-drama-example-waimai.md",
+      "title": "外卖员逆袭（单集结构示例）",
+      "author": "content-team 原创示例",
+      "form": "short-drama",
+      "genres": ["复仇打脸", "都市"],
+      "tags": ["3/30/60", "卡点", "单集钩子", "题材模板"],
+      "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。"
+    }
+  ]
+}

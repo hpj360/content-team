@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -112,3 +113,32 @@ def compare_variants(
     for row in rows:
         grouped.setdefault(row.variant_id, []).append(row)
     return {variant: summarize(items) for variant, items in grouped.items()}
+
+
+_JUDGE_SCORE_RE = re.compile(r"score=(-?\d+(?:\.\d+)?)")
+
+
+def parse_judge_score(notes: list[str]) -> float | None:
+    """从 judge 建议中提取 ``[judge] score=NN`` 分数；缺失返回 None。"""
+    for note in notes or []:
+        match = _JUDGE_SCORE_RE.search(str(note))
+        if match:
+            try:
+                return float(match.group(1))
+            except ValueError:
+                return None
+    return None
+
+
+def summarize_judge(scores: dict[str, list[float]]) -> dict[str, dict[str, Any]]:
+    """聚合各变体的 judge 语义分（平均分 / 有效样本数）。"""
+    out: dict[str, dict[str, Any]] = {}
+    for variant, values in scores.items():
+        valid = [v for v in values if v is not None]
+        out[variant] = {
+            "n": len(valid),
+            "avg_judge_score": (
+                round(sum(valid) / len(valid), 1) if valid else None
+            ),
+        }
+    return out

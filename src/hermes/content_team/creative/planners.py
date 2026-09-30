@@ -13,6 +13,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from hermes.content_team.creative.corpus import corpus_refs_for
 from hermes.content_team.creative.state_store import StoryIndex
 from hermes.content_team.models.creative import CreationStage
 
@@ -114,11 +115,16 @@ def make_beat_sheet_planner():
             if keyword and keyword in text:
                 target_scenes, pacing = scenes, hint
                 break
-        return {
+        plan: dict[str, Any] = {
             "target_scenes": target_scenes,
             "pacing_hint": pacing,
             "beat_sheet": "三幕：建置→对抗→转折",
         }
+        # R19：引用命中的拆解案例（让语料结论进入 plan 与 stage_results）
+        refs = corpus_refs_for(text, limit=2)
+        if refs:
+            plan["corpus_refs"] = refs
+        return plan
 
     return planner
 
