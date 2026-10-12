@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +28,7 @@ class CorpusCase:
     tags: list[str]
     summary: str
     file: str
+    foreshadowing_plan: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -54,6 +55,11 @@ def load_corpus_index(path: Path | None = None) -> list[CorpusCase]:
                 tags=[str(t) for t in item.get("tags") or []],
                 summary=str(item.get("summary") or ""),
                 file=str(item.get("file") or ""),
+                foreshadowing_plan=[
+                    dict(p)
+                    for p in item.get("foreshadowing_plan") or []
+                    if isinstance(p, dict)
+                ],
             )
         )
     return cases
@@ -101,3 +107,84 @@ def get_case(case_id: str, path: Path | None = None) -> CorpusCase | None:
         if case.id == case_id:
             return case
     return None
+
+
+def corpus_payload_for(
+    text: str, *, ids: list[str] | None = None, path: Path | None = None
+) -> list[dict[str, Any]]:
+    """返回用于注入生成 prompt 的语料精简负载（摘要 + 技法标签）。"""
+    cases = load_corpus_index(path)
+    wanted = set(ids) if ids else set(corpus_refs_for(text, path=path))
+    payload: list[dict[str, Any]] = []
+    for case in cases:
+        if case.id not in wanted:
+            continue
+        payload.append(
+            {
+                "id": case.id,
+                "title": case.title,
+                "form": case.form,
+                "summary": case.summary,
+                "tags": case.tags,
+            }
+        )
+    return payload
+
+
+def foreshadowing_plan_for(
+    text: str, *, limit: int = 3, path: Path | None = None
+) -> list[dict[str, Any]]:
+    """从命中的语料案例抽取结构化伏笔计划（用于 seed 进 StoryState）。"""
+    wanted = set(corpus_refs_for(text, limit=limit, path=path))
+    plan: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for case in load_corpus_index(path):
+        if case.id not in wanted:
+            continue
+        for item in case.foreshadowing_plan:
+            content = str(item.get("content") or "")
+            if not content or content in seen:
+                continue
+            seen.add(content)
+            plan.append({**item, "source_case": case.id})
+    return plan
+
+
+def reconcile_foreshadowing(
+    plan: list[dict[str, Any]], state_items: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """语料伏笔计划 ↔ StoryState.foreshadowing 对账。
+
+    - ``matched``：计划项在状态卡中找到（按 keyword 或 content 匹配）
+    - ``missing``：计划有、状态卡无（应 seed 或补登记）
+    - ``unplanned``：状态卡有、计划无（作者自加，非错误）
+    """
+    state_keys = set()
+    for item in state_items or []:
+        for key in ("keyword", "content"):
+            value = str(item.get(key) or "").strip()
+            if value:
+                state_keys.add(value)
+    matched: list[str] = []
+    missing: list[str] = []
+    for item in plan or []:
+        key = str(item.get("keyword") or item.get("content") or "").strip()
+        (matched if key in state_keys else missing).append(key or "(空)")
+    planned_keys = {
+        str(item.get("keyword") or item.get("content") or "").strip()
+        for item in plan or []
+    }
+    unplanned = [
+        str(item.get("id") or item.get("content") or "")
+        for item in state_items or []
+        if str(item.get("keyword") or item.get("content") or "").strip()
+        not in planned_keys
+    ]
+    return {
+        "matched": matched,
+        "missing": missing,
+        "unplanned": unplanned,
+        "coverage": (
+            round(len(matched) / len(plan), 3) if plan else None
+        ),
+    }

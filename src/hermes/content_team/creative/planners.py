@@ -13,7 +13,10 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from hermes.content_team.creative.corpus import corpus_refs_for
+from hermes.content_team.creative.corpus import (
+    corpus_refs_for,
+    foreshadowing_plan_for,
+)
 from hermes.content_team.creative.state_store import StoryIndex
 from hermes.content_team.models.creative import CreationStage
 
@@ -103,25 +106,36 @@ def make_beat_sheet_planner():
     async def planner(
         stage: CreationStage, ctx: dict[str, Any]
     ) -> dict[str, Any]:
-        if stage is not CreationStage.SCRIPT:
-            return {}
         topic = ctx.get("topic")
         text = (
             f"{getattr(topic, 'title', '')} {getattr(topic, 'description', '')}"
             f" {ctx.get('genre', '')} {ctx.get('script_type', '')}"
         )
+        refs = corpus_refs_for(text, limit=2)
+
+        if stage is CreationStage.NOVEL:
+            # NOVEL：提供结构化伏笔种子（由 seed_foreshadowing 决定是否落库）
+            seed = foreshadowing_plan_for(text, limit=2)
+            plan: dict[str, Any] = {}
+            if seed:
+                plan["foreshadowing_seed"] = seed
+            if refs:
+                plan["corpus_refs"] = refs
+            return plan
+
+        if stage is not CreationStage.SCRIPT:
+            return {}
+
         target_scenes, pacing = 3, "中速：冲突递进，每场价值转折"
         for keyword, scenes, hint in _GENRE_SCENE_HINTS:
             if keyword and keyword in text:
                 target_scenes, pacing = scenes, hint
                 break
-        plan: dict[str, Any] = {
+        plan = {
             "target_scenes": target_scenes,
             "pacing_hint": pacing,
             "beat_sheet": "三幕：建置→对抗→转折",
         }
-        # R19：引用命中的拆解案例（让语料结论进入 plan 与 stage_results）
-        refs = corpus_refs_for(text, limit=2)
         if refs:
             plan["corpus_refs"] = refs
         return plan

@@ -94,6 +94,14 @@ def _build_user_payload(
         payload["retrieval"] = [
             {"title": h.get("title"), "snippet": h.get("snippet")} for h in hits
         ]
+    # R22：把命中语料的摘要/技法注入生成上下文（此前只进 plan 未进 prompt）
+    ref_ids = ctx.get("corpus_refs")
+    if ref_ids:
+        from hermes.content_team.creative.corpus import corpus_payload_for
+
+        corpus = corpus_payload_for("", ids=[str(i) for i in ref_ids])
+        if corpus:
+            payload["corpus_refs"] = corpus
     fp_raw = ctx.get("style_fingerprint")
     if isinstance(fp_raw, dict):
         fp = StyleFingerprint(**{

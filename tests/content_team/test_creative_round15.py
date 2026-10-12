@@ -196,8 +196,10 @@ async def test_beat_sheet_planner_returns_script_params():
     plan = await planner(CreationStage.SCRIPT, {"topic": T()})
     assert plan["target_scenes"] >= 3
     assert "pacing_hint" in plan and "beat_sheet" in plan
-    # 非 SCRIPT 阶段不干预
-    assert await planner(CreationStage.NOVEL, {"topic": T()}) == {}
+    # NOVEL 阶段不返回 SCRIPT 参数（可能含语料 seed/refs）
+    novel_plan = await planner(CreationStage.NOVEL, {"topic": T()})
+    assert "target_scenes" not in novel_plan
+    assert "pacing_hint" not in novel_plan
 
 
 async def test_compose_planners_merges():

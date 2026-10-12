@@ -51,7 +51,12 @@
       "form": "short-drama",
       "genres": ["复仇打脸", "都市"],
       "tags": ["3/30/60", "卡点", "单集钩子", "题材模板"],
-      "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。"
+      "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。",
+      "foreshadowing_plan": [
+        {"id": "W1", "content": "总部为何调监控", "planted_at": "第1章", "planned_resolution": "第3章", "status": "planted", "keyword": "调监控"},
+        {"id": "W2", "content": "云端视频能否被删", "planted_at": "第1章", "planned_resolution": "第2章", "status": "planted", "keyword": "云端"},
+        {"id": "W3", "content": "董事专用桶的主人", "planted_at": "第1章", "planned_resolution": "第6章", "status": "planted", "keyword": "董事专用"}
+      ]
     },
     {
       "id": "chapter-form-wukong",
@@ -81,7 +86,11 @@
       "form": "mystery-game",
       "genres": ["悬疑", "推理"],
       "tags": ["视角分割", "时间线碰撞", "线索链", "信息公平", "反转重估"],
-      "summary": "信息不对称拼图：视角分割 + 线索链 + 反转重估 + 情感还原。"
+      "summary": "信息不对称拼图：视角分割 + 线索链 + 反转重估 + 情感还原。",
+      "foreshadowing_plan": [
+        {"id": "M1", "content": "关键线索指向的第三方", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "线索"},
+        {"id": "M2", "content": "时间线上的矛盾证词", "planted_at": "第2章", "planned_resolution": "第5章", "status": "planted", "keyword": "证词"}
+      ]
     }
   ]
 }

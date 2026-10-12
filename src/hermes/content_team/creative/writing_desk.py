@@ -115,6 +115,24 @@ async def build_writing_desk(
     if error_warnings:
         next_actions.append(f"修复 {len(error_warnings)} 条连续性错误")
 
+    # R22：语料伏笔计划 ↔ 状态卡对账（按题名/简介命中语料案例）
+    from hermes.content_team.creative.corpus import (
+        foreshadowing_plan_for,
+        reconcile_foreshadowing,
+    )
+
+    plan_text = f"{novel.title} {novel.synopsis or ''} {novel.genre or ''}"
+    corpus_plan = foreshadowing_plan_for(plan_text, limit=2)
+    reconciliation = (
+        reconcile_foreshadowing(corpus_plan, state.foreshadowing or [])
+        if corpus_plan
+        else None
+    )
+    if reconciliation and reconciliation.get("missing"):
+        next_actions.append(
+            f"登记 {len(reconciliation['missing'])} 条语料伏笔计划"
+        )
+
     return {
         "novel": {
             "id": str(novel.id),
@@ -130,6 +148,7 @@ async def build_writing_desk(
         "context_card": context_card,
         "pending_foreshadowing": pending_foreshadowing,
         "continuity_warnings": warnings,
+        "corpus_foreshadowing": reconciliation,
         "recent_review": recent_review,
         "next_actions": next_actions,
     }

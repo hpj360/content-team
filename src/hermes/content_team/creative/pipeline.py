@@ -323,7 +323,7 @@ async def _build_novel(
                 "goals": "实现核心目标",
             }
         ],
-        foreshadowing=[],
+        foreshadowing=_foreshadowing_seed(ctx),
         goals={
             "global": "保持人设与世界观一致",
             "volume": f"完成「{topic.title}」首卷冲突闭环",
@@ -385,6 +385,33 @@ async def _resolve_style_fingerprint(
     novel = await db.get(Novel, uuid.UUID(str(novel_id)))
     if novel is not None and novel.style_fingerprint:
         context["style_fingerprint"] = dict(novel.style_fingerprint)
+
+
+def _foreshadowing_seed(ctx: dict[str, Any]) -> list[dict[str, Any]]:
+    """R22：从语料伏笔计划 seed StoryState.foreshadowing（需显式开启）。
+
+    仅当 ``options.seed_foreshadowing=True`` 且规划器给出了
+    ``foreshadowing_seed`` 时落库；默认关闭，避免自动种子未兑现导致门禁误报。
+    """
+    if not ctx.get("seed_foreshadowing"):
+        return []
+    seed = ctx.get("foreshadowing_seed") or []
+    out: list[dict[str, Any]] = []
+    for item in seed:
+        if not isinstance(item, dict):
+            continue
+        out.append(
+            {
+                "id": str(item.get("id") or ""),
+                "content": str(item.get("content") or ""),
+                "planted_at": str(item.get("planted_at") or "第1章"),
+                "planned_resolution": str(item.get("planned_resolution") or ""),
+                "status": str(item.get("status") or "planted"),
+                "keyword": str(item.get("keyword") or ""),
+                "source_case": str(item.get("source_case") or ""),
+            }
+        )
+    return out
 
 
 def _novel_chapter_body(topic: Topic, ctx: dict[str, Any]) -> tuple[str, list[str]]:

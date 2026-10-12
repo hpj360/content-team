@@ -38,10 +38,13 @@ from hermes.content_team.creative.pipeline import (
 from hermes.content_team.creative.corpus import (
     CORPUS_DIR,
     CorpusCase,
+    corpus_payload_for,
     corpus_refs_for,
     find_cases,
+    foreshadowing_plan_for,
     get_case,
     load_corpus_index,
+    reconcile_foreshadowing,
 )
 from hermes.content_team.creative.content_freshness import (
     check_freshness,
@@ -161,6 +164,7 @@ __all__ = [
     "compare_fingerprints",
     "compare_variants",
     "compose_planners",
+    "corpus_payload_for",
     "corpus_refs_for",
     "count_scenes",
     "current_tracker",
@@ -176,6 +180,7 @@ __all__ = [
     "find_tokens",
     "find_cases",
     "fingerprint_to_prompt",
+    "foreshadowing_plan_for",
     "gate_directing",
     "gate_foreshadowing_lifecycle",
     "gate_novel",
@@ -200,6 +205,7 @@ __all__ = [
     "render_retrieval_block",
     "render_run_report",
     "render_template",
+    "reconcile_foreshadowing",
     "review_creation",
     "run_creation",
     "score_reports",

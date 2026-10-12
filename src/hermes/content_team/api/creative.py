@@ -1124,6 +1124,7 @@ class WritingDeskResponse(BaseModel):
     context_card: dict[str, Any]
     pending_foreshadowing: list[dict[str, Any]]
     continuity_warnings: list[dict[str, Any]]
+    corpus_foreshadowing: dict[str, Any] | None = None
     recent_review: dict[str, Any] | None = None
     next_actions: list[str] = Field(default_factory=list)
 

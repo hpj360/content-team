@@ -40,6 +40,7 @@
 | **Round 19** | R15 调优 pass（v1/v2/v3 实网对比→选定 v2）+ R19 语料案例（公版拆解×2 + 失败案例集 + 平台规则时效机制） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 20** | 扩大调优样本（5 选题 × 3 变体 + judge 语义分 → v2 以 89.0 显著领先）+ 语料扩充（公版拆解再 +2、短剧原创示例、机器可读索引与 planner 引用、`GET /api/corpus`） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 21** | 语料范式拓展：章回体动作叙事（参考黑神话悟空）/ 中文商业素描（参考喜人奇妙夜式）/ 剧本杀高分机制；新增素描与悬疑 2 个模板（均方法论级，不复制任何剧本台词） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 22** | 语料注入生成（`corpus_refs` 进入 drafter prompt）+ 伏笔自动对账（语料伏笔计划 seed 进 `StoryState` + 写作台对账报告） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 
 > 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
 
@@ -121,6 +122,13 @@ Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/�
 - **范式拓展（Round 21）**：章回体多卷叙事、中文商业素描（高概念+升级三拍+回调）、
   剧本杀高分机制（视角分割/线索链/信息公平）——**均为方法论级**，不复制任何剧本或台词；
   配套新增 `comedy-sketch-structure`、`mystery-game-outline` 两个可渲染模板。
+- **语料闭环（Round 22）**：
+  - **注入生成**：`_build_user_payload` 现注入 `corpus_refs`（案例摘要+技法标签），
+    拆解结论不再只留痕于 plan，而进入 drafter prompt。
+  - **伏笔对账**：语料案例携带结构化 `foreshadowing_plan`；`foreshadowing_plan_for` 抽取、
+    `reconcile_foreshadowing` 与 `StoryState.foreshadowing` 对账（matched/missing/unplanned/coverage），
+    写作台返回 `corpus_foreshadowing` 并提示补登记；`options.seed_foreshadowing=True` 时可自动
+    seed 进状态卡（默认关闭，避免未兑现种子触发门禁误报）。
 - **平台规则时效机制**：`data/platform_rules.json`（版本化快照）+ `content_freshness.py`
   （新鲜度检查 / 更新盖章）+ `GET /api/platform-rules`；过期规则可被工作台与编导方案提示。
 
