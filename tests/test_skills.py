@@ -73,9 +73,19 @@ def test_discover_skills_handles_missing_dir(monkeypatch, tmp_path) -> None:
 
 
 def test_discover_skills_count_matches_manifest() -> None:
-    # 33 original + 12 mattpocock - 2 merged (pskoett dup, product-manager-skills merged) = 43 (v0.7.0).
-    # +1 grounded-citations skill added after v0.7.0 → 44.
-    assert len(discover_skills()) == 44
+    # 本项目为 hermes fork：技能清单以 manifest.json 为准（含归档），
+    # 不再断言历史魔数（44）；改为校验"manifest 活跃技能均在磁盘可发现"。
+    import json
+
+    manifest = json.loads(
+        (Path(__file__).resolve().parents[1] / "manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    discovered = {info.name for info in discover_skills()}
+    missing = [name for name in manifest.get("skills", []) if name not in discovered]
+    assert missing == [], f"manifest 列出但磁盘缺失: {missing}"
+    assert len(discovered) >= len(manifest.get("skills", []))
 
 
 # ---------------------------------------------------------------------------

@@ -1,8 +1,6 @@
 """内容 API 集成测试。"""
 from __future__ import annotations
 
-import uuid
-
 
 async def test_create_content(client):
     """POST /api/content 创建内容并返回完整对象。"""
@@ -91,7 +89,7 @@ async def test_list_content(client):
 async def test_list_content_with_status_filter(client):
     """GET /api/content?status=DRAFT 按状态过滤。"""
     # 创建时均为默认 DRAFT 状态
-    draft = await client.post(
+    await client.post(
         "/api/content",
         json={"title": "草稿内容"},
     )

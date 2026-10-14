@@ -43,6 +43,10 @@ class TestIsAvailable:
         client = SkillUpClient()
         assert client.is_available() is True
 
+    @pytest.mark.skipif(
+        __import__("os").name == "nt",
+        reason="POSIX 可执行位（chmod X_OK）在 Windows 无意义",
+    )
     def test_explicit_path_checks_executable_bit(self, tmp_path):
         # Non-executable file
         non_exec = tmp_path / "skill-up"

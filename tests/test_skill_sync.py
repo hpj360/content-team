@@ -128,6 +128,10 @@ def test_compute_hash_differs_for_different_content(tmp_path: Path) -> None:
 # ── add_skill ───────────────────────────────────────────────────────
 
 
+@pytest.mark.skipif(
+    __import__("os").name == "nt",
+    reason="Windows 默认禁止创建符号链接（需管理员/开发者模式），symlink 模式不可测",
+)
 def test_add_skill_symlink_mode(sync_env: types.SimpleNamespace) -> None:
     """symlink 模式：在 agent 目录创建指向中心仓库的 symlink。"""
     _make_skill(sync_env.central, "wechat-reader")
@@ -270,6 +274,10 @@ def test_sync_all_skills(sync_env: types.SimpleNamespace) -> None:
 # ── get_status ──────────────────────────────────────────────────────
 
 
+@pytest.mark.skipif(
+    __import__("os").name == "nt",
+    reason="依赖 symlink 链接态；Windows 无符号链接权限时 state 记为 copied",
+)
 def test_get_status_shows_managed_and_unmanaged(
     sync_env: types.SimpleNamespace,
 ) -> None:

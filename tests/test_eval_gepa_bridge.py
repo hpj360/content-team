@@ -290,7 +290,8 @@ class TestMakeEvaluator:
         evaluator(variant, "task", "context")
 
         assert captured[0] == variant
-        assert fake_runner.run_calls[0]["skill_dir"] == "/skills/foo"
+        # 路径比较用 Path 归一化（Windows 分隔符为 \）
+        assert Path(fake_runner.run_calls[0]["skill_dir"]) == Path("/skills/foo")
 
     def test_evaluator_task_and_context_ignored_in_run_call(self, fake_runner):
         """GEPA passes task/context but runner.run doesn't use them (info only)."""

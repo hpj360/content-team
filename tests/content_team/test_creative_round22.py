@@ -12,7 +12,7 @@ from hermes.content_team.creative.corpus import (
     reconcile_foreshadowing,
 )
 from hermes.content_team.creative.planners import make_beat_sheet_planner
-from hermes.content_team.models.creative import CreationStage, StoryState
+from hermes.content_team.models.creative import CreationStage
 
 from tests.content_team._fakes import FakeLlmClient
 

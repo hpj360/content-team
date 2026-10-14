@@ -7,6 +7,22 @@ from pathlib import Path
 
 import pytest
 
+# ---------------------------------------------------------------------------
+# 归档 skill 陈旧测试隔离（R24 技术债清理）
+#
+# 本项目自 hermes fork 后**有意归档**了设计/UI 类 skill（见 manifest.skills_archived），
+# 其脚本已从磁盘移除，但仓库仍残留针对这些 skill 的测试（数量约占历史失败的全部）。
+# 这些测试编码的是"归档前"的仓库快照，与本项目当前形态无关，故在收集阶段隔离；
+# 文件保留在原处以备将来恢复归档 skill 时复用。
+# ---------------------------------------------------------------------------
+
+collect_ignore_glob = [
+    "skills/*",  # 归档 skill 的脚本测试（figma_reader/ui_design_system/...）
+    "test_mattpocock_skills.py",
+    "test_grounded_citations_skill.py",
+    "test_skill_consolidation.py",  # 断言归档/合并前的技能清单
+]
+
 
 @pytest.fixture
 def reset_settings() -> Iterator[None]:
