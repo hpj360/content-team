@@ -59,8 +59,10 @@ from hermes.content_team.creative.cost import (
 )
 from hermes.content_team.creative.judges import (
     RUBRICS,
+    build_judge,
     judge_report,
     make_checklist_critic,
+    make_cross_provider_judge,
     make_llm_judge,
 )
 from hermes.content_team.creative.planners import (
@@ -158,6 +160,7 @@ __all__ = [
     "assemble_content_body",
     "available_variants",
     "build_default_pipeline",
+    "build_judge",
     "build_llm_revise_fn",
     "build_writing_desk",
     "check_freshness",
@@ -196,6 +199,7 @@ __all__ = [
     "load_quality_evals",
     "make_beat_sheet_planner",
     "make_checklist_critic",
+    "make_cross_provider_judge",
     "make_llm_drafter",    "make_llm_judge",
     "make_llm_reviser",
     "make_retrieval_planner",

@@ -169,3 +169,47 @@ def _judge_call(client: Any, messages: list[Any]) -> dict[str, Any]:
     from hermes.content_team.creative.llm_io import chat_json_safe
 
     return chat_json_safe(client, messages, max_tokens=1024, retries=2, role="judge")
+
+
+def make_cross_provider_judge(
+    provider: str | None = None,
+    model: str | None = None,
+    *,
+    settings: Any | None = None,
+    rubrics: dict[CreationStage, list[str]] | None = None,
+):
+    """用**不同 provider** 构造 judge，消除同源偏好（R23）。
+
+    缺省从 ``CONTENT_TEAM_JUDGE_PROVIDER`` / ``CONTENT_TEAM_JUDGE_MODEL`` 读取；
+    未配置时返回 None（调用方回退同源 judge）。
+    """
+    import os as _os
+
+    resolved_provider = provider or _os.environ.get("CONTENT_TEAM_JUDGE_PROVIDER")
+    if not resolved_provider:
+        return None
+    resolved_model = model or _os.environ.get("CONTENT_TEAM_JUDGE_MODEL")
+    from hermes.workbench.llm import make_llm_client
+
+    client = make_llm_client(
+        provider=resolved_provider, model=resolved_model, settings=settings
+    )
+    return make_llm_judge(client, rubrics=rubrics)
+
+
+def build_judge(
+    *,
+    provider: str | None = None,
+    model: str | None = None,
+    settings: Any | None = None,
+    rubrics: dict[CreationStage, list[str]] | None = None,
+):
+    """统一入口：优先跨 provider；未配置则回退默认 client（同源）。"""
+    cross = make_cross_provider_judge(
+        provider, model, settings=settings, rubrics=rubrics
+    )
+    if cross is not None:
+        return cross
+    from hermes.workbench.llm import make_llm_client
+
+    return make_llm_judge(make_llm_client(settings=settings), rubrics=rubrics)

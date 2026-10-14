@@ -97,9 +97,10 @@ _GENRE_SCENE_HINTS: tuple[tuple[str, int, str], ...] = (
 )
 
 
-def make_beat_sheet_planner():
+def make_beat_sheet_planner(*, include_corpus: bool = True):
     """默认节奏规划器：依据选题题材给出剧本类型/场景数/节奏提示。
 
+    ``include_corpus=False`` 时不引用语料案例（用于对照实验：语料注入是否有效）。
     纯规则、零成本；LLM 版规划器可另行注入覆盖。
     """
 
@@ -111,11 +112,11 @@ def make_beat_sheet_planner():
             f"{getattr(topic, 'title', '')} {getattr(topic, 'description', '')}"
             f" {ctx.get('genre', '')} {ctx.get('script_type', '')}"
         )
-        refs = corpus_refs_for(text, limit=2)
+        refs = corpus_refs_for(text, limit=2) if include_corpus else []
 
         if stage is CreationStage.NOVEL:
             # NOVEL：提供结构化伏笔种子（由 seed_foreshadowing 决定是否落库）
-            seed = foreshadowing_plan_for(text, limit=2)
+            seed = foreshadowing_plan_for(text, limit=2) if include_corpus else []
             plan: dict[str, Any] = {}
             if seed:
                 plan["foreshadowing_seed"] = seed

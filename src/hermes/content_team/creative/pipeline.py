@@ -625,6 +625,7 @@ async def run_creation(
     memory: Any | None = None,
     budget_tokens: int | None = None,
     default_roles: bool = True,
+    corpus_injection: bool = True,
 ) -> CreationRun:
     """执行创作管线并在提供 ``memory`` 时记账（C1 · 跨 run 学习地基）。
 
@@ -647,6 +648,7 @@ async def run_creation(
             roles=roles,
             retrieval=retrieval,
             default_roles=default_roles,
+            corpus_injection=corpus_injection,
         )
     finally:
         reset_tracker(token)
@@ -708,6 +710,7 @@ async def _execute_creation(
     roles: StageRoles | None = None,
     retrieval: bool = True,
     default_roles: bool = True,
+    corpus_injection: bool = True,
 ) -> CreationRun:
     """执行一次创作管线并落库为 ``CreationRun``。
 
@@ -740,7 +743,7 @@ async def _execute_creation(
     # 默认角色组：节奏规划（R17）+ 一致性检索（A1）+ 清单评议（R17）
     effective_roles = roles
     if effective_roles is None and default_roles:
-        planner_fns = [make_beat_sheet_planner()]
+        planner_fns = [make_beat_sheet_planner(include_corpus=corpus_injection)]
         if retrieval:
             planner_fns.append(make_retrieval_planner(db))
         effective_roles = StageRoles(
