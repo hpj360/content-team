@@ -122,11 +122,13 @@ def test_corpus_index_shape_and_files():
     from hermes.content_team.creative.corpus import CORPUS_DIR, load_corpus_index
 
     cases = load_corpus_index()
-    assert len(cases) >= 8
+    assert len(cases) >= 11
     ids = {c.id for c in cases}
     assert {"chekhov-chameleon", "luxun-kongyiji", "ohenry-gift",
             "ibsen-dollhouse", "shortdrama-waimai-example",
-            "chapter-form-wukong", "comedy-sketch", "mystery-game"} <= ids
+            "chapter-form-wukong", "comedy-sketch", "mystery-game",
+            "maupassant-necklace", "sophocles-oedipus",
+            "poe-telltale-heart"} <= ids
     for case in cases:
         assert case.file and (CORPUS_DIR / case.file).is_file(), f"缺文件 {case.file}"
         assert case.genres and case.tags and case.summary

@@ -65,7 +65,7 @@ description: 分镜设计。当用户要把剧本转成分镜、拆镜头，或�
 ## 方法论参考（按需加载）
 
 - `references/storyboard-method.md` — 分镜方法论：段→镜→分镜图三级结构、4C 原则、Beat Board/Sequence Board、轴线与景别规则、时长切点对账、一致性锚点。
-- `references/shot-patterns.md` — 场景类型镜头序列模式库：对话/追逐/情绪/开场四类标准序列（含景别运镜时长与调节参数）。
+- `references/shot-patterns.md` — 场景类型镜头序列模式库：对话/追逐/情绪/开场/打斗/恐怖/爱情七类标准序列（含景别运镜时长与调节参数）。
 - `references/continuity-anchor-examples.md` — 一致性锚点实例库：canonical description 写法正反例、光色锚点表、识别符词表与锚点包 YAML 模板。
 
 在拆镜头、套用模式或做提示词对账阶段读取。

@@ -253,7 +253,18 @@ def test_list_templates_includes_builtins():
     ids = {t.id for t in templates}
     assert {"novel-golden-three", "short-drama-episode-8beat",
             "storyboard-dialogue-scene", "directing-style-pack-starter",
-            "comedy-sketch-structure", "mystery-game-outline"} <= ids
+            "comedy-sketch-structure", "mystery-game-outline",
+            "worldbuilding-sheet", "character-profile",
+            "series-episode-outline"} <= ids
+
+
+def test_render_content_templates():
+    world = render_template("worldbuilding-sheet", {"世界名": "雾港", "核心规则": "记忆可交易"})
+    assert "《雾港》" in world and "记忆可交易" in world
+    char = render_template("character-profile", {"姓名": "李默", "定位": "主角"})
+    assert "【李默】" in char and "四维状态" in char
+    series = render_template("series-episode-outline", {"系列名": "逆袭", "总集数": 12})
+    assert "《逆袭》" in series and "12" in series
 
 
 def test_render_new_templates():

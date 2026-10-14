@@ -98,11 +98,65 @@
 - **反例**：不是堆满 UI 与全息投影。硬核科幻靠**功能可见**（每束光/每个接口有用途），
   而非装饰性炫技。与 cyberpunk 的区别：本包不默认雨夜霓虹。
 
-## 选用与组合规则（补充）
+## 10 纪录片写实
 
+```yaml
+风格参数:
+  lens_kit_mm: [35, 85]
+  allowed_moves: [handheld, follow, static]
+  forbidden_moves: [crane, snap_zoom]
+  motion_budget: medium
+  key_light_ratio: "2:1"
+  palette: ["自然光", "环境原色", "低饱和"]
+  avg_shot_length_s: 4.5
+  sound_policy: "同期声优先，无配乐；保留环境瑕疵"
+  negative_prompt_additions: ["studio_lighting", "perfect_composition", "soundtrack"]
+```
+
+- **机制**：自然光 + 跟拍 + 同期声 → "未经编排"的可信感。
+- **反例**：不是"晃=真实"。手持只用于跟随动作，不制造焦虑；构图仍需可读。
+
+## 11 黑色喜剧
+
+```yaml
+风格参数:
+  lens_kit_mm: [28, 50]
+  allowed_moves: [static, slow_push]
+  forbidden_moves: [whip_pan]
+  motion_budget: low
+  key_light_ratio: "8:1"
+  palette: ["冷灰", "芥末黄", "血锈红点"]
+  avg_shot_length_s: 3.5
+  sound_policy: "轻松配乐与残酷画面对位（反差）；音效克制"
+  negative_prompt_additions: ["slapstick", "bright_cheerful", "fast_cut"]
+```
+
+- **机制**：冷调 + 轻配乐 + 残酷内容 → 反差产生"笑着发冷"。
+- **反例**：不是"把悲剧拍搞笑"。表演保持克制写实，荒诞来自处境而非表情。
+
+## 12 职场都市
+
+```yaml
+风格参数:
+  lens_kit_mm: [35, 65]
+  allowed_moves: [static, lateral_track, slow_push]
+  forbidden_moves: [crane, handheld_shake]
+  motion_budget: low
+  key_light_ratio: "5:1"
+  palette: ["玻璃青", "冷白", "高级灰"]
+  avg_shot_length_s: 3.5
+  sound_policy: "键盘/空调/电梯提示音作节拍；配乐冷感合成器"
+  negative_prompt_additions: ["warm_cozy", "nature_light", "romantic_glow"]
+```
+
+- **机制**：冷白 + 玻璃反光 + 低运动 → 秩序感与疏离（职场的"体面"）。
+- **反例**：不是"办公室随手拍"。要用几何秩序（隔间/玻璃/会议桌对称）承载权力关系。
+
+## 选用与组合规则（补充）
 1. **类型即节奏**：喜剧 2s 均长、悬疑 5s、古装 5.5s——均长本身就是类型信号。
 2. **不要跨包混用**：喜剧切悬疑时，直接换包（视听突变即类型转换的标点）。
-3. 与前 4 包（写实/霓虹黑色/武侠写意/家庭剧情）合计 **9 包**，覆盖主流类型。
+3. 与本库 8 包（悬疑/喜剧/青春/古装/科幻/纪录片写实/黑色喜剧/职场都市）+ 基础 4 包
+   合计 **12 包**，覆盖主流类型与题材。
 4. 出口双门不放宽：风格包只覆盖默认值，不豁免 `dramaturgy-gate.md` 的六点检查。
 
 ## 与本项目集成

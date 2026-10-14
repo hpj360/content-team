@@ -91,6 +91,36 @@
         {"id": "M1", "content": "关键线索指向的第三方", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "线索"},
         {"id": "M2", "content": "时间线上的矛盾证词", "planted_at": "第2章", "planned_resolution": "第5章", "status": "planted", "keyword": "证词"}
       ]
+    },
+    {
+      "id": "maupassant-necklace",
+      "file": "deconstruction-maupassant-necklace.md",
+      "title": "项链",
+      "author": "莫泊桑",
+      "form": "short-story",
+      "genres": ["现实主义", "都市", "言情"],
+      "tags": ["欲望代价", "假象道具", "时间跳跃", "结尾反转"],
+      "summary": "欲望招致意外，十年偿还后反转揭示代价本可避免。"
+    },
+    {
+      "id": "sophocles-oedipus",
+      "file": "deconstruction-sophocles-oedipus.md",
+      "title": "俄狄浦斯王",
+      "author": "索福克勒斯",
+      "form": "stage-play",
+      "genres": ["悬疑", "悲剧", "古典"],
+      "tags": ["调查即自证", "命运反讽", "线索链", "象征动作"],
+      "summary": "调查者即被调查对象，努力本身加速厄运，以自惩收束。"
+    },
+    {
+      "id": "poe-telltale-heart",
+      "file": "deconstruction-poe-telltale-heart.md",
+      "title": "泄密的心",
+      "author": "爱伦·坡",
+      "form": "short-story",
+      "genres": ["恐怖", "悬疑"],
+      "tags": ["不可靠叙述", "感官放大", "声音恐怖", "得意即伏笔"],
+      "summary": "不可靠叙述者的自白，以感官失控（幻听）驱动崩溃与自首。"
     }
   ]
 }

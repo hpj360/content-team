@@ -64,6 +64,8 @@ description: 小说创作。当用户要构思、写作、续写、改写或评�
 - `references/hook-library.md` — 章尾钩子 13 式**实例库**：每式定义/示例句/误用 + 全书排布与防疲劳规则。
 - `references/case-breakdown.md` — 拆文工作流：五步拆解法、节奏条统计（压:爆比）、剧情模块库、拆文报告模板。
 - `references/genre-playbooks.md` — 题材手册：七题材的读者期待×爽点节奏×开篇套路×雷区，附 `Novel.genre` 与状态卡映射。
+- `references/worldbuilding-guide.md` — 世界观设定指南：五层结构（规则/势力/地理/经济/历史）与"规则即代价"三原则。
+- `references/character-bible.md` — 人物档案与关系网：档案模板、四维状态、三线关系网、对手三要素。
 
 仅在进入对应阶段（开篇设计 / 状态维护 / 章尾收束 / 拆文对标）时读取，避免上下文膨胀。
 

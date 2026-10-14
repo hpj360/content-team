@@ -83,6 +83,7 @@ description: 剧本创作。当用户要写、改、评估剧本，或提到"剧
 - `references/dialogue-examples.md` — 台词改造实例库：8 组病症 bad→good 对照 + 四步改造流程。
 - `references/beat-sheets.md` — 节拍表模板：三幕 15 拍（含整季映射实例）+ 微短剧单集 8 拍（含时长分配与折算）。
 - `references/short-drama-genres.md` — 短剧题材库：六大题材的单集钩子/爽点链/反派配置/雷区 + 单集设计模板。
+- `references/scene-writing-drills.md` — 场景写作练习库：八类场景（冲突/揭示/追逐/情感/喜剧/悬疑/建置/过渡）的写法与改写要点。
 
 仅在撰写对应类型或打磨对应环节时读取。
 
