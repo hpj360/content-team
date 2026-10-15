@@ -255,7 +255,10 @@ def test_list_templates_includes_builtins():
             "storyboard-dialogue-scene", "directing-style-pack-starter",
             "comedy-sketch-structure", "mystery-game-outline",
             "worldbuilding-sheet", "character-profile",
-            "series-episode-outline"} <= ids
+            "series-episode-outline", "stage-play-script",
+            "variety-script", "oral-broadcast-script",
+            "audio-drama-script", "interactive-node-script",
+            "documentary-script", "jubensha-character-book"} <= ids
 
 
 def test_render_content_templates():

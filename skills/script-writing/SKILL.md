@@ -87,6 +87,8 @@ description: 剧本创作。当用户要写、改、评估剧本，或提到"剧
 - `references/screenplay-formats.md` — 剧本形态格式规范：电影/短剧/微短剧/舞台/综艺/口播/广播剧/漫剧/广告 九类规范与模板。
 - `references/adaptation-guide.md` — 改编方法论：改编转换矩阵（小说/真实事件/IP/游戏→各形态）+ 小说→剧本六步 + 长篇→短剧压缩法。
 - `references/variety-and-broadcast.md` — 非叙事脚本：综艺台本/口播脚本/广播剧脚本的写法与自检。
+- `references/interactive-and-game-script.md` — 互动剧/游戏分支脚本：节点图、选项与变量、多结局判定、对白表格化。
+- `references/documentary-musical-immersive.md` — 纪录片三栏脚本 / 音乐剧（唱词与台词分工）/ 沉浸式与剧本杀（角色本+线索卡+DM 手册）。
 
 仅在撰写对应类型或打磨对应环节时读取。
 

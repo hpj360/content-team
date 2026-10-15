@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 64 |
-| 语料案例 | 22 |
+| 技能方法论（references） | 66 |
+| 语料案例 | 26 |
 | 知识沉淀 | 15 |
-| 写作模板 | 16 |
-| **合计** | **142** |
+| 写作模板 | 19 |
+| **合计** | **151** |
 
 ## 创作技能
 
@@ -84,6 +84,8 @@
 - **剧本形态格式规范（九类）** — `skills/script-writing/references/screenplay-formats.md` · `script-writing、screenplay、formats`
 - **改编方法论（源 → 目标形态）** — `skills/script-writing/references/adaptation-guide.md` · `script-writing、adaptation、guide`
 - **综艺台本 / 口播 / 广播剧（非叙事脚本写法）** — `skills/script-writing/references/variety-and-broadcast.md` · `script-writing、variety、and、broadcast`
+- **互动剧 / 游戏分支脚本（形态深度）** — `skills/script-writing/references/interactive-and-game-script.md` · `script-writing、interactive、and、game`
+- **纪录片 / 音乐剧 / 沉浸式脚本（形态深度）** — `skills/script-writing/references/documentary-musical-immersive.md` · `script-writing、documentary、musical、immersive`
 - **场景类型标准镜头序列（模式库）** — `skills/storyboarding/references/shot-patterns.md` · `storyboarding、shot、patterns`
 - **声音与剪辑手艺** — `skills/directing/references/sound-and-edit-craft.md` · `directing、sound、and、edit`
 - **失败案例手册（F 编码 × 完整案例）** — `skills/directing/references/failure-casebook.md` · `directing、failure、casebook`
@@ -132,6 +134,10 @@
 - **项链** — `knowledge/corpus/deconstruction-maupassant-necklace.md` · `欲望代价、假象道具、时间跳跃、结尾反转`
 - **题材案例对照集（按题材横向对比）** — `knowledge/corpus/genre-comparison.md` · `corpus、genre、comparison`
 - **麦琪的礼物** — `knowledge/corpus/deconstruction-ohenry-gift.md` · `双向牺牲、误会反转、结尾反转、言情`
+- **基督山伯爵** — `knowledge/corpus/deconstruction-dumas-monte-cristo.md` · `复仇范式、马甲分层、延迟满足、蛰伏得道`
+- **福尔摩斯探案** — `knowledge/corpus/deconstruction-doyle-holmes.md` · `单元剧系列化、双人组合、稳定模板、复盘揭示`
+- **海底两万里** — `knowledge/corpus/deconstruction-verne-twenty-thousand-leagues.md` · `奇观悬念双引擎、强制进入新世界、知识型爽感、谜挂人物`
+- **西游记** — `knowledge/corpus/deconstruction-wu-journey-west.md` · `任务型单元剧、群像分工、反派分层、背景即爽点`
 
 ## 知识沉淀
 
@@ -169,3 +175,6 @@
 - **综艺台本** — `GET /api/templates/variety-script` · `script、节目名、期数、本期主题`
 - **口播脚本** — `GET /api/templates/oral-broadcast-script` · `script、主题、钩子、承诺`
 - **广播剧脚本** — `GET /api/templates/audio-drama-script` · `script、场景、角色A、角色B`
+- **互动剧节点脚本** — `GET /api/templates/interactive-node-script` · `script、剧名、节点号、地点`
+- **纪录片三栏脚本** — `GET /api/templates/documentary-script` · `script、片名、主题`
+- **剧本杀角色本/线索卡** — `GET /api/templates/jubensha-character-book` · `script、剧本名、角色名、身份`

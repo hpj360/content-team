@@ -181,6 +181,46 @@
       "genres": ["现实主义", "象征"],
       "tags": ["双线并置", "象征蒙太奇", "看客群像", "冷收留白"],
       "summary": "双线在结尾同一空间交汇，以象征物承载主题，冷收留一线微光。"
+    },
+    {
+      "id": "dumas-monte-cristo",
+      "file": "deconstruction-dumas-monte-cristo.md",
+      "title": "基督山伯爵",
+      "author": "大仲马",
+      "form": "novel",
+      "genres": ["复仇", "都市", "爽文"],
+      "tags": ["复仇范式", "马甲分层", "延迟满足", "蛰伏得道"],
+      "summary": "复仇爽文鼻祖：极端失去→蛰伏得道→身份反差→逐个清算→宽恕余味。"
+    },
+    {
+      "id": "doyle-holmes",
+      "file": "deconstruction-doyle-holmes.md",
+      "title": "福尔摩斯探案",
+      "author": "柯南·道尔",
+      "form": "short-story-series",
+      "genres": ["悬疑", "推理", "单元剧"],
+      "tags": ["单元剧系列化", "双人组合", "稳定模板", "复盘揭示"],
+      "summary": "单元剧爆款原型：固定结构模板+可变案件，主角魅力跨篇累积即 IP。"
+    },
+    {
+      "id": "verne-twenty-thousand-leagues",
+      "file": "deconstruction-verne-twenty-thousand-leagues.md",
+      "title": "海底两万里",
+      "author": "儒勒·凡尔纳",
+      "form": "novel",
+      "genres": ["科幻", "冒险"],
+      "tags": ["奇观悬念双引擎", "强制进入新世界", "知识型爽感", "谜挂人物"],
+      "summary": "类型启蒙爆款：奇观序列+人物之谜双引擎，知识穿插形成知识型爽感。"
+    },
+    {
+      "id": "wu-journey-west",
+      "file": "deconstruction-wu-journey-west.md",
+      "title": "西游记",
+      "author": "吴承恩",
+      "form": "chapter-novel",
+      "genres": ["玄幻", "神话", "章回体"],
+      "tags": ["任务型单元剧", "群像分工", "反派分层", "背景即爽点"],
+      "summary": "章回体爆款范式：任务锚+单元历险+群像分工+背景揭秘反转。"
     }
   ]
 }
