@@ -67,6 +67,7 @@ description: 编导。当用户需要统筹整部/整季内容的策略与节奏
 - `references/platform-playbooks.md` — 平台特色库：番茄/起点/红果/抖音/小红书/公众号/视频号/B站/知乎/快手/微博 11 平台的格式×字数×节奏×审核×变现 + 发布前检查清单。
 - `references/platform-rule-maintenance.md` — 平台规则维护机制：版本化快照、新鲜度检查（`GET /api/platform-rules`）、更新流程与变更日志模板。
 - `references/platform-structure-templates.md` — 平台爆款结构模板：11 平台各一套可套用骨架（分章/分集/图文/短视频节奏）。
+- `references/series-planning.md` — 系列与连载规划：三层规划、可持续引擎、跨季伏笔/人设管理、节奏总控。
 
 在规划分集节奏、分派验收或组织审查时读取。
 

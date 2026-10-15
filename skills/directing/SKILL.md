@@ -61,7 +61,8 @@ description: 导演。当用户需要确立作品的整体呈现、指导表演�
 - `references/directing-craft.md` — 导演手艺：导演式推理五原则、13 步流水线与 A–J 输出模式、导演书/走位/覆盖、风格镜头参数化、失败编码与成本阶梯。
 - `references/dramaturgy-gate.md` — 戏剧硬门与模型语法：出口双门（六点戏剧检查 + 三细节审计）、S1–S4 提示词形态、能力族适配与一致性锚点。
 - `references/director-style-params.md` — 风格参数实例库：4 个完整风格包（写实/霓虹黑色/武侠写意/家庭剧情）机制说明 + 反例 + 三层覆盖规则。
-- `references/failure-casebook.md` — 失败案例手册：F1–F5 完整案例（症状→机制→修复前后对照）与三振处置流程。
+- `references/failure-casebook.md` — 失败案例手册：F1–F10 完整案例（症状→机制→修复前后对照）与三振处置流程。
+- `references/sound-and-edit-craft.md` — 声音与剪辑手艺：声音三层、音效即标点、剪辑四参数、五种转场工程。
 - `references/style-pack-library.md` — 风格包扩充库：悬疑/喜剧/青春/古装/科幻/纪录片写实/黑色喜剧/职场都市 8 个类型化风格包（YAML + 机制 + 反例），与基础 4 包合计 12 包。
 
 在出导演阐述、选定风格包或诊断生成失败时读取。

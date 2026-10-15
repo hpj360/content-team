@@ -1302,3 +1302,55 @@ async def get_corpus_case(case_id: str) -> dict[str, Any]:
     if case is None:
         raise HTTPException(status_code=404, detail="Corpus case not found")
     return case.to_dict()
+
+
+# ---------------------------------------------------------------------------
+# 知识库索引与检索（R28）
+# ---------------------------------------------------------------------------
+
+
+class KnowledgeEntryResponse(BaseModel):
+    """知识资产条目响应体。"""
+
+    id: str
+    category: str
+    title: str
+    path: str
+    summary: str = ""
+    tags: list[str] = Field(default_factory=list)
+    skill: str = ""
+
+
+@templates_router.get("/knowledge", response_model=list[KnowledgeEntryResponse])
+async def list_knowledge(category: str | None = Query(None)) -> list[dict[str, Any]]:
+    """列出知识资产（可按 category 过滤：skill/skill-reference/corpus/knowledge/template）。"""
+    from hermes.content_team.creative.knowledge_base import build_knowledge_index
+
+    entries = build_knowledge_index()
+    if category:
+        entries = [e for e in entries if e.category == category]
+    return [e.to_dict() for e in entries]
+
+
+@templates_router.get("/knowledge/search")
+async def search_knowledge_assets(
+    q: str = Query(..., min_length=1, max_length=100),
+    category: str | None = Query(None),
+    limit: int = Query(default=10, ge=1, le=50),
+) -> dict[str, Any]:
+    """检索知识资产（标题/标签/摘要/路径打分）。"""
+    from hermes.content_team.creative.knowledge_base import search_knowledge
+
+    results = search_knowledge(q, category=category, limit=limit)
+    return {"query": q, "matched": len(results), "results": results}
+
+
+@templates_router.get("/knowledge/index")
+async def knowledge_index_markdown() -> Response:
+    """生成知识库总目录（Markdown）。"""
+    from hermes.content_team.creative.knowledge_base import render_index_markdown
+
+    return Response(
+        content=render_index_markdown(),
+        media_type="text/markdown; charset=utf-8",
+    )

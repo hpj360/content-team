@@ -65,6 +65,12 @@ from hermes.content_team.creative.judges import (
     make_cross_provider_judge,
     make_llm_judge,
 )
+from hermes.content_team.creative.knowledge_base import (
+    KnowledgeEntry,
+    build_knowledge_index,
+    render_index_markdown,
+    search_knowledge,
+)
 from hermes.content_team.creative.planners import (
     RETRIEVAL_KEY,
     compose_planners,
@@ -134,6 +140,7 @@ __all__ = [
     "DRAFTER_CONTRACTS",
     "DEFAULT_VARIANT",
     "GOAL_LEVELS",
+    "KnowledgeEntry",
     "MAX_LOGLINE_CHARS",
     "MIN_SCENES",
     "REVIEW_PASS_SCORE",
@@ -161,6 +168,7 @@ __all__ = [
     "available_variants",
     "build_default_pipeline",
     "build_judge",
+    "build_knowledge_index",
     "build_llm_revise_fn",
     "build_writing_desk",
     "check_freshness",
@@ -206,6 +214,7 @@ __all__ = [
     "make_script_drafter",
     "measure_draft",
     "publish_creation_run",
+    "render_index_markdown",
     "render_retrieval_block",
     "render_run_report",
     "render_template",
@@ -213,6 +222,7 @@ __all__ = [
     "review_creation",
     "run_creation",
     "score_reports",
+    "search_knowledge",
     "set_tracker",
     "summarize",
     "update_rules",
