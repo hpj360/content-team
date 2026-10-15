@@ -30,12 +30,14 @@ py -3.12 -m ruff check --isolated --select E4,E7,E9,F --line-length 100 src/herm
 - 收集阶段隔离（`tests/conftest.py::collect_ignore_glob`）：
   `tests/skills/*`、`test_mattpocock_skills.py`、`test_grounded_citations_skill.py`、
   `test_skill_consolidation.py` —— 均为 **fork 前归档 skill 的陈旧测试**，与本项目形态无关。
+- Windows 下整体跳过 `tests/workbench/`（`tests/workbench/conftest.py`）：
+  该目录验证继承自 hermes 的运行时（并发写入/线程池/端口探测/递归深度等），
+  在 Windows 上时序普遍偶发、每轮失败项不同；**非 Windows（含 CI）完整运行**。
 - 条件跳过：
   - `tests/test_skill_sync.py` 2 例（Windows 无符号链接权限）
+  - `tests/test_eval_client.py::...::test_explicit_path_checks_executable_bit`（POSIX 可执行位）
   - `tests/workbench/test_server.py::test_tasks_create_and_run`（workbench 侧历史遗留）
-- 已知**偶发**（Windows 并发/线程，workbench 侧，非本项目）：`test_atomic_append_jsonl_concurrent_writes`、
-  `test_concurrent_writes_no_loss`、`test_ping_local_success`、`test_execute_single_job_succeeds`、
-  `test_sync_memory_between_projects` —— 隔离复跑可通过。
+- 实网 LLM 套件默认跳过（`CONTENT_TEAM_LIVE_LLM=1` 显式开启）。
 
 ## 代码约定
 

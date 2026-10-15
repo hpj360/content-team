@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 61 |
+| 技能方法论（references） | 64 |
 | 语料案例 | 22 |
 | 知识沉淀 | 15 |
-| 写作模板 | 12 |
-| **合计** | **135** |
+| 写作模板 | 16 |
+| **合计** | **142** |
 
 ## 创作技能
 
@@ -81,6 +81,9 @@
 - **台词改造实例库（bad → good 对照）** — `skills/script-writing/references/dialogue-examples.md` · `script-writing、dialogue、examples`
 - **各阶段验收清单实例** — `skills/showrunning/references/acceptance-checklists.md` · `showrunning、acceptance、checklists`
 - **场景写作练习库（八类场景写法）** — `skills/script-writing/references/scene-writing-drills.md` · `script-writing、scene、writing、drills`
+- **剧本形态格式规范（九类）** — `skills/script-writing/references/screenplay-formats.md` · `script-writing、screenplay、formats`
+- **改编方法论（源 → 目标形态）** — `skills/script-writing/references/adaptation-guide.md` · `script-writing、adaptation、guide`
+- **综艺台本 / 口播 / 广播剧（非叙事脚本写法）** — `skills/script-writing/references/variety-and-broadcast.md` · `script-writing、variety、and、broadcast`
 - **场景类型标准镜头序列（模式库）** — `skills/storyboarding/references/shot-patterns.md` · `storyboarding、shot、patterns`
 - **声音与剪辑手艺** — `skills/directing/references/sound-and-edit-craft.md` · `directing、sound、and、edit`
 - **失败案例手册（F 编码 × 完整案例）** — `skills/directing/references/failure-casebook.md` · `directing、failure、casebook`
@@ -162,3 +165,7 @@
 - **短剧单集 8 拍** — `GET /api/templates/short-drama-episode-8beat` · `script、集数、集名、本集冲突`
 - **素描喜剧结构** — `GET /api/templates/comedy-sketch-structure` · `script、前提、怪人、直人`
 - **网文黄金三章** — `GET /api/templates/novel-golden-three` · `novel、书名、主角、核心卖点`
+- **舞台剧剧本** — `GET /api/templates/stage-play-script` · `script、剧名、幕次、地点`
+- **综艺台本** — `GET /api/templates/variety-script` · `script、节目名、期数、本期主题`
+- **口播脚本** — `GET /api/templates/oral-broadcast-script` · `script、主题、钩子、承诺`
+- **广播剧脚本** — `GET /api/templates/audio-drama-script` · `script、场景、角色A、角色B`

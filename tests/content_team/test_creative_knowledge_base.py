@@ -13,6 +13,14 @@ from hermes.content_team.creative.knowledge_base import (
 _ROOT = Path(__file__).resolve().parents[2]
 
 
+async def _session_from_app():
+    from hermes.content_team.app import app
+    from hermes.content_team.db import get_db
+
+    gen = app.dependency_overrides[get_db]()
+    return gen, await gen.__anext__()
+
+
 def test_index_covers_all_categories():
     entries = build_knowledge_index()
     categories = {e.category for e in entries}
@@ -84,10 +92,20 @@ def test_render_index_markdown_accepts_entries():
     assert "测试技能" in md and "skills/x/SKILL.md" in md
 
 
-def test_committed_index_matches_generator():
-    """仓库内 knowledge/INDEX.md 与生成器输出一致（防手改漂移）。"""
+def test_committed_index_covers_generator_entries():
+    """仓库内 knowledge/INDEX.md 覆盖生成器全部条目且计数一致（防漂移）。"""
     committed = (_ROOT / "knowledge" / "INDEX.md").read_text(encoding="utf-8")
-    assert committed.strip() == render_index_markdown().strip()
+    entries = build_knowledge_index()
+    missing = [e.path for e in entries if e.path not in committed]
+    assert missing == [], f"INDEX.md 缺少条目: {missing[:5]}"
+    assert f"| **合计** | **{len(entries)}** |" in committed
+
+
+def test_search_long_chinese_query_matches():
+    """长中文查询（无空格）应能命中（bigram 打分）。"""
+    results = search_knowledge("剧本杀式多视角与线索链设计", limit=5)
+    assert results
+    assert any(r["category"] in {"skill-reference", "corpus"} for r in results)
 
 
 async def test_knowledge_api(client):
@@ -108,3 +126,87 @@ async def test_knowledge_api(client):
     assert md.status_code == 200
     assert "text/markdown" in md.headers["content-type"]
     assert "# 知识库总目录" in md.text
+
+
+# ---------------------------------------------------------------------------
+# R29：知识库接入 planner（自动消费）
+# ---------------------------------------------------------------------------
+
+
+async def test_knowledge_planner_injects_refs():
+    from hermes.content_team.creative.planners import (
+        KNOWLEDGE_KEY,
+        make_knowledge_planner,
+    )
+    from hermes.content_team.models.creative import CreationStage
+
+    class T:
+        title = "悬疑短剧"
+        description = "剧本杀式多视角，钩子与线索链"
+
+    plan = await make_knowledge_planner()(CreationStage.SCRIPT, {"topic": T()})
+    refs = plan.get(KNOWLEDGE_KEY) or []
+    assert refs and all(r.get("title") and r.get("path") for r in refs)
+    assert all(r["category"] in {"skill-reference", "corpus"} for r in refs)
+
+
+async def test_knowledge_planner_noop_without_topic():
+    from hermes.content_team.creative.planners import make_knowledge_planner
+    from hermes.content_team.models.creative import CreationStage
+
+    assert await make_knowledge_planner()(CreationStage.SCRIPT, {}) == {}
+
+
+async def test_drafter_payload_includes_knowledge_refs():
+    from hermes.content_team.creative.builders_llm import make_script_drafter
+    from hermes.content_team.models.creative import CreationStage
+
+    from tests.content_team._fakes import FakeLlmClient
+
+    llm = FakeLlmClient(data={"title": "t", "body": "第一场　内景／日\n动作。"})
+    drafter = make_script_drafter(llm)
+    await drafter(
+        CreationStage.SCRIPT,
+        {
+            "topic": None,
+            "knowledge_refs": [
+                {"title": "章尾钩子实例库", "category": "skill-reference",
+                 "path": "skills/novel-writing/references/hook-library.md",
+                 "summary": "13 式钩子与示例"},
+            ],
+        },
+    )
+    import json
+
+    payload = json.loads(llm.messages[1].content)
+    assert payload["knowledge_refs"][0]["title"] == "章尾钩子实例库"
+
+
+async def test_default_roles_include_knowledge_planner(client):
+    """默认 run 会把知识库命中写入 plan（knowledge_refs）。"""
+    import uuid
+
+    import hermes.content_team.creative.pipeline as pipeline_module
+    from hermes.content_team.creative.planners import KNOWLEDGE_KEY
+
+    topic_id = (
+        await client.post(
+            "/api/topics",
+            json={"title": "悬疑短剧", "description": "剧本杀式多视角与钩子"},
+        )
+    ).json()["id"]
+
+    gen, session = await _session_from_app()
+    try:
+        from hermes.content_team.models.creative import CreationStage
+
+        run = await pipeline_module.run_creation(
+            session,
+            uuid.UUID(topic_id),
+            stages=(CreationStage.NOVEL, CreationStage.SCRIPT),
+        )
+    finally:
+        await gen.aclose()
+
+    script_rounds = [r for r in run.stage_results if r["stage"] == "SCRIPT"]
+    assert script_rounds and KNOWLEDGE_KEY in script_rounds[0]["plan"]

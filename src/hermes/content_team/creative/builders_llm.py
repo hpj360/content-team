@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from hermes.content_team.creative.gates import AI_CLICHE_TOKENS
-from hermes.content_team.creative.planners import RETRIEVAL_KEY
+from hermes.content_team.creative.planners import KNOWLEDGE_KEY, RETRIEVAL_KEY
 from hermes.content_team.creative.prompts import drafter_contract
 from hermes.content_team.creative.style_fingerprint import (
     fingerprint_to_prompt,
@@ -102,6 +102,18 @@ def _build_user_payload(
         corpus = corpus_payload_for("", ids=[str(i) for i in ref_ids])
         if corpus:
             payload["corpus_refs"] = corpus
+    # R29：注入知识库检索命中的方法论/语料（自动消费）
+    knowledge = ctx.get(KNOWLEDGE_KEY)
+    if knowledge:
+        payload["knowledge_refs"] = [
+            {
+                "title": item.get("title"),
+                "category": item.get("category"),
+                "path": item.get("path"),
+                "summary": str(item.get("summary") or "")[:120],
+            }
+            for item in knowledge
+        ]
     fp_raw = ctx.get("style_fingerprint")
     if isinstance(fp_raw, dict):
         fp = StyleFingerprint(**{

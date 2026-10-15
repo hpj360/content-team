@@ -84,6 +84,9 @@ description: 剧本创作。当用户要写、改、评估剧本，或提到"剧
 - `references/beat-sheets.md` — 节拍表模板：三幕 15 拍（含整季映射实例）+ 微短剧单集 8 拍（含时长分配与折算）。
 - `references/short-drama-genres.md` — 短剧题材库：六大题材的单集钩子/爽点链/反派配置/雷区 + 单集设计模板。
 - `references/scene-writing-drills.md` — 场景写作练习库：八类场景（冲突/揭示/追逐/情感/喜剧/悬疑/建置/过渡）的写法与改写要点。
+- `references/screenplay-formats.md` — 剧本形态格式规范：电影/短剧/微短剧/舞台/综艺/口播/广播剧/漫剧/广告 九类规范与模板。
+- `references/adaptation-guide.md` — 改编方法论：改编转换矩阵（小说/真实事件/IP/游戏→各形态）+ 小说→剧本六步 + 长篇→短剧压缩法。
+- `references/variety-and-broadcast.md` — 非叙事脚本：综艺台本/口播脚本/广播剧脚本的写法与自检。
 
 仅在撰写对应类型或打磨对应环节时读取。
 

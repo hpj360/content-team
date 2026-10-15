@@ -67,6 +67,7 @@ from hermes.content_team.creative.planners import (
     RETRIEVAL_KEY,
     compose_planners,
     make_beat_sheet_planner,
+    make_knowledge_planner,
     make_retrieval_planner,
     render_retrieval_block,
 )
@@ -626,6 +627,7 @@ async def run_creation(
     budget_tokens: int | None = None,
     default_roles: bool = True,
     corpus_injection: bool = True,
+    knowledge_injection: bool = True,
 ) -> CreationRun:
     """执行创作管线并在提供 ``memory`` 时记账（C1 · 跨 run 学习地基）。
 
@@ -649,6 +651,7 @@ async def run_creation(
             retrieval=retrieval,
             default_roles=default_roles,
             corpus_injection=corpus_injection,
+            knowledge_injection=knowledge_injection,
         )
     finally:
         reset_tracker(token)
@@ -711,6 +714,7 @@ async def _execute_creation(
     retrieval: bool = True,
     default_roles: bool = True,
     corpus_injection: bool = True,
+    knowledge_injection: bool = True,
 ) -> CreationRun:
     """执行一次创作管线并落库为 ``CreationRun``。
 
@@ -746,6 +750,8 @@ async def _execute_creation(
         planner_fns = [make_beat_sheet_planner(include_corpus=corpus_injection)]
         if retrieval:
             planner_fns.append(make_retrieval_planner(db))
+        if knowledge_injection:
+            planner_fns.append(make_knowledge_planner())
         effective_roles = StageRoles(
             planner=compose_planners(*planner_fns),
             critic=make_checklist_critic(),

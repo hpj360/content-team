@@ -144,6 +144,51 @@ def make_beat_sheet_planner(*, include_corpus: bool = True):
     return planner
 
 
+# 知识检索注入的上下文键名（builder 消费）
+KNOWLEDGE_KEY = "knowledge_refs"
+
+# 默认参与检索的知识类别（方法论 + 语料）
+_KNOWLEDGE_CATEGORIES = ("skill-reference", "corpus")
+
+
+def make_knowledge_planner(
+    *,
+    limit: int = 3,
+    categories: tuple[str, ...] = _KNOWLEDGE_CATEGORIES,
+):
+    """知识库检索规划器（R29）：写前把相关知识资产注入 builder 上下文。
+
+    复用 ``knowledge_base.search_knowledge`` 按选题关键词检索技能方法论与语料案例，
+    使知识库从"可查"变为"自动消费"。纯检索、零 LLM 成本。
+    """
+
+    async def planner(
+        stage: CreationStage, ctx: dict[str, Any]
+    ) -> dict[str, Any]:
+        from hermes.content_team.creative.knowledge_base import search_knowledge
+
+        query = derive_query(stage, ctx)
+        if not query:
+            return {}
+        hits = search_knowledge(query, limit=limit * 3)
+        picked = [h for h in hits if h.get("category") in categories][:limit]
+        if not picked:
+            return {}
+        return {
+            KNOWLEDGE_KEY: [
+                {
+                    "title": h.get("title"),
+                    "category": h.get("category"),
+                    "path": h.get("path"),
+                    "summary": h.get("summary"),
+                }
+                for h in picked
+            ]
+        }
+
+    return planner
+
+
 def compose_planners(*planners) -> Any:
     """把多个 planner 组合为一个（后者覆盖前者的同名字段）。"""
     active = [p for p in planners if p is not None]

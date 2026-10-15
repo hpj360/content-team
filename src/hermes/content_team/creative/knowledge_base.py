@@ -261,11 +261,31 @@ def build_knowledge_index(root: Path | None = None) -> list[KnowledgeEntry]:
 # ---------------------------------------------------------------------------
 
 
-def _score(entry: KnowledgeEntry, terms: list[str], raw_query: str) -> int:
+def _query_terms(query: str) -> tuple[list[str], list[str]]:
+    """拆查询为 (整词, CJK bigram)。中文无空格，用 bigram 提升长句命中率。"""
+    terms = [t.lower() for t in re.split(r"\s+", query) if t]
+    grams: list[str] = []
+    for term in terms:
+        for run in re.findall(r"[\u4e00-\u9fff]+", term):
+            if len(run) >= 2:
+                grams.extend(run[i : i + 2] for i in range(len(run) - 1))
+            else:
+                grams.append(run)
+    return terms, grams
+
+
+# 最低分阈值：过滤仅由偶然 bigram 命中的噪声
+MIN_SCORE = 2
+
+
+def _score(
+    entry: KnowledgeEntry, terms: list[str], grams: list[str], raw_query: str
+) -> int:
     title = entry.title.lower()
     summary = entry.summary.lower()
     path = entry.path.lower()
     tags = " ".join(entry.tags).lower()
+    haystack = f"{title}\n{tags}\n{summary}\n{path}"
     score = 0
     if raw_query.lower() in title:
         score += 4
@@ -278,6 +298,9 @@ def _score(entry: KnowledgeEntry, terms: list[str], raw_query: str) -> int:
             score += 1
         if term in path:
             score += 1
+    # bigram 命中：每个不同 bigram 计 1（不重复计）
+    matched_grams = {g for g in grams if g in haystack}
+    score += len(matched_grams)
     return score
 
 
@@ -288,17 +311,20 @@ def search_knowledge(
     limit: int = 10,
     root: Path | None = None,
 ) -> list[dict[str, Any]]:
-    """按关键词检索知识资产，返回按相关度排序的条目（含 score）。"""
+    """按关键词检索知识资产，返回按相关度排序的条目（含 score）。
+
+    中文友好：整词 + CJK bigram 打分；低于 ``MIN_SCORE`` 的噪声被过滤。
+    """
     query = (query or "").strip()
     if not query:
         return []
-    terms = [t.lower() for t in re.split(r"\s+", query) if t]
+    terms, grams = _query_terms(query)
     results: list[tuple[int, KnowledgeEntry]] = []
     for entry in build_knowledge_index(root):
         if category and entry.category != category:
             continue
-        score = _score(entry, terms, query)
-        if score > 0:
+        score = _score(entry, terms, grams, query)
+        if score >= MIN_SCORE:
             results.append((score, entry))
     results.sort(key=lambda item: (-item[0], item[1].title))
     return [{**entry.to_dict(), "score": score} for score, entry in results[:limit]]

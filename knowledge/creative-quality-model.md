@@ -47,6 +47,7 @@
 | **Round 26** | 内容四向补充：题材技法库 ×3（玄幻/科幻/悬疑）+ 语料 11→13（哈姆雷特/罗生门式）+ 题材对照集 + 平台爆款结构模板（11 平台骨架）+ 钩子/台词各 +10 组场景对照 | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 27** | 语料再扩：公版戏剧/短篇 13→17（樱桃园/不可儿戏/于勒/药）+ 按题材失败案例集（六题材×5）+ 平台爆款拆解样例（11 平台共性，范式级原创骨架） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 | **Round 28** | 构建知识库：统一索引/检索（`knowledge_base.py` + `GET /api/knowledge`/`search`/`index`）+ `knowledge/INDEX.md` 总目录（135 条）+ 资产再扩（系列规划/声音与剪辑手艺） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
+| **Round 29** | 知识库**接入 planner**（`make_knowledge_planner` 自动检索注入 drafter，知识从"可查"变"自动消费"）+ 剧本宽度拓展（形态规范九类/改编方法论/非叙事脚本 + 4 模板，模板 9→13） | 5 | 5 | 5 | 5 | 5 | 5 | 5.00 |
 
 > 注：Round 4 起审查六维已满分，分值不再变动；迭代记录用于追踪能力面扩展。
 
@@ -178,6 +179,17 @@ Round 12 实网联调 + 内容深耕 D           →「真跑得通」+ 平台/�
 - **总目录**：`knowledge/INDEX.md`（由生成器产出；测试校验与生成器**零漂移**）。
 - **资产再扩**：`showrunning/references/series-planning.md`（系列/连载规划）、
   `directing/references/sound-and-edit-craft.md`（声音与剪辑手艺）。
+
+### Round 29：知识库接入 planner + 剧本宽度拓展
+
+- **知识库自动消费**：`make_knowledge_planner()` 按选题关键词检索知识库
+  （`skill-reference` + `corpus`），命中注入 builder 上下文 `knowledge_refs`，
+  经 `_build_user_payload` 进入 drafter prompt；`run_creation(knowledge_injection=)` 可控。
+  检索支持**长中文查询**（CJK bigram 打分 + 最低分阈值，过滤噪声）。
+- **剧本宽度拓展**：`screenplay-formats.md`（九类形态规范）、`adaptation-guide.md`
+  （改编矩阵 + 小说→剧本六步 + 长篇→短剧压缩法）、`variety-and-broadcast.md`
+  （综艺台本/口播/广播剧）；新增 4 个可渲染模板（舞台剧/综艺台本/口播/广播剧），
+  内置模板 9 → **13**。
 
 ### 内容深耕 D（C1 补齐）
 新增 4 份深度库（技能文档 23→27）：
