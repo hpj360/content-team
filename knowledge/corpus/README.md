@@ -20,7 +20,13 @@
 | `deconstruction-poe-telltale-heart.md` | 爱伦·坡《泄密的心》（公版） | 恐怖 | 不可靠叙述、感官放大、声音恐怖 |
 | `deconstruction-shakespeare-hamlet.md` | 莎士比亚《哈姆雷特》（公版） | 悲剧 | 复仇延宕、戏中戏、代价具象化 |
 | `deconstruction-akutagawa-rashomon.md` | 芥川龙之介《罗生门》式多视角（公版） | 多视角 | 多版本自利叙述、真相不可知 |
+| `deconstruction-chekhov-cherry-orchard.md` | 契诃夫《樱桃园》（公版） | 戏剧 | 无反派悲剧、象征物、幕外转折、以声收尾 |
+| `deconstruction-wilde-earnest.md` | 王尔德《不可儿戏》（公版） | 喜剧 | 误会引擎、机锋对白、荒诞成真 |
+| `deconstruction-maupassant-uncle-jules.md` | 莫泊桑《我的叔叔于勒》（公版） | 短篇 | 期待落差、识别符转折、行动写道德 |
+| `deconstruction-luxun-medicine.md` | 鲁迅《药》（公版） | 短篇 | 双线并置、象征蒙太奇、看客群像 |
 | `genre-comparison.md` | —（题材横向对照） | 索引 | 按题材归类已有案例 + 推荐组合 |
+| `failure-by-genre.md` | —（按题材失败案例集） | 失败库 | 六题材 ×5 高频失败模式（症状/机制/修复） |
+| `platform-hits-patterns.md` | —（平台爆款拆解，范式级） | 拆解 | 11 平台爆款共性 + 原创骨架示例 |
 
 > 后两类为**范式分析**：只迁移通用结构与机制，不复制任何剧本/台词/原文（见各文件顶部声明）。
 

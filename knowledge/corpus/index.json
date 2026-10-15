@@ -141,6 +141,46 @@
       "genres": ["悬疑", "多视角"],
       "tags": ["多版本", "自利叙述", "真相不可知", "留白收束"],
       "summary": "同一事件多版本自利叙述，不裁决真相，以旁观者茫然收束。"
+    },
+    {
+      "id": "chekhov-cherry-orchard",
+      "file": "deconstruction-chekhov-cherry-orchard.md",
+      "title": "樱桃园",
+      "author": "契诃夫",
+      "form": "stage-play",
+      "genres": ["群像", "现实主义"],
+      "tags": ["无反派", "象征物", "幕外转折", "以声收尾"],
+      "summary": "时代更替下的群像挽歌：无反派冲突、象征物承载主题、以砍树声收束。"
+    },
+    {
+      "id": "wilde-earnest",
+      "file": "deconstruction-wilde-earnest.md",
+      "title": "不可儿戏",
+      "author": "王尔德",
+      "form": "stage-play",
+      "genres": ["喜剧", "爱情"],
+      "tags": ["误会引擎", "机锋对白", "荒诞成真", "自洽前提"],
+      "summary": "一个自洽的谎言装置驱动多场误会，以荒诞成真式反转收束。"
+    },
+    {
+      "id": "maupassant-uncle-jules",
+      "file": "deconstruction-maupassant-uncle-jules.md",
+      "title": "我的叔叔于勒",
+      "author": "莫泊桑",
+      "form": "short-story",
+      "genres": ["现实主义", "都市"],
+      "tags": ["期待落差", "识别符转折", "行动写道德", "冷收"],
+      "summary": "期待建构后被一次认出戳破，以躲避行动暴露势利，冷收作结。"
+    },
+    {
+      "id": "luxun-medicine",
+      "file": "deconstruction-luxun-medicine.md",
+      "title": "药",
+      "author": "鲁迅",
+      "form": "short-story",
+      "genres": ["现实主义", "象征"],
+      "tags": ["双线并置", "象征蒙太奇", "看客群像", "冷收留白"],
+      "summary": "双线在结尾同一空间交汇，以象征物承载主题，冷收留一线微光。"
     }
   ]
 }
