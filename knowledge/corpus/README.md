@@ -18,6 +18,9 @@
 | `deconstruction-maupassant-necklace.md` | 莫泊桑《项链》（公版） | 短篇 | 欲望代价、假象道具、时间跳跃、结尾反转 |
 | `deconstruction-sophocles-oedipus.md` | 索福克勒斯《俄狄浦斯王》（公版） | 悲剧 | 调查即自证、命运反讽、象征动作 |
 | `deconstruction-poe-telltale-heart.md` | 爱伦·坡《泄密的心》（公版） | 恐怖 | 不可靠叙述、感官放大、声音恐怖 |
+| `deconstruction-shakespeare-hamlet.md` | 莎士比亚《哈姆雷特》（公版） | 悲剧 | 复仇延宕、戏中戏、代价具象化 |
+| `deconstruction-akutagawa-rashomon.md` | 芥川龙之介《罗生门》式多视角（公版） | 多视角 | 多版本自利叙述、真相不可知 |
+| `genre-comparison.md` | —（题材横向对照） | 索引 | 按题材归类已有案例 + 推荐组合 |
 
 > 后两类为**范式分析**：只迁移通用结构与机制，不复制任何剧本/台词/原文（见各文件顶部声明）。
 

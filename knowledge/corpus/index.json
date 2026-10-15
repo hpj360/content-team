@@ -121,6 +121,26 @@
       "genres": ["恐怖", "悬疑"],
       "tags": ["不可靠叙述", "感官放大", "声音恐怖", "得意即伏笔"],
       "summary": "不可靠叙述者的自白，以感官失控（幻听）驱动崩溃与自首。"
+    },
+    {
+      "id": "shakespeare-hamlet",
+      "file": "deconstruction-shakespeare-hamlet.md",
+      "title": "哈姆雷特",
+      "author": "莎士比亚",
+      "form": "stage-play",
+      "genres": ["悲剧", "复仇"],
+      "tags": ["复仇延宕", "戏中戏", "误杀反噬", "代价具象化"],
+      "summary": "已知真相却延宕行动，以戏中戏验证、误杀反噬、同归于尽收束。"
+    },
+    {
+      "id": "akutagawa-rashomon",
+      "file": "deconstruction-akutagawa-rashomon.md",
+      "title": "罗生门式多视角结构",
+      "author": "芥川龙之介（范式）",
+      "form": "multi-perspective",
+      "genres": ["悬疑", "多视角"],
+      "tags": ["多版本", "自利叙述", "真相不可知", "留白收束"],
+      "summary": "同一事件多版本自利叙述，不裁决真相，以旁观者茫然收束。"
     }
   ]
 }

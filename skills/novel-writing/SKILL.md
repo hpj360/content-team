@@ -66,6 +66,9 @@ description: 小说创作。当用户要构思、写作、续写、改写或评�
 - `references/genre-playbooks.md` — 题材手册：七题材的读者期待×爽点节奏×开篇套路×雷区，附 `Novel.genre` 与状态卡映射。
 - `references/worldbuilding-guide.md` — 世界观设定指南：五层结构（规则/势力/地理/经济/历史）与"规则即代价"三原则。
 - `references/character-bible.md` — 人物档案与关系网：档案模板、四维状态、三线关系网、对手三要素。
+- `references/genre-xuanhuan-techniques.md` — 玄幻/仙侠技法：境界体系四要素、升级节奏、战力守恒、资源经济、宗门三层。
+- `references/genre-scifi-techniques.md` — 科幻技法：三律自洽、硬软边界、科技树三阶、伦理冲突、设定分片投放。
+- `references/genre-mystery-techniques.md` — 悬疑/推理技法：诡计六类、线索链 6:4、误导三原则、真凶防空降、反转三层。
 
 仅在进入对应阶段（开篇设计 / 状态维护 / 章尾收束 / 拆文对标）时读取，避免上下文膨胀。
 
