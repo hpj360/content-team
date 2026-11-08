@@ -67,6 +67,10 @@ description: 分镜设计。当用户要把剧本转成分镜、拆镜头，或�
 - `references/storyboard-method.md` — 分镜方法论：段→镜→分镜图三级结构、4C 原则、Beat Board/Sequence Board、轴线与景别规则、时长切点对账、一致性锚点。
 - `references/shot-patterns.md` — 场景类型镜头序列模式库：对话/追逐/情绪/开场/打斗/恐怖/爱情七类标准序列（含景别运镜时长与调节参数）。
 - `references/continuity-anchor-examples.md` — 一致性锚点实例库：canonical description 写法正反例、光色锚点表、识别符词表与锚点包 YAML 模板。
+- `references/vertical-shot-grammar.md` — 竖屏镜头语法：9:16 景别迁移表、竖向构图与字幕安全区、卡点镜头与运镜克制原则。
+- `references/edit-rhythm-and-transition.md` — 剪辑节奏与切点方法：信息/情绪/动势三类切点每镜时长的情绪函数、J/L cut 镜头表写法、转场四类与硬门对账表。
+- `references/storyboard-failure-casebook.md` — 分镜失败案例手册：SB1–SB8 条目（症状/机制/修复/关联断言），逐条对账 `creative/gates.py` 分镜门断言。
+- `references/ai-video-storyboard-prompting.md` — AI 视频分镜提示词推导：镜头表字段到每镜提示词的槽位映射、主体/风格逐字锚定、负面词纪律与逐镜校验回路（含对话戏与追逐两例）。
 
 在拆镜头、套用模式或做提示词对账阶段读取。
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updated_at": "2026-10-01",
-  "note": "语料库索引：供 planner/模板按题材与技法标签引用；文件均为公版作品的结构化拆解或原创示例。",
+  "updated_at": "2026-11-08",
+  "note": "语料库索引（2026-11-08 按语义族分序：公版经典 → 创作示例 → 机制范式 → 题材范式 → 导演方法论 → 喜剧赛道 → 节拍/档案级全拆）；供 planner/模板按题材与技法标签引用；文件均为公版作品的结构化拆解或原创示例/范式分析。范式分析类的锚点选取现象级热门作品（方法论级，不复制台词/素材），锚点热度随时间衰减，使用前按 content_freshness 机制复核时效；最近校准 2026-11-04。",
   "cases": [
     {
       "id": "chekhov-chameleon",
@@ -42,55 +42,6 @@
       "genres": ["家庭伦理", "现实主义"],
       "tags": ["三幕结构", "突转", "门响收尾", "觉醒"],
       "summary": "家庭表象下的债务秘密被揭穿，主角在觉醒中出走；以'关门声'作为终局标点。"
-    },
-    {
-      "id": "shortdrama-waimai-example",
-      "file": "short-drama-example-waimai.md",
-      "title": "外卖员逆袭（单集结构示例）",
-      "author": "content-team 原创示例",
-      "form": "short-drama",
-      "genres": ["复仇打脸", "都市"],
-      "tags": ["3/30/60", "卡点", "单集钩子", "题材模板"],
-      "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。",
-      "foreshadowing_plan": [
-        {"id": "W1", "content": "总部为何调监控", "planted_at": "第1章", "planned_resolution": "第3章", "status": "planted", "keyword": "调监控"},
-        {"id": "W2", "content": "云端视频能否被删", "planted_at": "第1章", "planned_resolution": "第2章", "status": "planted", "keyword": "云端"},
-        {"id": "W3", "content": "董事专用桶的主人", "planted_at": "第1章", "planned_resolution": "第6章", "status": "planted", "keyword": "董事专用"}
-      ]
-    },
-    {
-      "id": "chapter-form-wukong",
-      "file": "deconstruction-chapter-form-wukong.md",
-      "title": "章回体动作叙事范式",
-      "author": "范式分析（参考《黑神话：悟空》）",
-      "form": "structure-analysis",
-      "genres": ["玄幻", "仙侠", "西游"],
-      "tags": ["章回体", "档案式世界观", "对手即主题", "多结局"],
-      "summary": "章回体多卷结构：卷内独立小世界 + 世界内散落档案拼主线 + 多结局。"
-    },
-    {
-      "id": "comedy-sketch",
-      "file": "deconstruction-comedy-sketch.md",
-      "title": "中文商业素描喜剧结构",
-      "author": "范式分析（参考喜人奇妙夜式素描）",
-      "form": "sketch",
-      "genres": ["喜剧", "综艺"],
-      "tags": ["高概念前提", "升级三拍", "怪人直人", "回调", "笑中带泪"],
-      "summary": "强设定先行 + 同一结构三次加码 + 回调 + 情绪收尾的素描范式。"
-    },
-    {
-      "id": "mystery-game",
-      "file": "deconstruction-mystery-game.md",
-      "title": "剧本杀高分机制",
-      "author": "范式分析（Murder Mystery）",
-      "form": "mystery-game",
-      "genres": ["悬疑", "推理"],
-      "tags": ["视角分割", "时间线碰撞", "线索链", "信息公平", "反转重估"],
-      "summary": "信息不对称拼图：视角分割 + 线索链 + 反转重估 + 情感还原。",
-      "foreshadowing_plan": [
-        {"id": "M1", "content": "关键线索指向的第三方", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "线索"},
-        {"id": "M2", "content": "时间线上的矛盾证词", "planted_at": "第2章", "planned_resolution": "第5章", "status": "planted", "keyword": "证词"}
-      ]
     },
     {
       "id": "maupassant-necklace",
@@ -221,6 +172,408 @@
       "genres": ["玄幻", "神话", "章回体"],
       "tags": ["任务型单元剧", "群像分工", "反派分层", "背景即爽点"],
       "summary": "章回体爆款范式：任务锚+单元历险+群像分工+背景揭秘反转。"
+    },
+    {
+      "id": "dou-e-yuan",
+      "file": "deconstruction-dou-e-yuan.md",
+      "title": "窦娥冤",
+      "author": "关汉卿",
+      "form": "stage-play",
+      "genres": ["戏曲", "冤案"],
+      "tags": ["三桩誓愿", "超自然验证", "诉冤递进", "六月飞雪"],
+      "summary": "元杂剧冤案叙事：以誓证冤的三层凭据装置，把不可验证的冤屈转成观众亲眼可见的昭雪诉求。"
+    },
+    {
+      "id": "mudanting",
+      "file": "deconstruction-mudanting.md",
+      "title": "牡丹亭",
+      "author": "汤显祖",
+      "form": "stage-play",
+      "genres": ["戏曲", "言情"],
+      "tags": ["生死双段", "梦前置", "物证对账", "园林情绪地形"],
+      "summary": "情至论叙事：梦中相会先行、生死双段推进、自画像作情缘物证，为爱死而复生的预设终点结构。"
+    },
+    {
+      "id": "honglou-meng",
+      "file": "deconstruction-honglou-meng.md",
+      "title": "红楼梦判词与档案叙事系统",
+      "author": "曹雪芹/程高本体系",
+      "form": "chapter-novel",
+      "genres": ["章回体", "群像"],
+      "tags": ["判词预言", "草蛇灰线", "真假互文", "空间关系地形", "账本叙事"],
+      "summary": "档案先于剧情的元系统：判词+红楼梦曲双轨命运预告、草蛇灰线伏笔登记、大观园空间性格外化与账本叙事。",
+      "foreshadowing_plan": [
+        {"id": "HL1", "content": "判词在第五回预告人物终局，长线兑现", "planted_at": "第5回", "planned_resolution": "判词对应回目", "status": "planted", "keyword": "判词"},
+        {"id": "HL2", "content": "一物一谶提前指认远期事件", "planted_at": "点缀穿插", "planned_resolution": "远期回目", "status": "planted", "keyword": "灰线"}
+      ]
+    },
+    {
+      "id": "shortdrama-waimai-example",
+      "file": "short-drama-example-waimai.md",
+      "title": "外卖员逆袭（单集结构示例）",
+      "author": "content-team 原创示例",
+      "form": "short-drama",
+      "genres": ["复仇打脸", "都市"],
+      "tags": ["3/30/60", "卡点", "单集钩子", "题材模板"],
+      "summary": "原创示例：用 3/30/60 公式与 8 拍结构演示单集如何递进施压并留强钩子。",
+      "foreshadowing_plan": [
+        {"id": "W1", "content": "总部为何调监控", "planted_at": "第1章", "planned_resolution": "第3章", "status": "planted", "keyword": "调监控"},
+        {"id": "W2", "content": "云端视频能否被删", "planted_at": "第1章", "planned_resolution": "第2章", "status": "planted", "keyword": "云端"},
+        {"id": "W3", "content": "董事专用桶的主人", "planted_at": "第1章", "planned_resolution": "第6章", "status": "planted", "keyword": "董事专用"}
+      ]
+    },
+    {
+      "id": "example-variety-segment",
+      "file": "example-variety-segment.md",
+      "title": "综艺任务赛段实战示例：迷宫情报战",
+      "author": "content-team 原创示例",
+      "form": "variety-segment",
+      "genres": ["综艺", "任务赛段"],
+      "tags": ["翻盘点", "逐拍实录", "工况变体", "突发救场", "后期重组"],
+      "summary": "原创棚内赛段单段示例：4 站位+四要素机制+拍 1–8 逐拍拆解+直播/录播/户外三工况变体与救场预案。",
+      "foreshadowing_plan": [
+        {"id": "V1", "content": "主持人手中的悬念信封内容未揭晓", "planted_at": "第1拍", "planned_resolution": "第7拍", "status": "planted", "keyword": "信封"},
+        {"id": "V2", "content": "计分板存在未展示的第 4 隐藏栏", "planted_at": "第2拍", "planned_resolution": "第8拍", "status": "planted", "keyword": "计分板"},
+        {"id": "V3", "content": "未出场的神秘第 5 位玩家身份", "planted_at": "第3拍", "planned_resolution": "第7拍", "status": "planted", "keyword": "X位"}
+      ]
+    },
+    {
+      "id": "example-animation-unit",
+      "file": "example-animation-unit.md",
+      "title": "动画单元集实战示例：信使与灯塔（第 7 集）",
+      "author": "content-team 原创示例",
+      "form": "animation-episode",
+      "genres": ["动画", "单元剧"],
+      "tags": ["双引擎配比", "作画工况", "逐拍实录", "辨识度资产", "收束即开门"],
+      "summary": "原创番剧单元集示例：拍 1–12 双引擎逐拍（80/20 配比、主线只推一格）+ 金卡/银卡/借位作画工况分级 + 复合工况微调。",
+      "foreshadowing_plan": [
+        {"id": "A1", "content": "灯塔多年不亮的原因", "planted_at": "第7集", "planned_resolution": "第14集", "status": "planted", "keyword": "灯塔"},
+        {"id": "A2", "content": "老龟师傅腰带的玄机", "planted_at": "第7集", "planned_resolution": "第18集", "status": "planted", "keyword": "腰带"},
+        {"id": "A3", "content": "信件回执反面的暗记", "planted_at": "第7集", "planned_resolution": "第20集", "status": "planted", "keyword": "回执"}
+      ]
+    },
+    {
+      "id": "comedy-sketch",
+      "file": "deconstruction-comedy-sketch.md",
+      "title": "中文商业素描喜剧结构",
+      "author": "范式分析（参考喜人奇妙夜式素描）",
+      "form": "sketch",
+      "genres": ["喜剧", "综艺"],
+      "tags": ["高概念前提", "升级三拍", "怪人直人", "回调", "笑中带泪"],
+      "summary": "强设定先行 + 同一结构三次加码 + 回调 + 情绪收尾的素描范式。"
+    },
+    {
+      "id": "mystery-game",
+      "file": "deconstruction-mystery-game.md",
+      "title": "剧本杀高分机制",
+      "author": "范式分析（Murder Mystery）",
+      "form": "mystery-game",
+      "genres": ["悬疑", "推理"],
+      "tags": ["视角分割", "时间线碰撞", "线索链", "信息公平", "反转重估"],
+      "summary": "信息不对称拼图：视角分割 + 线索链 + 反转重估 + 情感还原。",
+      "foreshadowing_plan": [
+        {"id": "M1", "content": "关键线索指向的第三方", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "线索"},
+        {"id": "M2", "content": "时间线上的矛盾证词", "planted_at": "第2章", "planned_resolution": "第5章", "status": "planted", "keyword": "证词"}
+      ]
+    },
+    {
+      "id": "chapter-form-wukong",
+      "file": "deconstruction-chapter-form-wukong.md",
+      "title": "章回体动作叙事范式",
+      "author": "范式分析（参考《黑神话：悟空》）",
+      "form": "structure-analysis",
+      "genres": ["玄幻", "仙侠", "西游"],
+      "tags": ["章回体", "档案式世界观", "对手即主题", "多结局"],
+      "summary": "章回体多卷结构：卷内独立小世界 + 世界内散落档案拼主线 + 多结局。"
+    },
+    {
+      "id": "paradigm-modern-romance",
+      "file": "paradigm-modern-romance.md",
+      "title": "现代言情误会引擎范式",
+      "author": "范式分析（参考《后会友期》/《再见爱人》/《玫瑰的故事》；2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["言情", "都市"],
+      "tags": ["双向心动", "三层误会递进", "戳破时机", "体面化解"],
+      "summary": "双向心动+单侧误解：信息差→身份差→立场差三层递进，在代价最深处戳破并体面和解。",
+      "foreshadowing_plan": [
+        {"id": "E1", "content": "双方各自掌握真相的一半，何时能说对上", "planted_at": "第1章", "planned_resolution": "第3章", "status": "planted", "keyword": "信息差"},
+        {"id": "E2", "content": "被误读的身份在正式场合被当面点名", "planted_at": "第3章", "planned_resolution": "第8章", "status": "planted", "keyword": "身份差"},
+        {"id": "E3", "content": "立场对立摊牌前对方留下的体面台阶", "planted_at": "第6章", "planned_resolution": "第9章", "status": "planted", "keyword": "立场差"}
+      ]
+    },
+    {
+      "id": "paradigm-urban-business",
+      "file": "paradigm-urban-business.md",
+      "title": "都市商战逆袭范式",
+      "author": "范式分析（参考《繁花》/《狂飙》）",
+      "form": "structure-analysis",
+      "genres": ["都市", "商战"],
+      "tags": ["立项对标", "资源差", "职场攻防", "规则内反杀", "舆论战"],
+      "summary": "立项→资源差→攻防三段的职场回合制：以数据/审计/舆论为玻璃房子里的暴力，规则内反杀后重排牌桌。"
+    },
+    {
+      "id": "paradigm-variety-show",
+      "file": "paradigm-variety-show.md",
+      "title": "综艺段落工程范式",
+      "author": "范式分析（参考《后会友期》/《种地吧》/《歌手 2024》；2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["综艺", "真人秀"],
+      "tags": ["人设分工", "任务机制", "突发救场", "后期叙事", "段落钩子", "翻盘", "游戏"],
+      "summary": "机制驱动真实反应：人物站位+任务机制四要素+突发救场预案+后期叙事重组与段落钩子。"
+    },
+    {
+      "id": "paradigm-animation-series",
+      "file": "paradigm-animation-series.md",
+      "title": "动画番剧双引擎范式",
+      "author": "范式分析（参考《哪吒之魔童闹海》/《浪浪山小妖怪》/《中国奇谭》；2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["动画", "单元剧"],
+      "tags": ["单元闭环", "主线大问号", "配比曲线", "辨识度资产"],
+      "summary": "单元闭环留住新观众、主线大问号留住老观众：配比曲线+季度三幕+辨识度资产+收束即开门。"
+    },
+    {
+      "id": "paradigm-vertical-interactive",
+      "file": "paradigm-vertical-interactive.md",
+      "title": "竖屏互动分支叙事范式",
+      "author": "范式分析（参考《盛夏芬德拉》/ 红果十亿俱乐部 /《逃出大英博物馆》；2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["互动", "悬疑"],
+      "tags": ["分支", "竖屏", "变量", "选择代价", "结局判定"],
+      "summary": "两分钟内核+分支节点密度：选择即付出代价，变量记账驱动结局判定，单集钩子与分支回收对账。",
+      "foreshadowing_plan": [
+        {"id": "V1", "content": "某个分支节点的后果延迟两段才显影", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "分支"},
+        {"id": "V2", "content": "隐藏变量计数板触发彩蛋结局", "planted_at": "第2章", "planned_resolution": "第6章", "status": "planted", "keyword": "变量"},
+        {"id": "V3", "content": "第1集末钩子里出现的选择前夜冻结", "planted_at": "第1章", "planned_resolution": "第2章", "status": "planted", "keyword": "钩子"}
+      ]
+    },
+    {
+      "id": "paradigm-paid-short-drama",
+      "file": "paradigm-paid-short-drama.md",
+      "title": "付费微短剧工程范式",
+      "author": "范式分析（参考《盛夏芬德拉》/ 红果十亿俱乐部；公开报道口径·2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["微短剧", "商业"],
+      "tags": ["免费转化窗", "单集钩链", "厂牌复利", "投流素材", "合规护栏", "钩子", "付费"],
+      "summary": "付费/免费混合微短剧的商业叙事工程：免费前 3 集转化窗、单集钩链卡点、投流=正片高潮切片、厂牌化与保本率成本结构、监管纠偏护栏。"
+    },
+    {
+      "id": "paradigm-narrative-podcast",
+      "file": "paradigm-narrative-podcast.md",
+      "title": "叙事播客工程范式",
+      "author": "范式分析（叙事类播客通用形态·公开节目方法论口径·2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["播客", "叙事"],
+      "tags": ["五秒时刻", "结尾倒推", "张力六工具", "八成悬崖钩", "周更复利", "真实故事", "访谈"],
+      "summary": "纯听觉叙事工程：5 秒时刻+结尾倒推+张力六工具+场景化分幕，悬崖钩落 80–95% 位，周更复利节奏。"
+    },
+    {
+      "id": "paradigm-game-narrative",
+      "file": "paradigm-game-narrative.md",
+      "title": "游戏叙事工程范式",
+      "author": "范式分析（参考《黑神话：悟空》影神图叙事体系·公开口径·2026-11-04 校准）",
+      "form": "structure-analysis",
+      "genres": ["游戏", "叙事"],
+      "tags": ["影神图", "档案拼图", "支线评论", "叙述距离", "空位设计", "档案"],
+      "summary": "环境叙事与玩家动作承担叙事：档案图鉴双层叙述距离、支线作主线的评论功能、隐藏空位与收集品登记制。"
+    },
+    {
+      "id": "paradigm-western-epic-asoiaf",
+      "file": "paradigm-western-epic-asoiaf.md",
+      "title": "冰与火之歌多线史诗工程范式",
+      "author": "范式分析（参考 George R.R. Martin《冰与火之歌》1996 起及剧集公开口径）",
+      "form": "novel-paradigm",
+      "genres": ["奇幻", "史诗"],
+      "tags": ["POV章节制", "家族线账本", "已知信息延迟兑现", "低魔计价", "事件代词"],
+      "summary": "多线史诗工程：视角即镜头预算的 POV 章节制、家族线账本、婚约攻防、低魔证据债与红色婚礼级事件代词。",
+      "foreshadowing_plan": [
+        {"id": "A1", "content": "家训口号在长线兑现为宏观时钟事件", "planted_at": "卷一", "planned_resolution": "末卷", "status": "planted", "keyword": "凛冬将至"},
+        {"id": "A2", "content": "背信事件名升格为公共代词", "planted_at": "卷三", "planned_resolution": "后续卷", "status": "planted", "keyword": "红色婚礼"}
+      ]
+    },
+    {
+      "id": "paradigm-webnovel-hit-masters",
+      "file": "paradigm-webnovel-hit-masters.md",
+      "title": "中文网文爆款引擎范式（六作逐案）",
+      "author": "范式分析（参考《十日终焉》《斩神》《我不是戏神》《剑来》《持械入宋》《悟空传》）",
+      "form": "novel-paradigm",
+      "genres": ["玄幻", "网文"],
+      "tags": ["数值化目标", "轮回记忆账", "文化规则库", "语录体外溢", "双载体量产"],
+      "summary": "六部现象级作品的爆款引擎：数值化大目标+轮回记忆账+非遗规则库+语录体金句+双载体量产+AI 合规红线案例。",
+      "foreshadowing_plan": [
+        {"id": "E1", "content": "十日轮回间以记忆保留兑现旧账", "planted_at": "第1轮回", "planned_resolution": "第N轮回", "status": "planted", "keyword": "回响"},
+        {"id": "E2", "content": "语录在章尾以回收句兑现", "planted_at": "首章", "planned_resolution": "后期章", "status": "planted", "keyword": "语录"}
+      ]
+    },
+    {
+      "id": "paradigm-director-hitchcock",
+      "file": "paradigm-director-hitchcock.md",
+      "title": "希区柯克悬念工业（导演方法论）",
+      "author": "导演方法论（参考《惊魂记》《后窗》《迷魂记》《西北偏北》《绳索》等）",
+      "form": "director-paradigm",
+      "genres": ["悬疑", "惊悚"],
+      "tags": ["悬念配方", "MacGuffin", "POV三角", "观众契约", "希区柯克变焦", "悬念"],
+      "summary": "给观众全知、给人物无知：悬念vs惊吓、桌下炸弹、无辜者奔逃与观众契约的阶段背叛。",
+      "foreshadowing_plan": [
+        {"id": "H1", "content": "桌下炸弹的可见性构成悬念钩", "planted_at": "第1章", "planned_resolution": "第5章", "status": "planted", "keyword": "悬念"},
+        {"id": "H2", "content": "MacGuffin 的真面目延迟揭晓", "planted_at": "第2章", "planned_resolution": "第4章", "status": "planted", "keyword": "MacGuffin"}
+      ]
+    },
+    {
+      "id": "paradigm-director-wongkarwai",
+      "file": "paradigm-director-wongkarwai.md",
+      "title": "王家卫情绪即兴作者电影（导演方法论）",
+      "author": "导演方法论（参考《花样年华》《重庆森林》《春光乍泄》《一代宗师》）",
+      "form": "director-paradigm",
+      "genres": ["爱情", "作者电影"],
+      "tags": ["独白驱动", "抽格慢门", "前景遮挡", "条件虚拟句式", "过期时间"],
+      "summary": "记忆与错过：独白承担叙事、片段拼贴时空、物品独白句法与克制未遂的情绪节拍表。",
+      "foreshadowing_plan": [
+        {"id": "W1", "content": "有限次机会在心里反复练习这句台词", "planted_at": "第3章", "planned_resolution": "第9章", "status": "planted", "keyword": "船票"},
+        {"id": "W2", "content": "过期的纪念日在结尾被重新提到出口", "planted_at": "第2章", "planned_resolution": "第8章", "status": "planted", "keyword": "过期"}
+      ]
+    },
+    {
+      "id": "paradigm-director-kurosawa",
+      "file": "paradigm-director-kurosawa.md",
+      "title": "黑泽明群像与动作叙事（导演方法论）",
+      "author": "导演方法论（参考《罗生门》《七武士》《用心棒》《影武者》《乱》）",
+      "form": "director-paradigm",
+      "genres": ["动作", "时代剧"],
+      "tags": ["长焦多机位", "天气即叙事", "擦拭转场", "群像招募", "多视角框架", "群像"],
+      "summary": "远望式长焦多机位与自然要素协同：群像招募结构、天气当叙事力、擦拭转场与多视角框架叙事。",
+      "foreshadowing_plan": [
+        {"id": "K1", "content": "框架叙事里自证词与判词的裂缝", "planted_at": "第1章", "planned_resolution": "第4章", "status": "planted", "keyword": "框架"},
+        {"id": "K2", "content": "第六位武士到岗的真正原因", "planted_at": "第2章", "planned_resolution": "第6章", "status": "planted", "keyword": "招募"}
+      ]
+    },
+    {
+      "id": "paradigm-director-tarantino",
+      "file": "paradigm-director-tarantino.md",
+      "title": "昆汀类型杂烩与非线性对白（导演方法论）",
+      "author": "导演方法论（参考《低俗小说》《落水狗》《杀死比尔》《无耻混蛋》）",
+      "form": "director-paradigm",
+      "genres": ["犯罪", "非线性"],
+      "tags": ["章节环回", "闲谈即炸弹", "后备箱镜头", "暴力喜剧化", "镜像章", "章节", "闲谈"],
+      "summary": "类型零件拼装：时间轴打乱后重组意义，闲谈长镜头积攒压迫，后备箱镜头成行业梗。",
+      "foreshadowing_plan": [
+        {"id": "Q1", "content": "章节间被时间打乱的因果延迟显影", "planted_at": "第1章", "planned_resolution": "第5章", "status": "planted", "keyword": "章节"},
+        {"id": "Q2", "content": "闲谈里埋的规则在爆点回合兑现", "planted_at": "第2章", "planned_resolution": "第4章", "status": "planted", "keyword": "闲谈"}
+      ]
+    },
+    {
+      "id": "paradigm-director-nolan",
+      "file": "paradigm-director-nolan.md",
+      "title": "诺兰结构迷宫与高概念工程（导演方法论）",
+      "author": "导演方法论（参考《记忆碎片》《盗梦空间》《星际穿越》《敦刻尔克》《奥本海默》）",
+      "form": "director-paradigm",
+      "genres": ["科幻", "悬疑"],
+      "tags": ["谜题盒结构", "层级规则", "三时轴", "实拍物理感", "概念台词"],
+      "summary": "时间作为叙事对象：层级规则表先行、谜题盒倒计时揭示、多时轴并行收束与实拍物理感。",
+      "foreshadowing_plan": [
+        {"id": "N1", "content": "层级规则在揭晓时反噬叙事本身的代价", "planted_at": "第1章", "planned_resolution": "第6章", "status": "planted", "keyword": "规则"},
+        {"id": "N2", "content": "结尾悬念物不给出判定的开放谜底", "planted_at": "第5章", "planned_resolution": "第7章", "status": "planted", "keyword": "陀螺"}
+      ]
+    },
+    {
+      "id": "paradigm-sketch-competition",
+      "file": "paradigm-sketch-competition.md",
+      "title": "中国素描喜剧竞赛工程范式",
+      "author": "范式分析（参考《互联网体检》《少爷和我》《小品的世界》《八十一难》；2026-11-04 校准）",
+      "form": "comedy-competition",
+      "genres": ["喜剧", "综艺"],
+      "tags": ["预制件强设定", "三拍装载", "元自反", "句式骨架", "尾部情绪落"],
+      "summary": "制度/句法整体上舞台字面执行：三拍升级+认真人×失控怪人+元喜剧自反+存量IP压力测试，尾部情绪收口。",
+      "foreshadowing_plan": [
+        {"id": "S1", "content": "制度性小差错被逐段计分复用", "planted_at": "第1拍", "planned_resolution": "第8拍", "status": "planted", "keyword": "差错"},
+        {"id": "S2", "content": "开场规则字面执行的后果延迟兑现", "planted_at": "第2拍", "planned_resolution": "第7拍", "status": "planted", "keyword": "规则"}
+      ]
+    },
+    {
+      "id": "paradigm-standup-competition",
+      "file": "paradigm-standup-competition.md",
+      "title": "单口喜剧竞技工程范式",
+      "author": "范式分析（参考《脱口秀大会》系列；2026-11-04 校准）",
+      "form": "comedy-competition",
+      "genres": ["喜剧", "脱口秀"],
+      "tags": ["主题先行", "callback登记", "短板货币化", "铺垫反转密度", "议题风险预算"],
+      "summary": "叙述人的声腔工事：五分钟单元+主题回流+callback登记+人设短板换信任+议题合规护栏+开放麦迭代制。",
+      "foreshadowing_plan": [
+        {"id": "U1", "content": "开场登记的主题在末段回响兑现", "planted_at": "开篇", "planned_resolution": "收尾", "status": "planted", "keyword": "callback"},
+        {"id": "U2", "content": "金句在议题峰后一句收束", "planted_at": "中段", "planned_resolution": "收尾", "status": "planted", "keyword": "金句"}
+      ]
+    },
+    {
+      "id": "breakdown-internet-health-check",
+      "file": "breakdown-internet-health-check.md",
+      "title": "节拍级全拆：《互联网体检》",
+      "author": "节拍级拆解（参考《互联网体检》·2021·公开报道口径）",
+      "form": "beat-breakdown",
+      "genres": ["喜剧", "综艺"],
+      "tags": ["逐拍表", "制度具象化", "价格牌反转", "三拍升级", "数字梗外化"],
+      "summary": "约 12 分钟素描逐拍表：三拍升级对账、笑点类型与声效位、舞台→竖屏拍长换算与六个落点。"
+    },
+    {
+      "id": "breakdown-inception",
+      "file": "breakdown-inception.md",
+      "title": "节拍级全拆：《盗梦空间》四层规则×时间对照",
+      "author": "节拍级拆解（参考《盗梦空间》·2010）",
+      "form": "beat-breakdown",
+      "genres": ["科幻", "烧脑"],
+      "tags": ["层级倍增", "同步锚", "规则卡", "多线并行", "悬念帧"],
+      "summary": "四层梦界工程表：层级倍增与同步锚、规则卡十条、三幕节拍线性化与观众认知负载管理。"
+    },
+    {
+      "id": "breakdown-kuangbiao-arc",
+      "file": "breakdown-kuangbiao-arc.md",
+      "title": "弧线级全拆：《狂飙》高启强黑化三幕",
+      "author": "弧线级拆解（参考《狂飙》·2023·公开讨论口径）",
+      "form": "beat-breakdown",
+      "genres": ["犯罪", "都市"],
+      "tags": ["黑化三幕", "权力道具", "合法身份漂移", "镜像对照线", "正义公约", "黑化"],
+      "summary": "黑化机制学：合法身份漂移、受害者叙事闭环、忠诚贬值、家庭对照线与代差式暴力升级，弧线节拍表×3 幕。"
+    },
+    {
+      "id": "breakdown-rear-window",
+      "file": "breakdown-rear-window.md",
+      "title": "节拍级全拆：《后窗》多窗口 POV 对账",
+      "author": "节拍级拆解（参考《后窗》·1954）",
+      "form": "beat-breakdown",
+      "genres": ["悬疑", "导演方法论"],
+      "tags": ["POV对账", "窗即画框", "四幕执行表", "供给节奏", "单机位约束"],
+      "summary": "窗对账表：每窗一个叙事功能与站位、四幕 POV 三角执行表、悬念供给节奏与单机位资源约束写作。"
+    },
+    {
+      "id": "breakdown-fanxiangzhidi",
+      "file": "breakdown-fanxiangzhidi.md",
+      "title": "节拍级全拆：《反相之地》",
+      "author": "节拍级拆解（参考《反相之地》·2026·作者公开剧本口径）",
+      "form": "beat-breakdown",
+      "genres": ["悬疑", "AI"],
+      "tags": ["规则怪谈", "单集双钩", "AI一致锚", "国风恐怖", "地点钩子"],
+      "summary": "首部现象级 AI 剧集样本：世界观规则卡、首集逐拍表、单集双钩工程与 AI 生产管线一致性锚定拆解。"
+    },
+    {
+      "id": "breakdown-black-myth-wukong",
+      "file": "breakdown-black-myth-wukong.md",
+      "title": "节拍级全拆：《黑神话：悟空》六章章节叙事编排",
+      "author": "节拍级拆解（参考《黑神话：悟空》·2024·公开口径）",
+      "form": "beat-breakdown",
+      "genres": ["游戏", "奇幻"],
+      "tags": ["章节叙事", "双收束", "影神图回收", "气象定调", "取经公版骨架"],
+      "summary": "六章+序章总表、章节叙事编排规则卡、逐章节拍表与章末动画双收束制度的工程化拆解。"
+    },
+    {
+      "id": "breakdown-blackmyth-yingshentu",
+      "file": "breakdown-blackmyth-yingshentu.md",
+      "title": "档案级拆解：《黑神话：悟空》影神图图鉴工程",
+      "author": "档案级拆解（据悟空 Wiki 公开影神图文本·2026-11-04 校准；诗引 ≤2 句/条）",
+      "form": "archive-breakdown",
+      "genres": ["游戏", "图鉴"],
+      "tags": ["影神图", "判词诗引", "收集叙事", "五视角证词", "失败者肖像学"],
+      "summary": "203 条影神图的结构公式（韵语判词+志传小品）与五样条拆解：狼斥候/广智/黄风大圣/灵吉菩萨五视角条/支线判词体系，Y-T1–T8+交叉 G-T/罗生门条目。",
+      "foreshadowing_plan": [
+        {"id": "Y1", "content": "收集完成度回收为主线暗窗口", "planted_at": "首章", "planned_resolution": "第六章", "status": "planted", "keyword": "图鉴"}
+      ]
     }
   ]
 }

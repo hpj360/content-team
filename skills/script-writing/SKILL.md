@@ -89,6 +89,8 @@ description: 剧本创作。当用户要写、改、评估剧本，或提到"剧
 - `references/variety-and-broadcast.md` — 非叙事脚本：综艺台本/口播脚本/广播剧脚本的写法与自检。
 - `references/interactive-and-game-script.md` — 互动剧/游戏分支脚本：节点图、选项与变量、多结局判定、对白表格化。
 - `references/documentary-musical-immersive.md` — 纪录片三栏脚本 / 音乐剧（唱词与台词分工）/ 沉浸式与剧本杀（角色本+线索卡+DM 手册）。
+- `references/scene-engineering.md` — **场景工程判定层**：价值翻转公式与 10 类场景判定表、删除测试、进出钩四型、过渡类型学、三种"脏"与写前功能表（回答"这场戏该不该存在"）。
+- `references/revision-diagnosis.md` — **稿件诊断法**：三层体检 24 个标红信号（结构/场景/句）、五类病因（结构·因果·节奏·视角·语言债）、删→补→调→修手术顺序与修订台账（回答"稿子哪里坏了、先修哪"）。
 
 仅在撰写对应类型或打磨对应环节时读取。
 
