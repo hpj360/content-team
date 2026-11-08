@@ -124,3 +124,47 @@ def test_template_descriptions_have_boundaries():
     assert "9:16" in by_id["storyboard-vertical-scene"].description
     assert "配合" in by_id["scene-detail-expansion"].description
     assert "配合" in by_id["emotion-curve-card"].description
+
+
+# ---------------------------------------------------------------------------
+# R47：项目工作法蒸馏（44 号四维细节 → references；工作区文件挂"已蒸馏"横幅）
+# ---------------------------------------------------------------------------
+
+NOVEL_DIR = _ROOT / "content-creation" / "novel"
+
+
+def test_scene_detail_has_project_formulas():
+    """scene-detail-engineering 须含项目实训公式（三拍/三账/环境参与/配比/句式）。"""
+    text = (_SKILLS / "novel-writing/references/scene-detail-engineering.md").read_text(encoding="utf-8")
+    for concept in ("动作三拍", "影响三账", "环境＝参与动作", "注意偏移", "闪回", "35%", "可套用句式"):
+        assert concept in text, f"scene-detail-engineering 缺蒸馏公式 {concept}"
+
+
+def test_emotion_file_has_conflict_layers_and_arc():
+    """emotion-conflict-externalization 须含冲突四层与情感三段式。"""
+    text = (_SKILLS / "novel-writing/references/emotion-conflict-externalization.md").read_text(encoding="utf-8")
+    for concept in ("表层", "利益层", "价值层", "自我层", "引信", "三段式", "泪点写小"):
+        assert concept in text, f"emotion-conflict-externalization 缺蒸馏概念 {concept}"
+
+
+def test_novel_method_files_have_distilled_banner():
+    """项目工作区 7 份方法文件须挂'已蒸馏'横幅（防止两套方法分叉）。"""
+    files = [
+        "16-章节体量标准V3.md", "22-场景连续性工作法.md", "23-叙述连贯性工作法.md",
+        "24-勘察组规则体系.md", "25-理解成本优化-规则的呈现改造.md",
+        "27-写作方法落地-章节修订日志.md",
+        "44-吞兽维修师-写作手法优化-四维细节系统.md",
+    ]
+    for name in files:
+        path = NOVEL_DIR / name
+        assert path.is_file(), f"缺项目工作法 {name}"
+        head = path.read_text(encoding="utf-8")[:800]
+        assert "已蒸馏" in head, f"{name} 缺'已蒸馏'横幅"
+
+
+def test_novel_asset_overview_has_mapping_table():
+    text = (NOVEL_DIR / "00-资产总览.md").read_text(encoding="utf-8")
+    assert "方法资产 ↔ 仓库 references 映射" in text, "00-资产总览 缺方法映射表"
+    for target in ("chapter-continuity", "rule-horror-techniques",
+                   "scene-detail-engineering", "emotion-conflict-externalization"):
+        assert target in text, f"映射表缺 {target}"

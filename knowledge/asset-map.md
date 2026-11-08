@@ -77,6 +77,8 @@
 | 狂飙两件 | `breakdown-kuangbiao-arc.md`（弧线级） | `paradigm-urban-business.md`（商战范式挂锚） |
 | 失败六库 | `corpus/failure-corpus.md`（**总索引+沉淀规范**） | `failure-by-genre.md`、`failure-vertical-drama.md`、`failure-ai-drama.md`、`skills/directing/references/failure-casebook.md`、`skills/storyboarding/references/storyboard-failure-casebook.md`、`revision-diagnosis.md` |
 
+**项目工作区（`content-creation/novel/`）方法资产**：16/22/23/24/25/27 号与 44 号已蒸馏进上述 references（映射表见 `content-creation/novel/00-资产总览.md` 末节）；工作区文件保留项目侧执行细节，方法论冲突时以 references 为准。
+
 ## 六、references 全清单（50 份，按簇分组；★=簇主文件）
 
 **novel-writing（17）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
