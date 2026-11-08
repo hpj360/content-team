@@ -6,6 +6,8 @@
 > 最近校准 2026-11-04；使用前请按 `content_freshness` 机制复核是否仍具讨论度。
 > 适用：`script-writing`（竖屏形态）、`novel-writing`（多结局）。
 
+赛道与变现（分账/投流/厂牌）见 `paradigm-paid-short-drama.md`；生产管线样本见 `breakdown-fanxiangzhidi.md`；本篇只做互动分支机制。
+
 ## 一·补、热门锚点对照（方法论级）
 最近校准：2026-11-04（据公开报道播放量数据与行业媒体盘点）。
 

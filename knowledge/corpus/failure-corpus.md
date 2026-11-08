@@ -4,6 +4,19 @@
 > 的 F 编码互补：本文件偏**叙事/流程**层，F 编码偏**生成/镜头**层。
 > 按 `case-breakdown.md` 的"失败记录"要求沉淀，避免重复踩坑。
 
+## 失败编码总索引
+
+| 编码 | 适用层 | 入口文件 |
+|---|---|---|
+| F1–F10 | 导演/风格层 | `skills/directing/references/failure-casebook.md` |
+| SB1–SB8 | 分镜/镜头层 | `skills/storyboarding/references/storyboard-failure-casebook.md` |
+| N-FAIL/P-FAIL | 叙事/流程层 | 本篇 |
+| V-F1–V-F10 | 竖屏剧集/转化层 | `failure-vertical-drama.md` |
+| AI-F1–AI-F10 | AI 生成内容层 | `failure-ai-drama.md` |
+| ST/SC/SE 标红信号 | 稿件诊断层 | `skills/script-writing/references/revision-diagnosis.md` |
+
+同层找对应入口；新增失败库须先在此登记。
+
 ## 一、叙事层
 
 ### N-FAIL-1 挖坑不填

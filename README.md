@@ -8,7 +8,7 @@
 
 | 层 | 内容 |
 |---|---|
-| 创作技能 | `skills/`：小说/剧本/分镜/导演/编导 5 技能 + 18 份方法论与实例库 references |
+| 创作技能 | `skills/`：小说/剧本/分镜/导演/编导 5 技能 + 50 份方法论与实例库 references |
 | 质量审查 | `creative/gates.py`（34 断言）· 独立审查器 · 硬门 · 自动修订闭环 · 行为契约 evals |
 | 创作编排 | 4 阶段管线 + planner/drafter/critic/checker 四角色 + 一致性检索 + 记忆记账 |
 | 风控 | 文风指纹（越用越像你）· 去 AI 味出口门 · token 成本护栏 |
@@ -45,6 +45,11 @@ py -3.12 -m pytest tests/content_team/test_creative_llm_live.py tests/content_te
 ## 文档
 
 - `CONTEXT.md` — 项目定位与术语表
+- `knowledge/creative-methodology-overview.md` — 总纲：体系骨架（叙事有哪些零件）
+- `knowledge/usage-writing-with-content-team.md` — 操作手册：写小说时的流程与命令
+- `knowledge/asset-map.md` — 资产总图：任务路由的唯一入口
+- `knowledge/INDEX.md` — 全量资产目录（生成式索引）
+- `knowledge/corpus/README.md` — 语料库分族目录与同 IP 分工
 - `knowledge/creative-quality-model.md` — 审查质量模型与迭代评分
 - `knowledge/creative-tuning-report.md` — 提示词调优报告（实网）
 - `docs/adr/` — 架构决策记录

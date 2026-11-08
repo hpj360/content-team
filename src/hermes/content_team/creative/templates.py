@@ -65,7 +65,7 @@ BUILTIN_TEMPLATES: tuple[Template, ...] = (
         id="short-drama-episode-8beat",
         name="短剧单集 8 拍",
         category="script",
-        description="90 秒竖屏短剧单集节拍模板（含时长分配与卡点）。",
+        description="90 秒竖屏短剧单集节拍模板：含时长分配与卡点（90 秒竖屏；两分钟版见 `vertical-two-minute-episode`）。",
         variables=["集数", "集名", "本集冲突", "反转", "结尾钩子"],
         body=(
             "【第{集数}集】{集名}\n\n"
@@ -83,7 +83,7 @@ BUILTIN_TEMPLATES: tuple[Template, ...] = (
         id="storyboard-dialogue-scene",
         name="对话戏分镜序列",
         category="storyboard",
-        description="对峙/谈判场景的标准 7 镜序列（满足 2–5s 硬门）。",
+        description="（横屏 16:9；竖屏版见 `storyboard-vertical-scene`）对峙/谈判场景的标准 7 镜序列（满足 2–5s 硬门）。",
         variables=["场次", "地点", "人物A", "人物B"],
         body=(
             "场次：{场次}　地点：{地点}\n\n"
@@ -343,7 +343,7 @@ BUILTIN_TEMPLATES: tuple[Template, ...] = (
         id="vertical-two-minute-episode",
         name="竖屏两分钟单集",
         category="script",
-        description="120 秒竖屏短剧单集模板：三段四钩，钩子间隔 ≤35s，适配竖屏卡点节奏。",
+        description="120 秒竖屏短剧单集模板：三段四钩，钩子间隔 ≤35s，适配竖屏卡点节奏（120 秒；90 秒版见 `short-drama-episode-8beat`）。",
         variables=["集数", "本集危机", "反转点", "结尾钩子"],
         body=(
             "【第{集数}集】竖屏 120s 单集\n\n"
@@ -388,7 +388,7 @@ BUILTIN_TEMPLATES: tuple[Template, ...] = (
         id="storyboard-vertical-scene",
         name="竖屏竖构图镜头序列",
         category="storyboard",
-        description="竖屏对峙场景 7 镜模板：竖构图景别映射 + 卡点切点 + 满足 2–5s 硬门。",
+        description="（9:16；横屏版见 `storyboard-dialogue-scene`）竖屏对峙场景 7 镜模板：竖构图景别映射 + 卡点切点 + 满足 2–5s 硬门。",
         variables=["场次", "地点", "人物A", "人物B"],
         body=(
             "场次：{场次}　地点：{地点}（竖屏 9:16）\n\n"
@@ -418,11 +418,60 @@ BUILTIN_TEMPLATES: tuple[Template, ...] = (
             "- 真实时间线：\n- 触发条件：\n- 控场与救场：\n- 结局判定：\n"
         ),
     ),
+    Template(
+        id="scene-detail-expansion",
+        name="场景多维扩写工作单",
+        category="novel",
+        description="对单薄场景补充五维细节的对照工作单。与情感曲线卡配合使用（物理层/情感层）。",
+        variables=["场景编号", "原场景", "目标压力"],
+        body=(
+            "场景多维扩写 {场景编号}\n"
+            "原场景：\n{原场景}\n\n"
+            "目标压力/转折：{目标压力}\n\n"
+            "五维细节补充（每维1-2个，总计3-5核心细节）：\n"
+            "- 环境（光线/声音/气味/质地/空间/天气选1-2）：\n"
+            "- 动作（微动作/身体语言/器械交互/动作链选1）：\n"
+            "- 物件（识别符/状态变化/所有权/象征选1）：\n"
+            "- 感官（五感配比检查，避免全视觉）：\n"
+            "- 影响（对人物/关系/空间/后续的后果显影）：\n\n"
+            "扩写版（整合五维细节，200-300字）：\n\n"
+            "自检：\n"
+            "视角过滤无泄露（只写POV可感知）\n"
+            "细节服务于压力/转折（非堆砌）\n"
+            "密度小于等于5个核心细节\n"
+            "避免形容词三连\n"
+        ),
+    ),
+    Template(
+        id="emotion-curve-card",
+        name="情感曲线卡",
+        category="novel",
+        description="情感场景的四通道外化分配卡。与场景多维扩写工作单配合使用（情感层/物理层）。",
+        variables=["场景编号", "情感目标", "强度"],
+        body=(
+            "情感曲线卡 {场景编号}\n"
+            "情感目标：{情感目标}　强度：{强度}/10\n\n"
+            "四通道分配（心理通道小于等于30%）：\n"
+            "1. 生理反应（适用高强度）：\n"
+            "   - 具体信号（心跳/呼吸/出汗/肌肉/瞳孔选1-2）：\n"
+            "2. 动作释放（适用中高强度）：\n"
+            "   - 外化行为（砸/踱/手势/距离变化）：\n"
+            "3. 环境投射（适用低中强度，小于等于1次强共振）：\n"
+            "   - 环境响应（天气/光影/背景音，共振或反差）：\n"
+            "4. 心理内部（配比小于等于30%，优先自由间接引语）：\n"
+            "   - 内心活动（避免直述他感到）：\n\n"
+            "检验点：\n"
+            "删除所有感到/觉得/很XX直述\n"
+            "生理反应不千篇一律（不永远心跳加速）\n"
+            "环境投射不用滥（不每次悲伤就下雨）\n"
+            "心理描写小于等于场景总字数30%\n"
+        ),
+    ),
 )
 
 
 def list_document_templates() -> list[Template]:
-    """把 ``content-creation/`` 下的 Markdown 索引为文档模板（若存在）。"""
+    """仅索引 ``content-creation/`` **根目录**显式 Markdown（现无文件则为空）；不递归 novel/ 等子目录，避免把项目稿暴露为模板。"""
     if not _CONTENT_CREATION_DIR.is_dir():
         return []
     templates: list[Template] = []

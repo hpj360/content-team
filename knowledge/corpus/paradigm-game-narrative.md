@@ -8,6 +8,8 @@
 > 适用：`novel-writing`（多线并行/档案拼图）、`mystery-game`（剧本杀视角分割）、
 > `script-writing`（互动剧节点分支）。
 
+影神图条目的**档案工程实证**见 `breakdown-blackmyth-yingshentu.md`（本篇二·4/二·5 为机制定义，实证不复述）；成品章节编排见 `breakdown-black-myth-wukong.md`。
+
 ## 已知公开口径（公开评论/公开游戏文献口径）
 
 - 《黑神话：悟空》的**影神图**（图鉴叙事）将画像、短诗与叙事小传并置，

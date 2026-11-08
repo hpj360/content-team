@@ -1,6 +1,9 @@
 # 节拍表模板与实例
 
 > `script-writing` 按需加载参考。三幕 15 节拍模板（长片）与微短剧单集 8 拍模板（含时长分配），均带填好的实例。
+>
+> **拍位与时长的唯一权威**：单集 8 拍 / 三幕 15 拍以本篇数值为准。
+> 其他文件（`short-drama-playbook.md`、`skills/showrunning/references/episode-rhythm-examples.md`）的段落划分是对本篇的节奏化改写，数值冲突时以本篇为准。
 
 ## 一、三幕 15 节拍模板（长片 / 短剧整季骨架）
 

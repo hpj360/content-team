@@ -4,6 +4,8 @@
 > 所分析的是当代中文商业素描（Sketch Comedy）的**通用结构范式**，
 > "喜人奇妙夜"作为该范式的代表平台。适用：`script-writing`、`showrunning`。
 
+赛制工程与逐案拆解见 `paradigm-sketch-competition.md`；本篇只保留结构范式，不重复赛制与逐案。
+
 ## 一、骨架（范式级）
 
 ```

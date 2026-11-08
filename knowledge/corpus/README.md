@@ -4,6 +4,8 @@
 > 用于喂给拆文工作流（`case-breakdown.md`）与钩子库，方法论级 / 引用分级纪律见文末。
 > 检索入口：`GET /api/corpus`（题材/技法筛选）· planner 自动引用（`corpus_refs_for`）。
 
+**资产总图与任务路由**见 `knowledge/asset-map.md`；失败编码总表见 `failure-corpus.md`。
+
 ## 语料地图（2026-11-08 整理）
 
 | 族 | 数量 | 形态（form） | 一句话定位 |
@@ -34,7 +36,7 @@
 | `deconstruction-shakespeare-hamlet.md` | 莎士比亚《哈姆雷特》 | 悲剧 | 复仇延宕、戏中戏、代价具象化 |
 | `deconstruction-akutagawa-rashomon.md` | 芥川龙之介《罗生门》式多视角 | 多视角 | 多版本自利叙述、真相不可知 |
 | `deconstruction-chekhov-cherry-orchard.md` | 契诃夫《樱桃园》 | 戏剧 | 无反派悲剧、象征物、幕外转折、以声收尾 |
-| `deconstruction-wilde-earnest.md` | 王尔德《不可儿戏》 | 喜剧 | 误会引擎、机锋对白、荒诞成真 |
+| `deconstruction-wilde-earnest.md` | 王尔德《不可儿戏》 | 喜剧 | 误会引擎、机锋对白、荒诞成真（装置型） |
 | `deconstruction-maupassant-uncle-jules.md` | 莫泊桑《我的叔叔于勒》 | 短篇 | 期待落差、识别符转折、行动写道德 |
 | `deconstruction-luxun-medicine.md` | 鲁迅《药》 | 短篇 | 双线并置、象征蒙太奇、看客群像 |
 | `deconstruction-dumas-monte-cristo.md` | 大仲马《基督山伯爵》 | 长篇 | 复仇范式、马甲分层、延迟满足 |
@@ -110,7 +112,7 @@
 | `breakdown-black-myth-wukong.md` | 《黑神话：悟空》六章（2024） | 节拍级 | 气象定调章名、双收束制、影神图二次叙事 |
 | `breakdown-blackmyth-yingshentu.md` | 《黑神话：悟空》影神图（203 条） | 档案级 | 判词+志传条目公式、五样条实证、收集叙事账户 |
 
-### 索引与工具文档（5，非案例条目）
+### 索引与工具文档（8，非案例条目）
 
 | 文件 | 用途 |
 |---|---|

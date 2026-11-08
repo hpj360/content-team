@@ -2,6 +2,10 @@
 
 > `novel-writing` 按需加载参考。不同题材的读者要的不是同一个"爽"——选错爽点
 > 节奏等于劝退。本表按题材给出可执行参数。
+>
+> **本篇=选题速查层**（读者期待 / 爽点节奏 / 雷区，快速建立题材直觉）。
+> 具体参数（境界 / 三律 / 诡计）见 `genre-xuanhuan-techniques.md`、`genre-scifi-techniques.md`、`genre-mystery-techniques.md`。
+> **数值与口径以参数层为准**。
 
 ## 速查矩阵
 

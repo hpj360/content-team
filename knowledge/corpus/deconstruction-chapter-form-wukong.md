@@ -4,6 +4,8 @@
 > 所分析的是"章回体制动作叙事"这一**公开讨论的范式**，《黑神话：悟空》作为该范式的当代代表。
 > 适用：`novel-writing`（玄幻/西游题材）、`showrunning`（多卷/多章节奏）。
 
+**《黑神话》四件套分工**：本篇=原著章回体结构范式；影神图档案工程见 `breakdown-blackmyth-yingshentu.md`；成品章节节拍见 `breakdown-black-myth-wukong.md`；游戏叙事系统方法见 `paradigm-game-narrative.md`。三篇不重复同一机制。
+
 ## 一、骨架（范式级）
 
 ```

@@ -3,6 +3,9 @@
 > `script-writing` 按需加载参考。与 `scene-writing-drills.md`（八类场景**怎么写得好看**）互补：
 > 本文件是它的**工程判定层**，回答"这个场景该不该存在、它改变了什么、怎么进出、怎么衔接"。
 > 只给判定口径与写法，不含任何作品原文；八类场景的具体改法仍回 `scene-writing-drills.md` 查。
+>
+> **分工**：本篇=场景**判定层**（该不该存在 / 改变了什么 / 怎么进出衔接）；素材与改写见 `scene-writing-drills.md`。
+> 物理层细节（环境/动作/物件/感官/影响）见 `skills/novel-writing/references/scene-detail-engineering.md`。
 
 ## 一、场景的最小定义：一次价值翻转
 

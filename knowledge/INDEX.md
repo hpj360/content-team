@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 77 |
+| 技能方法论（references） | 79 |
 | 语料案例 | 59 |
-| 知识沉淀 | 19 |
-| 写作模板 | 20 |
-| **合计** | **200** |
+| 知识沉淀 | 20 |
+| 写作模板 | 22 |
+| **合计** | **205** |
 
 ## 创作技能
 
@@ -90,6 +90,7 @@
 - **场景写作练习库（八类场景写法）** — `skills/script-writing/references/scene-writing-drills.md` · `script-writing、scene、writing、drills`
 - **场景工程学：价值翻转、进出钩与过渡** — `skills/script-writing/references/scene-engineering.md` · `script-writing、scene、engineering`
 - **场景类型标准镜头序列（模式库）** — `skills/storyboarding/references/shot-patterns.md` · `storyboarding、shot、patterns`
+- **场景细节工程** — `skills/novel-writing/references/scene-detail-engineering.md` · `novel-writing、scene、detail、engineering`
 - **声音与剪辑手艺** — `skills/directing/references/sound-and-edit-craft.md` · `directing、sound、and、edit`
 - **失败案例手册（F 编码 × 完整案例）** — `skills/directing/references/failure-casebook.md` · `directing、failure、casebook`
 - **导演手艺与失败修复（蒸馏）** — `skills/directing/references/directing-craft.md` · `directing、directing、craft`
@@ -98,6 +99,7 @@
 - **平台特色库（发布前必查）** — `skills/showrunning/references/platform-playbooks.md` · `showrunning、platform、playbooks`
 - **平台规则维护机制（R19）** — `skills/showrunning/references/platform-rule-maintenance.md` · `showrunning、platform、rule、maintenance`
 - **悬疑/推理专属技法库** — `skills/novel-writing/references/genre-mystery-techniques.md` · `novel-writing、genre、mystery、techniques`
+- **情感与冲突外化** — `skills/novel-writing/references/emotion-conflict-externalization.md` · `novel-writing、emotion、conflict、externalization`
 - **戏剧硬门与模型语法适配（蒸馏）** — `skills/directing/references/dramaturgy-gate.md` · `directing、dramaturgy、gate`
 - **拆文工作流与案例拆解模板** — `skills/novel-writing/references/case-breakdown.md` · `novel-writing、case、breakdown`
 - **改编方法论（源 → 目标形态）** — `skills/script-writing/references/adaptation-guide.md` · `script-writing、adaptation、guide`
@@ -204,6 +206,7 @@
 - **工作法蒸馏溯源（2026-11-08，R44）** — `knowledge/method-distillation-log.md` · `method、distillation、log`
 - **提示词调优报告（R15 pass）** — `knowledge/creative-tuning-report.md` · `creative、tuning、report`
 - **素材入库受理规范（Material Intake SOP）** — `knowledge/material-intake.md` · `material、intake`
+- **资产总图（Asset Map）——唯一任务路由入口** — `knowledge/asset-map.md` · `asset、map`
 
 ## 写作模板
 
@@ -215,9 +218,11 @@
 - **剧本杀角色本/线索卡** — `GET /api/templates/jubensha-character-book` · `script、剧本名、角色名、身份`
 - **动画番剧单元集** — `GET /api/templates/animation-unit-episode` · `script、集数、单元任务、主线递进`
 - **口播脚本** — `GET /api/templates/oral-broadcast-script` · `script、主题、钩子、承诺`
+- **场景多维扩写工作单** — `GET /api/templates/scene-detail-expansion` · `novel、场景编号、原场景、目标压力`
 - **对话戏分镜序列** — `GET /api/templates/storyboard-dialogue-scene` · `storyboard、场次、地点、人物A`
 - **导演风格包起点** — `GET /api/templates/directing-style-pack-starter` · `directing、作品名、风格定位、参考片`
 - **广播剧脚本** — `GET /api/templates/audio-drama-script` · `script、剧名、场景、角色A`
+- **情感曲线卡** — `GET /api/templates/emotion-curve-card` · `novel、场景编号、情感目标、强度`
 - **短剧单集 8 拍** — `GET /api/templates/short-drama-episode-8beat` · `script、集数、集名、本集冲突`
 - **竖屏两分钟单集** — `GET /api/templates/vertical-two-minute-episode` · `script、集数、本集危机、反转点`
 - **竖屏竖构图镜头序列** — `GET /api/templates/storyboard-vertical-scene` · `storyboard、场次、地点、人物A`

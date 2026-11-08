@@ -8,6 +8,8 @@
 > 适用：`novel-writing`（群像/档案体）、`script-writing`、与 `paradigm-game-narrative.md`（影神图
 > 叙事体系框架）、`deconstruction-chapter-form-wukong.md`（悟空谱系）交叉。
 
+Y-T8（档案拼图）的定义以 `paradigm-game-narrative.md` 为准，本篇只做条目实证。
+
 ## 一、图鉴工程口径（公开库面）
 
 - 影神图=游戏内角色档案系统，总计 **203 条**：小妖 90 / 头目 55 / 妖王 26 / 人物 32（百科口径）。

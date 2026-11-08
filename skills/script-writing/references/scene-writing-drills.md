@@ -2,6 +2,9 @@
 
 > `script-writing` 按需加载参考。八类高频场景的**可练习写法**，每类给：目标 / 结构 / 反例 / 改写要点。
 > 与 `dialogue-examples.md`（台词）、`screenwriting-craft.md`（理论）配套使用。
+>
+> **边界**：本篇=八类场景的**写法素材与改写要点**（怎么写得好看）；"这场戏该不该存在"的判定见 `scene-engineering.md`。
+> 物理层细节（环境/动作/物件/感官/影响）见 `skills/novel-writing/references/scene-detail-engineering.md`。
 
 ## 一、冲突场景（对峙）
 

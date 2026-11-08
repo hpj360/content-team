@@ -3,6 +3,11 @@
 > 数据来源：`tests/content_team/test_creative_live_tuning.py`（实网，智谱 GLM-4-Flash）。
 > 命令：`CONTENT_TEAM_LIVE_LLM=1 HERMES_LLM_PROVIDER=zai HERMES_LLM_MODEL=glm-4-flash pytest tests/content_team/test_creative_live_tuning.py -q -s`
 
+> **定位**：实网提示词调优数据报告（R15 pass + R23 语料注入对照）。
+> **受众**：要查具体数值、变体对比与选定理由的人。
+> **权威口径**：权威=实网调优数据；质量模型 R19/20/23 为其摘要，数值以本报告为准。
+> **不做什么**：不承担逐轮台账（→ `creative-quality-model.md`）；不重复提示词正文。
+
 ## 一、变体定义
 
 | 变体 | 契约要点 |

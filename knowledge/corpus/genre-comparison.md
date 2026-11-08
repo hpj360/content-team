@@ -3,6 +3,10 @@
 > 把 `knowledge/corpus/` 的案例**按题材归类横向对照**，便于"同题材找多个参照"。
 > 每个题材给出：可用案例 / 共同结构 / 差异化技法 / 推荐组合。
 
+**题材知识分工**：题材**机制与参数**见 `skills/script-writing/references/short-drama-genres.md`（短剧六题材）与 `skills/novel-writing/references/genre-*-techniques.md`（长篇三题材）；
+**平台共性/翻车点**见 `platform-hits-patterns.md`；**题材失败模式**见 `failure-by-genre.md`。
+本篇只做案例横向对照与组合推荐。
+
 ## 一、悬疑/推理
 
 | 案例 | 提供什么 |

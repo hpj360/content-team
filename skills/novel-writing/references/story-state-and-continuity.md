@@ -1,6 +1,10 @@
 # 故事状态与连续性契约（蒸馏）
 
 > 面向 `novel-writing` 的按需加载参考。蒸馏自公开长篇创作 skill 的"状态落盘/连续性管理"方法，重构为可执行契约，非逐字引用。
+>
+> **状态连续性分工索引**：角色档案与四维状态 → `character-bible.md`；
+> 章际转场 / 叙述连贯 → `chapter-continuity.md`；
+> 交接权责 → `skills/showrunning/references/production-contract.md`。
 
 ## 一、原则：状态落盘，跨会话一致
 
