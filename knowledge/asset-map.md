@@ -48,10 +48,10 @@
 | 改稿不知从哪下手 | `revision-diagnosis.md` |
 | 题材怎么选/雷区 | `genre-playbooks.md`（速查层，数值以 techniques 为准） |
 | 编剧结构 / 九形态格式 | `screenwriting-craft.md` / `screenplay-formats.md` |
-| 短剧节奏 | `short-drama-playbook.md`（**节奏数值以 beat-sheets 为准**） |
+| 短剧节奏 | `short-drama-playbook.md`（**节奏数值以 beat-sheets 为准**；反派分级见 genres 附录；合规见 platform 附录） |
 | 平台怎么发 | `platform-playbooks.md`（**数值权威**）；骨架 → `platform-structure-templates.md` |
 | 多季/系列规划 | `series-planning.md`；交接 → `production-contract.md` |
-| 风格包 / 导演流水线 | `director-style-params.md` / `style-pack-library.md` / `directing-craft.md` |
+| 风格包 / 导演流水线 | `style-pack-library.md`（**12 包全库**）/ `director-style-params.md`（字段规范）/ `directing-craft.md` |
 | 分镜镜头序列 | `storyboard-method.md` / `shot-patterns.md` / `vertical-shot-grammar.md` |
 | 剪辑切点/声画 | `edit-rhythm-and-transition.md` / `sound-and-edit-craft.md` |
 | AI 视频分镜提示词 | `ai-video-storyboard-prompting.md` |
@@ -85,11 +85,11 @@
 
 **novel-writing（17）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
 
-**script-writing（13）**：★`screenwriting-craft` · ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（表达层）· `short-drama-genres` · ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
+**script-writing（13）**：★`screenwriting-craft`（总论）· ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（公式/爽点表达层）· `short-drama-genres`（含反派分级附录）· ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
 
-**showrunning（7）**：★`platform-playbooks`（**平台数值权威**）· `platform-structure-templates`（骨架）· `platform-rule-maintenance` · ★`series-planning` · `episode-rhythm-examples`（实例，口径同 beat-sheets）· ★`production-contract` · `acceptance-checklists`
+**showrunning（7）**：★`platform-playbooks`（**平台数值权威**；含短剧合规附录）· `platform-structure-templates`（骨架）· `platform-rule-maintenance` · ★`series-planning` · `episode-rhythm-examples`（实例，口径同 beat-sheets）· ★`production-contract` · `acceptance-checklists`
 
-**directing（6）**：★`directing-craft`（五原则/流水线）· ★`director-style-params`（YAML 字段权威）· `style-pack-library`（8 风格包）· `dramaturgy-gate`（戏剧硬门）· ★`failure-casebook`（F1–F10）· ★`sound-and-edit-craft`
+**directing（6）**：★`directing-craft`（五原则/流水线）· `director-style-params`（字段规范/覆盖规则）· `style-pack-library`（**12 包全库**）· `dramaturgy-gate`（戏剧硬门）· ★`failure-casebook`（F1–F10）· ★`sound-and-edit-craft`
 
 **storyboarding（7）**：★`storyboard-method` · ★`shot-patterns` · `vertical-shot-grammar` · ★`continuity-anchor-examples` · ★`edit-rhythm-and-transition`（镜头层切点）· `storyboard-failure-casebook`（SB1–SB8）· `ai-video-storyboard-prompting`
 

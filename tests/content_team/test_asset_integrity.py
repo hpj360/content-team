@@ -191,13 +191,16 @@ def test_canon_has_authority_numeric_and_antipattern_tables():
 
 
 def test_style_packs_respect_shot_gate():
-    """ASL 数值必须落在单镜硬门 2–5s 内（审计发现 6.0/5.5 超门已修）。"""
-    for name in ("director-style-params.md", "style-pack-library.md"):
-        text = (_SKILLS / "directing" / "references" / name).read_text(encoding="utf-8")
-        vals = [float(v) for v in re.findall(r"avg_shot_length_s:\s*([\d.]+)", text)]
-        assert vals, f"{name} 未解析到 avg_shot_length_s"
-        bad = [v for v in vals if not (2.0 <= v <= 5.0)]
-        assert bad == [], f"{name} 存在超门 ASL: {bad}"
+    """ASL 数值必须落在单镜硬门 2–5s 内，且数值唯一源是 style-pack-library（R49 合并后）。"""
+    lib = (_SKILLS / "directing" / "references" / "style-pack-library.md").read_text(encoding="utf-8")
+    vals = [float(v) for v in re.findall(r"avg_shot_length_s:\s*([\d.]+)", lib)]
+    assert len(vals) == 12, f"风格包全库应有 12 个 ASL 数值，实际 {len(vals)}"
+    bad = [v for v in vals if not (2.0 <= v <= 5.0)]
+    assert bad == [], f"风格包存在超门 ASL: {bad}"
+    params = (_SKILLS / "directing" / "references" / "director-style-params.md").read_text(encoding="utf-8")
+    assert not re.search(r"avg_shot_length_s:\s*[\d.]+", params), (
+        "director-style-params 不应再含 ASL 数值（唯一源=全库）"
+    )
 
 
 def test_failure_casebook_code_claim_consistent():
@@ -210,3 +213,51 @@ def test_shot_patterns_declares_segment_boundary():
     text = (_SKILLS / "storyboarding" / "references" / "shot-patterns.md").read_text(encoding="utf-8")
     head = text[:800]
     assert "拆为 2 段" in head or "段 ≤15s" in head, "shot-patterns 未声明段长边界"
+
+
+# ---------------------------------------------------------------------------
+# R49：实质合并（风格包全库 / 短剧三件瘦身 / 格式瘦身 / craft 边界）
+# ---------------------------------------------------------------------------
+
+
+def test_style_packs_merged_into_single_library():
+    lib = (_SKILLS / "directing" / "references" / "style-pack-library.md").read_text(encoding="utf-8")
+    packs = re.findall(r"^##\s+\d{2}", lib, flags=re.MULTILINE)
+    assert len(packs) == 12, f"style-pack-library 应为 12 包全库，实际 {len(packs)} 节"
+    for name in ("写实", "霓虹", "武侠", "家庭"):
+        assert name in lib, f"全库缺基础包 {name}"
+    params = (_SKILLS / "directing" / "references" / "director-style-params.md").read_text(encoding="utf-8")
+    assert "字段" in params, "director-style-params 应保留字段规范"
+    assert "style-pack-library" in params, "director-style-params 未指向全库"
+    assert not re.search(r"^##\s+0\d", params, flags=re.MULTILINE), (
+        "director-style-params 不应再含风格包 YAML 主体"
+    )
+
+
+def test_short_drama_moves_landed():
+    genres = (_SKILLS / "script-writing" / "references" / "short-drama-genres.md").read_text(encoding="utf-8")
+    assert "反派四级" in genres and "short-drama-playbook" in genres, "反派分级未迁入 genres"
+    playbooks = (_SKILLS / "showrunning" / "references" / "platform-playbooks.md").read_text(encoding="utf-8")
+    assert "短剧合规" in playbooks, "合规红线未迁入 platform-playbooks"
+    playbook = (_SKILLS / "script-writing" / "references" / "short-drama-playbook.md").read_text(encoding="utf-8")
+    for target in ("beat-sheets", "short-drama-genres", "platform-playbooks"):
+        assert target in playbook, f"playbook 未指向 {target}"
+
+
+def test_screenplay_formats_slimmed():
+    text = (_SKILLS / "script-writing" / "references" / "screenplay-formats.md").read_text(encoding="utf-8")
+    assert text.count("完整模板与写法见") >= 3, "formats 三形态未瘦身为索引"
+    assert "variety-and-broadcast" in text
+
+
+def test_screenwriting_craft_boundaries():
+    text = (_SKILLS / "script-writing" / "references" / "screenwriting-craft.md").read_text(encoding="utf-8")
+    for target in ("scene-engineering", "scene-writing-drills", "screenplay-formats", "acceptance-checklists"):
+        assert target in text, f"screenwriting-craft 缺边界指向 {target}"
+
+
+def test_canon_has_merge_record_and_abstraction():
+    assert "文档归并记录与抽象" in _CANON, "正典缺归并记录节"
+    assert "表示层" in _CANON, "正典缺'表示层差异'抽象"
+    for group in ("风格包", "短剧节奏", "交付格式", "总论 vs 专用"):
+        assert group in _CANON

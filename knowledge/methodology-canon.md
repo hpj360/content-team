@@ -120,15 +120,16 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 | 爽点链/爽点类型 | `short-drama-genres`（六题材矩阵） | playbook/episode-rhythm 引用 |
 | 压:爆配比 | **分层**：场/章级 → `revision-diagnosis`（2:1–3:1）；集级 → `episode-rhythm-examples`；平台结构仅引用 | 不同粒度各有口径 |
 | 受压上限/新信息频率 | **分层**：场级 → `revision-diagnosis`（≤3 场连压）；集级 → `episode-rhythm-examples`（≤2 集） | 同上 |
-| 反派递进 | `short-drama-playbook`（四级） | episode-rhythm 给每级集数 |
+| 反派递进 | `short-drama-genres`（附录：四级递进，自 playbook 归并） | episode-rhythm 给每级集数 |
 | 付费卡点 | `episode-rhythm-examples`（第 3/6/12 集，间隔 ≥2 集） | 公式见 playbook |
+| 短剧合规红线 | `platform-playbooks`（附录：自 playbook 归并） | 发布前按清单过 |
 | 门禁编码 | `creative/gates.py`（编码定义） | `acceptance-checklists` 只做验收映射 |
 | 连续性契约 | `production-contract`（阶段 owner/交付门） | series-planning 是季级应用 |
 | 语速/字数折算 | `beat-sheets`（4.0–4.5 字/秒） | formats/acceptance 引用 |
 | 景别枚举语义 | `storyboard-method`（段→镜→图 + 景别递进） | 竖屏映射 `vertical-shot-grammar` 独占 |
 | 一致性锚点/canonical | `continuity-anchor-examples`（**画面层**：身份词+3 特征+1 识别符逐字复用） | `dramaturgy-gate` 的"五锚"是**戏剧层**（身份/服装/道具/光位/方向），两轴不同，勿合并 |
 | 失败编码规则 | 规则归 `directing-craft`（成本阶梯/三振）；编码表见 `failure-casebook`（F1–F10）与 `storyboard-failure-casebook`（SB1–SB8）；总索引 `corpus/failure-corpus` | gates 编码定义在 `creative/gates.py` |
-| 风格包数值 | `style-pack-library`（12 包唯一数值源：4 基础 + 8 类型） | `director-style-params` 保留字段定义 |
+| 风格包数值 | `style-pack-library`（**12 包唯一库**：01–04 基础 + 05–12 类型） | `director-style-params` 只留字段语义与覆盖规则 |
 | ASL（均镜头长） | 唯一数值源 `style-pack-library`；**一律 ≤5s**（单镜硬门） | 其他文件引用不复制 |
 | 台词三口径 | **分层**：时长折算 4.2 字/秒（`screenplay-formats` 对账）；单镜台词预算 ≤12 字（`ai-video-storyboard-prompting`）；镜头表行数 ≤2 行/≤70%（`vertical-shot-grammar`） | 各管一域 |
 | 800 字一钩 | `chapter-continuity` §5.2（章节侧权威） | `scene-detail-engineering` §9 只引用 |
@@ -188,7 +189,23 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 2. 项目侧工作法（`content-creation/novel/` 16–27、44 号）保留执行细节，方法论以 references 为准（映射见其 00-号末节）。
 3. 新增方法论资产时：先判断是否能归入 P1–P13 某条原理；不能则新增原理并在此登记（防原理通胀）。
 
+## 六·补、文档归并记录与抽象（R49）
+
+审计确认"内容重复"背后其实是**同一原理的四种"表示层差异"**——合并的原则是：保住分层语义，
+只保留一个权威实例，另一侧退为规范/索引。已执行的归并：
+
+| 组 | 原状态 | 归并后 | 抽象出的共性 |
+|---|---|---|---|
+| **风格包** | `director-style-params`（4 基础包）+ `style-pack-library`（8 类型包），同 YAML/同用途 | `style-pack-library` = **12 包唯一库**（01–12）；`director-style-params` = 字段规范与覆盖规则 | **风格＝可机读的参数化约束**：类型即节奏，字段覆盖差异即风格差异 |
+| **短剧节奏** | `short-drama-playbook`（单集结构）+ `beat-sheets`（拍位）+ `episode-rhythm-examples`（季级） | playbook 保留公式/爽点矩阵；单集结构→引 beat-sheets；反派四级→迁 `short-drama-genres` 附录；合规红线→迁 `platform-playbooks` 附录 | **同一节奏系统的三种视图**：公式层（为什么）/拍位层（几秒）/季级视图（12 集布防） |
+| **交付格式** | `screenplay-formats` §五–七（完整模板）+ `variety-and-broadcast`（完整模板） | formats 只留格式要点与自检；完整模板归 `variety-and-broadcast` | **格式＝交付约束**（页长/字体/要素），**模板＝内容结构**（环节/节拍）——两件事，不可各写一遍 |
+| **总论 vs 专用** | `screenwriting-craft` §四/§五 与三件套部分重合 | craft 保持总论定位，§四/§五 加边界行（判定→engineering/素材→drills/格式→formats/验收→acceptance） | **三层分工**：总论（为什么）→ 判定层（该不该）→ 素材层（怎么写） |
+
+> 一句话抽象：**文档重复的本质是"规范 vs 实例 / 视图差异 / 交付约束 vs 内容结构 / 总论 vs 专用"四类表示层差异**；
+> 合并动作 = 抽象出分层 → 每层只留一个权威实例，其余层降为引用。此规则适用于后续所有新文档。
+
 ## 七、维护
 
 - 本文件与 `asset-map.md` 的分工：**正典=原理，路由=找文件**；两者条目变更需同步（资产总图测试覆盖 references 覆盖度，正典由 `test_asset_integrity.py` 覆盖十三条原理与数值表）。
+- 新增文档前先按 §六·补 的四类表示层差异自查：是否只是某个已有文档的另一层表示？若是则补引用，不新建文件。
 - INDEX 由生成器产出，本文件作为"知识沉淀"自动收录，无需手工维护统计。

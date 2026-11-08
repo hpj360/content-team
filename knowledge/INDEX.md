@@ -94,7 +94,7 @@
 - **声音与剪辑手艺** — `skills/directing/references/sound-and-edit-craft.md` · `directing、sound、and、edit`
 - **失败案例手册（F 编码 × 完整案例）** — `skills/directing/references/failure-casebook.md` · `directing、failure、casebook`
 - **导演手艺与失败修复（蒸馏）** — `skills/directing/references/directing-craft.md` · `directing、directing、craft`
-- **导演风格参数实例库** — `skills/directing/references/director-style-params.md` · `directing、director、style、params`
+- **导演风格参数规范（字段定义与选用）** — `skills/directing/references/director-style-params.md` · `directing、director、style、params`
 - **平台爆款结构模板（按平台套用）** — `skills/showrunning/references/platform-structure-templates.md` · `showrunning、platform、structure、templates`
 - **平台特色库（发布前必查）** — `skills/showrunning/references/platform-playbooks.md` · `showrunning、platform、playbooks`
 - **平台规则维护机制（R19）** — `skills/showrunning/references/platform-rule-maintenance.md` · `showrunning、platform、rule、maintenance`
@@ -121,7 +121,7 @@
 - **规则怪谈规则工程：定义·分层披露·理解成本转移** — `skills/novel-writing/references/rule-horror-techniques.md` · `novel-writing、rule、horror、techniques`
 - **钩子的认知机制：为什么钩子有效，以及何时失效** — `skills/novel-writing/references/hook-mechanics.md` · `novel-writing、hook、mechanics`
 - **题材手册（读者预期 × 爽点节奏 × 开篇套路 × 雷区）** — `skills/novel-writing/references/genre-playbooks.md` · `novel-writing、genre、playbooks`
-- **风格包扩充库（悬疑 / 喜剧 / 青春 / 古装 / 科幻 等 8 类）** — `skills/directing/references/style-pack-library.md` · `directing、style、pack、library`
+- **风格包全库（01–12）** — `skills/directing/references/style-pack-library.md` · `directing、style、pack、library`
 
 ## 语料案例
 
