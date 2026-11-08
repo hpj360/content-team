@@ -168,3 +168,45 @@ def test_novel_asset_overview_has_mapping_table():
     for target in ("chapter-continuity", "rule-horror-techniques",
                    "scene-detail-engineering", "emotion-conflict-externalization"):
         assert target in text, f"映射表缺 {target}"
+
+
+# ---------------------------------------------------------------------------
+# R48：方法论正典（跨文件去重合订）
+# ---------------------------------------------------------------------------
+
+_CANON = (_ROOT / "knowledge" / "methodology-canon.md").read_text(encoding="utf-8")
+
+
+def test_canon_has_six_layers_and_thirteen_principles():
+    assert "六层操作系统" in _CANON
+    for i in range(1, 14):
+        assert f"P{i} " in _CANON, f"正典缺原理 P{i}"
+
+
+def test_canon_has_authority_numeric_and_antipattern_tables():
+    for key in ("概念权威表", "数值口径总表", "反模式总表", "gates.py", "分档"):
+        assert key in _CANON, f"正典缺 {key}"
+    for concept in ("拍位/时长", "平台数值", "误会引擎", "失败编码", "风格包", "一致性锚点"):
+        assert concept in _CANON, f"概念权威表缺 {concept}"
+
+
+def test_style_packs_respect_shot_gate():
+    """ASL 数值必须落在单镜硬门 2–5s 内（审计发现 6.0/5.5 超门已修）。"""
+    for name in ("director-style-params.md", "style-pack-library.md"):
+        text = (_SKILLS / "directing" / "references" / name).read_text(encoding="utf-8")
+        vals = [float(v) for v in re.findall(r"avg_shot_length_s:\s*([\d.]+)", text)]
+        assert vals, f"{name} 未解析到 avg_shot_length_s"
+        bad = [v for v in vals if not (2.0 <= v <= 5.0)]
+        assert bad == [], f"{name} 存在超门 ASL: {bad}"
+
+
+def test_failure_casebook_code_claim_consistent():
+    text = (_SKILLS / "directing" / "references" / "failure-casebook.md").read_text(encoding="utf-8")
+    assert "F1–F10" in text, "failure-casebook 未标注实际编码范围"
+    assert "F1–F19" not in text, "failure-casebook 仍含过时 F1–F19 声明"
+
+
+def test_shot_patterns_declares_segment_boundary():
+    text = (_SKILLS / "storyboarding" / "references" / "shot-patterns.md").read_text(encoding="utf-8")
+    head = text[:800]
+    assert "拆为 2 段" in head or "段 ≤15s" in head, "shot-patterns 未声明段长边界"

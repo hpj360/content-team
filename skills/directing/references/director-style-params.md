@@ -69,13 +69,13 @@
   motion_budget: low
   key_light_ratio: "3:1"
   palette: ["钨丝暖黄", "米白", "木质棕"]
-  avg_shot_length_s: 6.0
+  avg_shot_length_s: 4.5
   sound_policy: "同期声 + 极简钢琴，人声永远高于乐"
   negative_prompt_additions: ["wide_angle_distortion", "handheld_shake", "cold_tone"]
 ```
 
-- **机制**：6s 均长 + 近焦集中 → 情绪在桌面细节（手/杯/合照）间流动，冲突靠沉默。
-- **反例**：不是煽情特写连发。爆发前必须有 ≥ 2 个 6s 的"无事发生"镜头蓄压。
+- **机制**：4.5s 均长 + 近焦集中 → 情绪在桌面细节（手/杯/合照）间流动，冲突靠沉默。
+- **反例**：不是煽情特写连发。爆发前必须有 ≥ 2 个 4.5s 的"无事发生"镜头蓄压（单镜上限 5s，均长不得超门）。
 
 ## 选用与组合规则
 

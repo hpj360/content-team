@@ -4,17 +4,19 @@
 > 全量条目（目录见 `knowledge/INDEX.md`）、不复制方法论正文。
 > 最近核对：2026-11-09（三路审计后的整合批次）。维护规则见文末。
 
-## 一、五个入口的分工（谁看哪份）
+## 一、六个入口的分工（谁看哪份）
 
 | 入口 | 回答什么问题 | 读者 |
 |---|---|---|
 | `creative-methodology-overview.md`（总纲） | "叙事有哪些零件、为什么有效"（体系骨架） | 建立全局认知 |
+| `methodology-canon.md`（**正典**） | "方法论由哪几条普适原理构成、概念/数值归谁" | 迁移/裁量/教学 |
 | `usage-writing-with-content-team.md`（手册） | "我写小说时按什么流程、用什么命令" | 正在写的人 |
 | **本图 asset-map** | "这个任务/问题该翻哪一份资产" | 找文件的人 |
 | `knowledge/INDEX.md` | "一共有哪些资产"（生成式全量目录） | 检索与盘点 |
 | `corpus/README.md` | "语料库怎么分族、同 IP 怎么分工" | 用案例对标的人 |
 
-规则：规矩条文（引用分级）以 `AGENTS.md` #3 为准；失败编码总表以 `corpus/failure-corpus.md` 为准。
+规则：规矩条文（引用分级）以 `AGENTS.md` #3 为准；失败编码总表以 `corpus/failure-corpus.md` 为准；
+原理与概念/数值权威以 `methodology-canon.md` 为准。
 
 ## 二、六道门 → 权威文件（写中流程）
 

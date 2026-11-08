@@ -9,9 +9,9 @@
 | 创作技能 | 25 |
 | 技能方法论（references） | 79 |
 | 语料案例 | 59 |
-| 知识沉淀 | 20 |
+| 知识沉淀 | 21 |
 | 写作模板 | 22 |
-| **合计** | **205** |
+| **合计** | **206** |
 
 ## 创作技能
 
@@ -121,7 +121,7 @@
 - **规则怪谈规则工程：定义·分层披露·理解成本转移** — `skills/novel-writing/references/rule-horror-techniques.md` · `novel-writing、rule、horror、techniques`
 - **钩子的认知机制：为什么钩子有效，以及何时失效** — `skills/novel-writing/references/hook-mechanics.md` · `novel-writing、hook、mechanics`
 - **题材手册（读者预期 × 爽点节奏 × 开篇套路 × 雷区）** — `skills/novel-writing/references/genre-playbooks.md` · `novel-writing、genre、playbooks`
-- **风格包扩充库（悬疑 / 喜剧 / 青春 / 古装 / 科幻）** — `skills/directing/references/style-pack-library.md` · `directing、style、pack、library`
+- **风格包扩充库（悬疑 / 喜剧 / 青春 / 古装 / 科幻 等 8 类）** — `skills/directing/references/style-pack-library.md` · `directing、style、pack、library`
 
 ## 语料案例
 
@@ -205,6 +205,7 @@
 - **创作方法论总纲（Creative Methodology Overview）** — `knowledge/creative-methodology-overview.md` · `creative、methodology、overview`
 - **工作法蒸馏溯源（2026-11-08，R44）** — `knowledge/method-distillation-log.md` · `method、distillation、log`
 - **提示词调优报告（R15 pass）** — `knowledge/creative-tuning-report.md` · `creative、tuning、report`
+- **方法论正典（Methodology Canon）——跨文件的统一原理体系** — `knowledge/methodology-canon.md` · `methodology、canon`
 - **素材入库受理规范（Material Intake SOP）** — `knowledge/material-intake.md` · `material、intake`
 - **资产总图（Asset Map）——唯一任务路由入口** — `knowledge/asset-map.md` · `asset、map`
 
