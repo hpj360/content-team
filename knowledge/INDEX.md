@@ -10,8 +10,8 @@
 | 技能方法论（references） | 80 |
 | 语料案例 | 59 |
 | 知识沉淀 | 21 |
-| 写作模板 | 22 |
-| **合计** | **207** |
+| 写作模板 | 23 |
+| **合计** | **208** |
 
 ## 创作技能
 
@@ -230,6 +230,7 @@
 - **竖屏竖构图镜头序列** — `GET /api/templates/storyboard-vertical-scene` · `storyboard、场次、地点、人物A`
 - **素描喜剧结构** — `GET /api/templates/comedy-sketch-structure` · `script、前提、怪人、直人`
 - **纪录片三栏脚本** — `GET /api/templates/documentary-script` · `script、片名、主题`
+- **细节五维体检单** — `GET /api/templates/detail-audit-sheet` · `novel、场景编号、场景概述、目标档位`
 - **综艺台本** — `GET /api/templates/variety-script` · `script、节目名、期数、本期主题`
 - **网文黄金三章** — `GET /api/templates/novel-golden-three` · `novel、书名、主角、核心卖点`
 - **舞台剧剧本** — `GET /api/templates/stage-play-script` · `script、剧名、幕次、地点`

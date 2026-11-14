@@ -95,7 +95,7 @@
 
 **转场分层**（四套分类各司其职）：叙事层 `scene-engineering.md` 四类 → 章际层 `chapter-continuity.md` 七法 → 镜头层 `edit-rhythm-and-transition.md` 四类 → 成片层 `sound-and-edit-craft.md`（声音/剪辑，编号以镜头层为准）。
 
-## 七、模板 id 路由（22 个内置）
+## 七、模板 id 路由（23 个内置）
 
 | 场景 | 模板 id |
 |---|---|
@@ -105,6 +105,7 @@
 | 长篇/系列 | `series-episode-outline` · `animation-unit-episode` |
 | 分镜/导演 | `storyboard-dialogue-scene`（横屏 16:9）· `directing-style-pack-starter` |
 | **细节扩写（R45）** | `scene-detail-expansion`（物理层）· `emotion-curve-card`（情感层）——两者配合使用 |
+| **细节体检（R52）** | `detail-audit-sheet`（五维各 3 问 + 影响四通道 + 档位评级 → 补写清单；诊断先于扩写） |
 
 ## 八、失败编码总览（细节见各文件）
 

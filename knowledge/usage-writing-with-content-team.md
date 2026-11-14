@@ -45,7 +45,7 @@
 | ③ 去 AI 味 | 每章 | `web-fiction-craft.md`（AI 腔词表）+ `deai.py` 口径 | 无排比腔/无解释性旁白/无"仿佛"密度 |
 | ④ 转场门 | 每章 | `chapter-continuity.md`（七法） | 章内冷切有桥、同章 ≤3 种桥法、A 出=B 进 |
 | ⑤ 连贯门 | 每章 | `chapter-continuity.md`（叙述五层）+ `narratology-toolbox.md` | 视角不漂、回场概念半句重注、因果有由头、主线 6:3:1、语者恒定 |
-| ⑥ 细节维度门 | 重点场景（冲突/情感转折） | `scene-detail-engineering.md` + `emotion-conflict-externalization.md` | 五维至少覆盖 3 维、密度 3-5 个、情感外化不直述、冲突至少两维推进 |
+| ⑥ 细节维度门 | 重点场景（冲突/情感转折） | `scene-detail-engineering.md`（五维+具体化四阶+事件/影响） + `emotion-conflict-externalization.md` | 先用模板 `detail-audit-sheet` 体检（五维各 3 问+影响四通道+档位评级）→ `scene-detail-expansion` 补写 → `emotion-curve-card` 分配情感；判定：五维至少 3 维、档位到 3/4、密度 3-5 个、情感不直述、冲突至少两维推进 |
 
 **章卡模板**（每章一行，写完即填）：
 
@@ -104,7 +104,7 @@ curl http://127.0.0.1:8000/api/novels/<novel_id>/writing-desk
 | 世界观漏气 / 规则随便改 | `worldbuilding-guide.md`（规则即代价）+ `rule-horror-techniques.md`（三构成） |
 | 转场跳跃 / 章节之间断线 | `chapter-continuity.md`（七法/五层） |
 | 读者说"看不懂/太累" | `rule-horror-techniques.md`（理解成本转移七条） |
-| 场景像流水账 / 单薄无细节 | `scene-engineering.md`（价值翻转/删除测试）→ `scene-detail-engineering.md`（五维细节矩阵） |
+| 场景像流水账 / 单薄无细节 | `scene-engineering.md`（价值翻转/删除测试）→ `scene-detail-engineering.md`（五维+具体化四阶+事件/影响），模板 `detail-audit-sheet` 体检后 `scene-detail-expansion` 补写 |
 | 情感直述 / 冲突全靠对话推 | `emotion-conflict-externalization.md`（四通道外化 + 五维冲突） |
 | 改稿不知从哪下手 | `revision-diagnosis.md`（三层体检→手术顺序） |
 | 主题说不清 / 结尾空 | `theme-engineering.md`（控制性观念/三拍/漂移检测） |
