@@ -36,7 +36,7 @@
 | 问题 | 权威文件 |
 |---|---|
 | 开篇不抓人 / 章尾无钩 | `web-fiction-craft.md` → `hook-mechanics.md` |
-| 中段塌陷 / 节奏失衡 | `beat-sheets.md`（**拍位时长唯一权威**） |
+| 中段塌陷 / 节奏失衡 | `beat-sheets.md`（**拍位时长唯一权威**）→ 事件弧排布 → `event-conflict-arc.md`（六拍：失衡→困难→尝试→失败→再试→假胜真胜） |
 | 场景像流水账 | `scene-engineering.md`（价值翻转/删除测试）；物理细节 → `scene-detail-engineering.md` |
 | 情感直述 / 冲突靠对话 | `emotion-conflict-externalization.md` |
 | 人物扁平 / 台词同腔 | `character-bible.md` + `dialogue-examples.md` |
@@ -83,7 +83,7 @@
 
 ## 六、references 全清单（50 份，按簇分组；★=簇主文件）
 
-**novel-writing（17）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
+**novel-writing（18）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`event-conflict-arc`（**六拍事件链**）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
 
 **script-writing（13）**：★`screenwriting-craft`（总论）· ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（公式/爽点表达层）· `short-drama-genres`（含反派分级附录）· ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
 

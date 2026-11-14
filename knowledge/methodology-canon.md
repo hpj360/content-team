@@ -12,7 +12,7 @@
 | 层 | 回答的问题 | 权威文件 |
 |---|---|---|
 | **L0 意图与契约** | 这部作品相信什么？与读者签了什么约？ | `theme-engineering`（控制性观念）· `web-fiction-craft`（黄金三章契约） |
-| **L1 结构骨架** | 事件按什么顺序、什么节拍发生？ | `beat-sheets`（**拍位时长唯一权威**）· `screenwriting-craft`（事件-场景-序列-幕）· `chapter-continuity`（章际）· `story-state-and-continuity`（伏笔登记） |
+| **L1 结构骨架** | 事件按什么顺序、什么节拍发生？ | `beat-sheets`（**拍位时长唯一权威**）· `event-conflict-arc`（**六拍事件链**：失衡→困难→尝试→失败→再试→假胜真胜）· `screenwriting-craft`（事件-场景-序列-幕）· `chapter-continuity`（章际）· `story-state-and-continuity`（伏笔登记） |
 | **L2 冲突与场景** | 每场戏改变了什么？冲突挖多深？ | `scene-engineering`（价值翻转/删除测试）· `emotion-conflict-externalization`（冲突纵深四层）· `scene-writing-drills`（八类场景素材） |
 | **L3 细节与情感** | 观众看到/感到什么？ | `scene-detail-engineering`（五维+实训公式）· `emotion-conflict-externalization`（四通道/三段式）· `dialogue-examples`（台词 8 症） |
 | **L4 叙述与语言** | 谁在讲、站多远、什么速度？ | `narratology-toolbox`（视角/距离/时序/速度）· `chapter-continuity`（叙述五层/语者恒定）· `web-fiction-craft`（去 AI 味） |
@@ -46,7 +46,7 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 - 定义：同一结构重复三次、每次必须**改变一个维度**（代价/尺度/关系），否则是堆量。
 - 操作：三拍装载（装/升/爆）；动作三拍（意图→受阻→变招）；升级三拍（压→小爽→大爽）。
 - 失败信号：三拍单调重复；第二拍起无新信息。
-- 权威：`beat-sheets`（S 系/8 拍）；`scene-detail-engineering`（动作三拍）；`paradigm-sketch-competition`（三拍装载）。
+- 权威：`beat-sheets`（S 系/8 拍）；`scene-detail-engineering`（动作三拍）；`paradigm-sketch-competition`（三拍装载）；`event-conflict-arc`（**完整弧形态**：失衡→困难→尝试→失败→再试→假胜·真胜——三拍是其压缩）。
 
 ### P5 钩子＝信息缺口＋回收承诺
 - 定义：钩子不是"留悬念"，而是**明确告诉读者有个答案、答案可得、且我承诺什么时候还**。

@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 79 |
+| 技能方法论（references） | 80 |
 | 语料案例 | 59 |
 | 知识沉淀 | 21 |
 | 写作模板 | 22 |
-| **合计** | **206** |
+| **合计** | **207** |
 
 ## 创作技能
 
@@ -78,6 +78,7 @@
 - **主题工程：控制性观念、命题三拍与象征系统** — `skills/novel-writing/references/theme-engineering.md` · `novel-writing、theme、engineering`
 - **互动剧 / 游戏分支脚本（形态深度）** — `skills/script-writing/references/interactive-and-game-script.md` · `script-writing、interactive、and、game`
 - **人物档案与关系网设计** — `skills/novel-writing/references/character-bible.md` · `novel-writing、character、bible`
+- **六拍事件链：失衡—困难—尝试—失败—再试—假胜·真胜** — `skills/novel-writing/references/event-conflict-arc.md` · `novel-writing、event、conflict、arc`
 - **分镜失败案例手册（SB 编号 × 完整案例）** — `skills/storyboarding/references/storyboard-failure-casebook.md` · `storyboarding、storyboard、failure、casebook`
 - **分镜方法论（蒸馏）** — `skills/storyboarding/references/storyboard-method.md` · `storyboarding、storyboard、method`
 - **分集节奏实例（12 集短剧节奏总表）** — `skills/showrunning/references/episode-rhythm-examples.md` · `showrunning、episode、rhythm、examples`
