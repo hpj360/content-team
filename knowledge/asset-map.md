@@ -16,7 +16,7 @@
 | `corpus/README.md` | "语料库怎么分族、同 IP 怎么分工" | 用案例对标的人 |
 
 规则：规矩条文（引用分级）以 `AGENTS.md` #3 为准；失败编码总表以 `corpus/failure-corpus.md` 为准；
-原理与概念/数值权威以 `methodology-canon.md` 为准。
+原理与概念/数值权威以 `methodology-canon.md` 为准；**技能（25 个）分组与边界见 `skills/README.md`**。
 
 ## 二、六道门 → 权威文件（写中流程）
 
@@ -109,6 +109,14 @@
 ## 八、失败编码总览（细节见各文件）
 
 F1–F10 导演层（`directing/references/failure-casebook.md`）· SB1–SB8 分镜层（`storyboard-failure-casebook.md`）· N-FAIL/P-FAIL 叙事流程层（`corpus/failure-corpus.md`，**总索引在此**）· V-F1–F10 竖屏层（`corpus/failure-vertical-drama.md`）· AI-F1–AI-F10 生成内容层（`corpus/failure-ai-drama.md`）· ST/SC/SE 稿件诊断层（`script-writing/references/revision-diagnosis.md`）。
+
+## 八·补、知识与继承文档归属（全部登记，无孤儿文档）
+
+| 组 | 文档 | 说明 |
+|---|---|---|
+| **创作入口（六入口）** | `creative-methodology-overview.md`（总纲）· `methodology-canon.md`（正典）· `usage-writing-with-content-team.md`（手册）· `asset-map.md`（本图）· `INDEX.md`（目录）· `corpus/README.md`（语料域） | 按 §一 分工 |
+| **规范与账本** | `../AGENTS.md`（协作与引用规则）· `material-intake.md`（素材入库 SOP）· `creative-tuning-report.md`（实网调优数据）· `creative-quality-model.md`（迭代账本）· `method-distillation-log.md`（蒸馏 SSOT） | 各自权威口径见文件头 |
+| **hermes 平台沉淀（继承 13 份）** | `architecture.md` · `builder-checker-loop.md` · `DECISIONS.md` · `evaluator-subagent-template.md` · `harness-engineering.md` · `loop-engineering.md` · `memory-model.md` · `multi-agent-harness.md` · `skill-and-loop.md` · `skill-sync-management.md` · `skill-writing-vocabulary.md` · `ui-design-stack.md` · `working-principles.md` | fork 继承的框架背景资料，非创作方法论；改创作方法论时不引用其细节，只作背景 |
 
 ## 九、维护规则（防止本图漂移）
 
