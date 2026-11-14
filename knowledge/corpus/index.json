@@ -672,6 +672,48 @@
         {"id": "MT1", "content": "前世知识的适用边界逐卷暴露", "planted_at": "前期", "planned_resolution": "中期", "status": "planted", "keyword": "前世"},
         {"id": "MT2", "content": "列强标尺人物逐一登场重定价", "planted_at": "早期提及", "planned_resolution": "各期", "status": "planted", "keyword": "列强"}
       ]
+    },
+    {
+      "id": "paradigm-ensemble-sanguo",
+      "file": "paradigm-ensemble-sanguo.md",
+      "title": "体系拆解：《三国演义》群像多线-势力合流体系",
+      "author": "范式分析（公版作品·2026-11-15 校准；短引 ≤2 句/条）",
+      "form": "ensemble-novel",
+      "genres": ["历史", "群像", "体系"],
+      "tags": ["势力线", "群像管理", "记忆点标签", "谋略分级", "以少胜多", "说书人视角"],
+      "summary": "势力线＞人物线的多线结构、线合流装置（会盟/大战/联姻）、出场即高光的群像管理、道具人格化记忆点、谋略分级作为实力轴、兵力城池粗刻度。",
+      "foreshadowing_plan": [
+        {"id": "SG1", "content": "谋士的献策在后续战局逐一兑现", "planted_at": "献策章", "planned_resolution": "战局章", "status": "planted", "keyword": "献策"},
+        {"id": "SG2", "content": "名将之死的杠杆效应延迟释放", "planted_at": "鼎盛期", "planned_resolution": "转折章", "status": "planted", "keyword": "名将"}
+      ]
+    },
+    {
+      "id": "breakdown-godfather-michael-arc",
+      "file": "breakdown-godfather-michael-arc.md",
+      "title": "弧线级拆解：《教父》迈克尔·柯里昂黑化继承弧",
+      "author": "弧线级拆解（据《教父》1972 公开口径·2026-11-15 校准；短引 ≤2 句/条）",
+      "form": "beat-breakdown",
+      "genres": ["犯罪", "电影"],
+      "tags": ["黑化弧", "旁观者掌权", "洗礼蒙太奇", "权力清算", "道德测量仪", "修辞合法性漂移"],
+      "summary": "旁观者→掌权者五阶段各配不可逆标志、与《狂飙》黑化弧对照、洗礼交叉剪辑=权力清算机制、配角作道德测量仪、'为了家族'的修辞合法性漂移。",
+      "foreshadowing_plan": [
+        {"id": "GF1", "content": "'从不分心'的宣言在家庭线崩塌处回收", "planted_at": "前期", "planned_resolution": "终章", "status": "planted", "keyword": "宣言"},
+        {"id": "GF2", "content": "门的意象逐阶段闭合", "planted_at": "各阶段", "planned_resolution": "结尾", "status": "planted", "keyword": "门"}
+      ]
+    },
+    {
+      "id": "breakdown-orient-express",
+      "file": "breakdown-orient-express.md",
+      "title": "节拍级拆解：《东方快车谋杀案》全员诡计与公平性工程",
+      "author": "节拍级拆解（据 1934/1974 公开口径·2026-11-15 校准；短引 ≤2 句/条）",
+      "form": "beat-breakdown",
+      "genres": ["悬疑", "电影", "小说"],
+      "tags": ["公平性工程", "全员嫌疑人", "密闭空间", "证词网", "双答案裁决", "红鲱鱼"],
+      "summary": "线索全量前置的公平密度、红鲱鱼公平放置三原则、全员嫌疑人的群像审讯节奏、列车密闭空间的时间冻结、法律vs程序正义的双答案结构、12 份证词互锁的证词网。",
+      "foreshadowing_plan": [
+        {"id": "OE1", "content": "全员身份的公共线索逐份解锁", "planted_at": "各章", "planned_resolution": "解密章", "status": "planted", "keyword": "身份"},
+        {"id": "OE2", "content": "侦探裁决的道德出口延迟揭晓", "planted_at": "中段", "planned_resolution": "终章", "status": "planted", "keyword": "裁决"}
+      ]
     }
   ]
 }

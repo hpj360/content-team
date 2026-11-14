@@ -61,6 +61,7 @@ description: 小说创作。当用户要构思、写作、续写、改写或评�
 
 - `references/web-fiction-craft.md` — 网文商业方法：扫榜→拆文→商业化写作、黄金三章、章尾钩子 13 式、去 AI 味清单。
 - `references/story-state-and-continuity.md` — 故事状态落盘与连续性契约：追踪状态、角色/伏笔契约、目标分层。
+- `references/asset-consistency-audit.md` — **资产一致性审查法**：六类资产单一事实源、对账五步（定源→抽取→比对→归因→台账）、抽查节奏（轻审/大事件后重审/交稿全量）、高频陷阱 8 条、自动代查与人审分界。
 - `references/hook-library.md` — 章尾钩子 13 式**实例库**：每式定义/示例句/误用 + 全书排布与防疲劳规则。
 - `references/case-breakdown.md` — 拆文工作流：五步拆解法、节奏条统计（压:爆比）、剧情模块库、拆文报告模板。
 - `references/genre-playbooks.md` — 题材手册：七题材的读者期待×爽点节奏×开篇套路×雷区，附 `Novel.genre` 与状态卡映射。

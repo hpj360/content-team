@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 81 |
-| 语料案例 | 66 |
+| 技能方法论（references） | 83 |
+| 语料案例 | 69 |
 | 知识沉淀 | 21 |
 | 写作模板 | 23 |
-| **合计** | **216** |
+| **合计** | **221** |
 
 ## 创作技能
 
@@ -44,6 +44,7 @@
 ## 技能方法论（references）
 
 - **AI 视频分镜提示词推导（镜头表 → 每镜提示词）** — `skills/storyboarding/references/ai-video-storyboard-prompting.md` · `storyboarding、ai、video、storyboard`
+- **AI 静态图出图配方（场景/角色/道具三类）** — `skills/storyboarding/references/ai-image-recipe.md` · `storyboarding、ai、image、recipe`
 - **Audio engine — voiceover, music, SFX, captions, transcription** — `skills/@heygen-com/media-use/references/audio.md` · `@heygen-com/media-use、audio`
 - **Audio-Reactive Animation** — `skills/@root/hyperframes/references/audio-reactive.md` · `@root/hyperframes、audio、reactive`
 - **Batch Workflows** — `skills/@lijiazhen0623/media-generation/references/batch-workflows.md` · `@lijiazhen0623/media-generation、batch、workflows`
@@ -121,6 +122,7 @@
 - **网文商业创作方法（蒸馏）** — `skills/novel-writing/references/web-fiction-craft.md` · `novel-writing、web、fiction、craft`
 - **节拍表模板与实例** — `skills/script-writing/references/beat-sheets.md` · `script-writing、beat、sheets`
 - **规则怪谈规则工程：定义·分层披露·理解成本转移** — `skills/novel-writing/references/rule-horror-techniques.md` · `novel-writing、rule、horror、techniques`
+- **资产一致性审查法（设定库级体检）** — `skills/novel-writing/references/asset-consistency-audit.md` · `novel-writing、asset、consistency、audit`
 - **钩子的认知机制：为什么钩子有效，以及何时失效** — `skills/novel-writing/references/hook-mechanics.md` · `novel-writing、hook、mechanics`
 - **题材手册（读者预期 × 爽点节奏 × 开篇套路 × 雷区）** — `skills/novel-writing/references/genre-playbooks.md` · `novel-writing、genre、playbooks`
 - **风格包全库（01–12）** — `skills/directing/references/style-pack-library.md` · `directing、style、pack、library`
@@ -135,6 +137,7 @@
 - **付费微短剧工程范式** — `knowledge/corpus/paradigm-paid-short-drama.md` · `免费转化窗、单集钩链、厂牌复利、投流素材`
 - **体系拆解：《Re:Zero》能力代价-加护-王国体系** — `knowledge/corpus/paradigm-power-system-rezero.md` · `能力代价、死亡回归、加护体系、隐性数值`
 - **体系拆解：《三体》科技-实力-文明体系** — `knowledge/corpus/paradigm-power-system-three-body.md` · `技术代差、威慑度、科技封锁、生存经济学`
+- **体系拆解：《三国演义》群像多线-势力合流体系** — `knowledge/corpus/paradigm-ensemble-sanguo.md` · `势力线、群像管理、记忆点标签、谋略分级`
 - **体系拆解：《凡人修仙传》境界-经济-天赋体系** — `knowledge/corpus/paradigm-power-system-mortal-cultivation.md` · `境界阶梯、灵根天赋、灵石经济、法宝丹药`
 - **体系拆解：《我独自升级》面板-副本-公会体系** — `knowledge/corpus/paradigm-power-system-solo-leveling.md` · `面板数值、系统任务、评级错位、副本经济`
 - **体系拆解：《斗破苍穹》等级-炼药师-经济体系** — `knowledge/corpus/paradigm-power-system-battle-through-heavens.md` · `九段星阶、炼药师、异火收集、微档推进`
@@ -156,6 +159,7 @@
 - **希区柯克悬念工业（导演方法论）** — `knowledge/corpus/paradigm-director-hitchcock.md` · `悬念配方、MacGuffin、POV三角、观众契约`
 - **平台爆款拆解样例（范式级）** — `knowledge/corpus/platform-hits-patterns.md` · `corpus、platform、hits、patterns`
 - **弧线级全拆：《狂飙》高启强黑化三幕** — `knowledge/corpus/breakdown-kuangbiao-arc.md` · `黑化三幕、权力道具、合法身份漂移、镜像对照线`
+- **弧线级拆解：《教父》迈克尔·柯里昂黑化继承弧** — `knowledge/corpus/breakdown-godfather-michael-arc.md` · `黑化弧、旁观者掌权、洗礼蒙太奇、权力清算`
 - **我的叔叔于勒** — `knowledge/corpus/deconstruction-maupassant-uncle-jules.md` · `期待落差、识别符转折、行动写道德、冷收`
 - **按题材的失败案例集** — `knowledge/corpus/failure-by-genre.md` · `corpus、failure、by、genre`
 - **昆汀类型杂烩与非线性对白（导演方法论）** — `knowledge/corpus/paradigm-director-tarantino.md` · `章节环回、闲谈即炸弹、后备箱镜头、暴力喜剧化`
@@ -183,6 +187,7 @@
 - **节拍级全拆：《后窗》多窗口 POV 对账** — `knowledge/corpus/breakdown-rear-window.md` · `POV对账、窗即画框、四幕执行表、供给节奏`
 - **节拍级全拆：《盗梦空间》四层规则×时间对照** — `knowledge/corpus/breakdown-inception.md` · `层级倍增、同步锚、规则卡、多线并行`
 - **节拍级全拆：《黑神话：悟空》六章章节叙事编排** — `knowledge/corpus/breakdown-black-myth-wukong.md` · `章节叙事、双收束、影神图回收、气象定调`
+- **节拍级拆解：《东方快车谋杀案》全员诡计与公平性工程** — `knowledge/corpus/breakdown-orient-express.md` · `公平性工程、全员嫌疑人、密闭空间、证词网`
 - **药** — `knowledge/corpus/deconstruction-luxun-medicine.md` · `双线并置、象征蒙太奇、看客群像、冷收留白`
 - **西游记** — `knowledge/corpus/deconstruction-wu-journey-west.md` · `任务型单元剧、群像分工、反派分层、背景即爽点`
 - **语料命中审计：语料库消耗回环第一份量化报告（2026-11-08）** — `knowledge/corpus/corpus-coverage-audit.md` · `corpus、corpus、coverage、audit`

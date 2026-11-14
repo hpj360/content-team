@@ -14,10 +14,10 @@
 | B. 创作实战示例 | 3 | short-drama / variety-segment / animation-episode | 自产逐拍级示例（外卖逆袭/迷宫情报战/信使与灯塔） |
 | C. 结构与机制范式 | 3 | sketch / mystery-game / structure-analysis | 跨题材通用机制：素描结构、剧本杀、章回体 |
 | D. 题材赛道范式 | 8 | structure-analysis | 言情/商战/综艺/动画/竖屏互动/付费微短剧/叙事播客/游戏叙事 |
-| E. 长篇双轨范式 | 2 | novel-paradigm | 冰与火之歌多线史诗、网文爆款引擎（六作逐案） |
+| E. 长篇双轨范式 | 3 | novel-paradigm / ensemble-novel | 冰与火之歌多线史诗、网文爆款引擎（六作逐案）、三国演义群像多线 |
 | F. 导演方法论 | 5 | director-paradigm | 希区柯克/王家卫/黑泽明/昆汀/诺兰（T1–T8 深度档） |
 | G. 喜剧双赛道 | 2 | comedy-competition | 素描竞赛工程、单口竞技工程（含逐案拆解） |
-| H. 全拆与档案拆解 | 7 | beat-breakdown / archive-breakdown | 节拍级/弧线级/档案级单案深拆 |
+| H. 全拆与档案拆解 | 9 | beat-breakdown / archive-breakdown | 节拍级/弧线级/档案级单案深拆 |
 | I. 体系拆解 | 7 | power-system | 能力/天赋/经济/科技/实力/数值六维（诡秘之主/凡人修仙传/三体/斗破苍穹/Re:Zero/我独自升级/无职转生） |
 | — 索引与工具文档 | 8 | —（非 case） | genre-comparison / hot-quotes-memes / failure-corpus / failure-by-genre / platform-hits-patterns / 新赛道失败库×2 / 命中审计 |
 
@@ -77,12 +77,13 @@
 | `paradigm-narrative-podcast.md` | 叙事播客 | 通用形态（公开方法论口径） | 5 秒时刻、张力六工具、悬崖钩 80–95% 位、周更复利 |
 | `paradigm-game-narrative.md` | 游戏叙事 | 《黑神话：悟空》影神图体系 | 档案拼图、支线评论、叙述距离分层、空位设计 |
 
-### E. 长篇双轨范式（2）
+### E. 长篇双轨范式（3）
 
 | 文件 | 赛道 | 对象 | 可迁移点 |
 |---|---|---|---|
 | `paradigm-western-epic-asoiaf.md` | 西式多线史诗 | 《冰与火之歌》口径 | POV 章节制、家族线账本、低魔计价、事件代词 |
 | `paradigm-webnovel-hit-masters.md` | 网文爆款 | 十日终焉/斩神/我不是戏神/剑来/持械入宋/悟空传 | 数值化目标、轮回记忆账、文化规则库、语录体、AI 合规案例 |
+| `paradigm-ensemble-sanguo.md` | 中式群像多线 | 《三国演义》（公版） | 势力线＞人物线、线合流装置、出场即高光、道具人格化记忆点、谋略分级实力轴 |
 
 ### F. 导演方法论（5，含 R36 深化档）
 
@@ -112,6 +113,8 @@
 | `breakdown-fanxiangzhidi.md` | 《反相之地》（2026） | 节拍级 | 规则怪谈规则卡、单集双钩、AI 一致性锚定 |
 | `breakdown-black-myth-wukong.md` | 《黑神话：悟空》六章（2024） | 节拍级 | 气象定调章名、双收束制、影神图二次叙事 |
 | `breakdown-blackmyth-yingshentu.md` | 《黑神话：悟空》影神图（203 条） | 档案级 | 判词+志传条目公式、五样条实证、收集叙事账户 |
+| `breakdown-godfather-michael-arc.md` | 《教父》（1972） | 弧线级 | 旁观者→掌权者五阶段、洗礼蒙太奇=权力清算、道德测量仪配角、修辞合法性漂移 |
+| `breakdown-orient-express.md` | 《东方快车谋杀案》（1934/1974） | 节拍级 | 公平性工程、全员嫌疑人群像审讯、密闭空间时间冻结、双答案裁决、证词网 |
 
 ### I. 体系拆解（7，六维：能力/天赋/经济/科技/实力/数值）
 

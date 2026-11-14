@@ -58,7 +58,7 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 - 定义：所有"被展示但未兑现"的元素都要登记 `planted_at ↔ planned_resolution`，未回收即债务。
 - 操作：写作台对账；欠钩 >3 先还债；判词/预言式预告（红楼梦/影神图）是登记制的文学原型。
 - 失败信号：伏笔永不回收；结局依赖前文未埋的信息（天降）。
-- 权威：`story-state-and-continuity`；`chapter-continuity`（章际回收）；语料 `honglou-meng`/`breakdown-blackmyth-yingshentu`。
+- 权威：`story-state-and-continuity`（伏笔账本）；`asset-consistency-audit`（设定资产交叉对账五步）；`chapter-continuity`（章际回收）；语料 `honglou-meng`/`breakdown-blackmyth-yingshentu`。
 
 ### P7 规则即代价（Rules cost something）
 - 定义：世界观/金手指/规则体系的每条规则必须有代价、上限与失效条件，否则只是设定不是戏剧。
