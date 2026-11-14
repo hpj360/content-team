@@ -56,6 +56,7 @@
 | 剪辑切点/声画 | `edit-rhythm-and-transition.md` / `sound-and-edit-craft.md` |
 | AI 视频分镜提示词 | `ai-video-storyboard-prompting.md` |
 | 改编（小说↔剧本） | `adaptation-guide.md` |
+| 能力/天赋/经济/数值体系设计 | `corpus/paradigm-power-system-*.md`（六维体系拆解：能力/天赋/经济/科技/实力/数值 + 耦合图） |
 
 ## 四、题材簇权责（审计确认的三份散点已归位）
 

@@ -574,6 +574,34 @@
       "foreshadowing_plan": [
         {"id": "Y1", "content": "收集完成度回收为主线暗窗口", "planted_at": "首章", "planned_resolution": "第六章", "status": "planted", "keyword": "图鉴"}
       ]
+    },
+    {
+      "id": "paradigm-power-system-lord-of-mysteries",
+      "file": "paradigm-power-system-lord-of-mysteries.md",
+      "title": "体系拆解：《诡秘之主》能力-数值-经济体系",
+      "author": "范式分析（参考《诡秘之主》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["玄幻", "克苏鲁", "体系"],
+      "tags": ["序列途径", "魔药代价", "扮演法", "金镑经济", "封印物", "灵性"],
+      "summary": "22 途径×9 序列的能力树、魔药获得与失控代价、扮演法的人格绑定、金镑→材料→能力的闭环经济、序列号即数值的三轴量化与六维耦合。",
+      "foreshadowing_plan": [
+        {"id": "L1", "content": "低序列时埋下的途径克制线索在晋升后兑现", "planted_at": "前期章", "planned_resolution": "中后期章", "status": "planted", "keyword": "序列"},
+        {"id": "L2", "content": "封印物的副作用延迟反噬", "planted_at": "获得章", "planned_resolution": "使用章", "status": "planted", "keyword": "封印物"}
+      ]
+    },
+    {
+      "id": "paradigm-power-system-mortal-cultivation",
+      "file": "paradigm-power-system-mortal-cultivation.md",
+      "title": "体系拆解：《凡人修仙传》境界-经济-天赋体系",
+      "author": "范式分析（参考《凡人修仙传》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["仙侠", "修真", "体系"],
+      "tags": ["境界阶梯", "灵根天赋", "灵石经济", "法宝丹药", "越阶规则", "寿元约束"],
+      "summary": "炼气→渡劫九阶境界、灵根天赋的入行门槛、灵石本位+贡献点双轨经济、符阵炼器四类修仙科技、越阶三条件与境界-寿元数值挂钩。",
+      "foreshadowing_plan": [
+        {"id": "M1", "content": "伪灵根的天赋劣势在关键突破处成为代价", "planted_at": "开局章", "planned_resolution": "突破章", "status": "planted", "keyword": "灵根"},
+        {"id": "M2", "content": "寿元上限逼近驱动孤注一掷", "planted_at": "中段章", "planned_resolution": "渡劫章", "status": "planted", "keyword": "寿元"}
+      ]
     }
   ]
 }

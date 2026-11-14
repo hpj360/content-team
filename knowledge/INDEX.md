@@ -8,10 +8,10 @@
 |---|---|
 | 创作技能 | 25 |
 | 技能方法论（references） | 80 |
-| 语料案例 | 59 |
+| 语料案例 | 61 |
 | 知识沉淀 | 21 |
 | 写作模板 | 23 |
-| **合计** | **208** |
+| **合计** | **210** |
 
 ## 创作技能
 
@@ -132,6 +132,8 @@
 - **中文商业素描喜剧结构** — `knowledge/corpus/deconstruction-comedy-sketch.md` · `高概念前提、升级三拍、怪人直人、回调`
 - **中文网文爆款引擎范式（六作逐案）** — `knowledge/corpus/paradigm-webnovel-hit-masters.md` · `数值化目标、轮回记忆账、文化规则库、语录体外溢`
 - **付费微短剧工程范式** — `knowledge/corpus/paradigm-paid-short-drama.md` · `免费转化窗、单集钩链、厂牌复利、投流素材`
+- **体系拆解：《凡人修仙传》境界-经济-天赋体系** — `knowledge/corpus/paradigm-power-system-mortal-cultivation.md` · `境界阶梯、灵根天赋、灵石经济、法宝丹药`
+- **体系拆解：《诡秘之主》能力-数值-经济体系** — `knowledge/corpus/paradigm-power-system-lord-of-mysteries.md` · `序列途径、魔药代价、扮演法、金镑经济`
 - **俄狄浦斯王** — `knowledge/corpus/deconstruction-sophocles-oedipus.md` · `调查即自证、命运反讽、线索链、象征动作`
 - **冰与火之歌多线史诗工程范式** — `knowledge/corpus/paradigm-western-epic-asoiaf.md` · `POV章节制、家族线账本、已知信息延迟兑现、低魔计价`
 - **剧本杀高分机制** — `knowledge/corpus/deconstruction-mystery-game.md` · `视角分割、时间线碰撞、线索链、信息公平`

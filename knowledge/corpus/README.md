@@ -6,7 +6,7 @@
 
 **资产总图与任务路由**见 `knowledge/asset-map.md`；失败编码总表见 `failure-corpus.md`。
 
-## 语料地图（2026-11-08 整理）
+## 语料地图（2026-11-15 整理）
 
 | 族 | 数量 | 形态（form） | 一句话定位 |
 |---|---|---|---|
@@ -18,6 +18,7 @@
 | F. 导演方法论 | 5 | director-paradigm | 希区柯克/王家卫/黑泽明/昆汀/诺兰（T1–T8 深度档） |
 | G. 喜剧双赛道 | 2 | comedy-competition | 素描竞赛工程、单口竞技工程（含逐案拆解） |
 | H. 全拆与档案拆解 | 7 | beat-breakdown / archive-breakdown | 节拍级/弧线级/档案级单案深拆 |
+| I. 体系拆解 | 2 | power-system | 能力/天赋/经济/科技/实力/数值六维（诡秘之主/凡人修仙传） |
 | — 索引与工具文档 | 8 | —（非 case） | genre-comparison / hot-quotes-memes / failure-corpus / failure-by-genre / platform-hits-patterns / 新赛道失败库×2 / 命中审计 |
 
 ## 目录
@@ -111,6 +112,15 @@
 | `breakdown-fanxiangzhidi.md` | 《反相之地》（2026） | 节拍级 | 规则怪谈规则卡、单集双钩、AI 一致性锚定 |
 | `breakdown-black-myth-wukong.md` | 《黑神话：悟空》六章（2024） | 节拍级 | 气象定调章名、双收束制、影神图二次叙事 |
 | `breakdown-blackmyth-yingshentu.md` | 《黑神话：悟空》影神图（203 条） | 档案级 | 判词+志传条目公式、五样条实证、收集叙事账户 |
+
+### I. 体系拆解（2，六维：能力/天赋/经济/科技/实力/数值）
+
+| 文件 | 对象 | 六维重点 | 可迁移点 |
+|---|---|---|---|
+| `paradigm-power-system-lord-of-mysteries.md` | 《诡秘之主》（公开口径） | 能力·天赋·经济·数值 | 22 途径×9 序列能力树、魔药代价与扮演法、金镑→材料→能力闭环经济、序列即数值三轴量化、六维耦合图 |
+| `paradigm-power-system-mortal-cultivation.md` | 《凡人修仙传》（公开口径） | 经济·天赋·实力·科技 | 九阶境界、灵根入行门槛、灵石本位+贡献点双轨、符阵炼器科技分阶、越阶三条件、境界-寿元数值挂钩 |
+
+> 体系类拆解只做**结构与方法论**，不复制原文设定文本/专名体系；数值为公开通行口径并标 hedge。
 
 ### 索引与工具文档（8，非案例条目）
 
