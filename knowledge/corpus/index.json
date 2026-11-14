@@ -602,6 +602,76 @@
         {"id": "M1", "content": "伪灵根的天赋劣势在关键突破处成为代价", "planted_at": "开局章", "planned_resolution": "突破章", "status": "planted", "keyword": "灵根"},
         {"id": "M2", "content": "寿元上限逼近驱动孤注一掷", "planted_at": "中段章", "planned_resolution": "渡劫章", "status": "planted", "keyword": "寿元"}
       ]
+    },
+    {
+      "id": "paradigm-power-system-three-body",
+      "file": "paradigm-power-system-three-body.md",
+      "title": "体系拆解：《三体》科技-实力-文明体系",
+      "author": "范式分析（参考《三体》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["科幻", "体系"],
+      "tags": ["技术代差", "威慑度", "科技封锁", "生存经济学", "文明刻度"],
+      "summary": "能力=战略装置的不对称、天赋在文明级实力前的失效边界、生存经济学、技术爆炸与代差、威慑度的量化与猜疑链的不可量化处理。",
+      "foreshadowing_plan": [
+        {"id": "T1", "content": "科技封锁的漏洞在后期成为破局点", "planted_at": "前期", "planned_resolution": "后期", "status": "planted", "keyword": "封锁"},
+        {"id": "T2", "content": "威慑建立的平衡在执剑人更替时反转", "planted_at": "中期", "planned_resolution": "更替章", "status": "planted", "keyword": "威慑"}
+      ]
+    },
+    {
+      "id": "paradigm-power-system-battle-through-heavens",
+      "file": "paradigm-power-system-battle-through-heavens.md",
+      "title": "体系拆解：《斗破苍穹》等级-炼药师-经济体系",
+      "author": "范式分析（参考《斗破苍穹》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["玄幻", "体系"],
+      "tags": ["九段星阶", "炼药师", "异火收集", "微档推进", "越阶爽点"],
+      "summary": "功法+斗技双载体、炼药师生产天赋连接经济轴、异火收集叙事、九段×星阶微档大档双层刻度、越阶=核心爽点装置。",
+      "foreshadowing_plan": [
+        {"id": "DP1", "content": "异火收集清单逐项回收", "planted_at": "前期章", "planned_resolution": "中后期章", "status": "planted", "keyword": "异火"},
+        {"id": "DP2", "content": "导师装置的旧伤在决战章兑现", "planted_at": "获得章", "planned_resolution": "决战章", "status": "planted", "keyword": "导师"}
+      ]
+    },
+    {
+      "id": "paradigm-power-system-rezero",
+      "file": "paradigm-power-system-rezero.md",
+      "title": "体系拆解：《Re:Zero》能力代价-加护-王国体系",
+      "author": "范式分析（参考《Re:Zero》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["奇幻", "体系"],
+      "tags": ["能力代价", "死亡回归", "加护体系", "隐性数值", "不可知实力"],
+      "summary": "最强能力+最痛代价+不可言说三件套、加护=世界授予的极端天赋、弱经济轴的合理性、轮回次数作隐性计数器的反数值设计。",
+      "foreshadowing_plan": [
+        {"id": "RZ1", "content": "不可言说的限制获得阶段性释放口", "planted_at": "前期", "planned_resolution": "关键章", "status": "planted", "keyword": "限制"},
+        {"id": "RZ2", "content": "不可知层的存在逐步显影", "planted_at": "中期", "planned_resolution": "后期", "status": "planted", "keyword": "显影"}
+      ]
+    },
+    {
+      "id": "paradigm-power-system-solo-leveling",
+      "file": "paradigm-power-system-solo-leveling.md",
+      "title": "体系拆解：《我独自升级》面板-副本-公会体系",
+      "author": "范式分析（参考《我独自升级》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["都市异能", "体系"],
+      "tags": ["面板数值", "系统任务", "评级错位", "副本经济", "军团复利"],
+      "summary": "面板四维+技能点全数值化、系统任务作成长发动机、军团=能力的复利化、评级滞后于真实实力的信息差、副本=可循环经济副本。",
+      "foreshadowing_plan": [
+        {"id": "SL1", "content": "系统来源之谜分阶段揭示", "planted_at": "觉醒章", "planned_resolution": "后期章", "status": "planted", "keyword": "系统"},
+        {"id": "SL2", "content": "评级错位在公开评级场合引爆", "planted_at": "前期", "planned_resolution": "评级章", "status": "planted", "keyword": "评级"}
+      ]
+    },
+    {
+      "id": "paradigm-power-system-mushoku-tensei",
+      "file": "paradigm-power-system-mushoku-tensei.md",
+      "title": "体系拆解：《无职转生》魔术阶级-公会-列强体系",
+      "author": "范式分析（参考《无职转生》公开口径·2026-11-15 校准）",
+      "form": "power-system",
+      "genres": ["奇幻", "体系"],
+      "tags": ["魔术阶级", "公会定价", "列强标尺", "跨世天赋", "魔术工学"],
+      "summary": "魔术六阶级+剑术三流派、公会=能力的社会定价机构、七大列强人形标尺、前世知识作隐藏天赋、数值随年龄真实生长。",
+      "foreshadowing_plan": [
+        {"id": "MT1", "content": "前世知识的适用边界逐卷暴露", "planted_at": "前期", "planned_resolution": "中期", "status": "planted", "keyword": "前世"},
+        {"id": "MT2", "content": "列强标尺人物逐一登场重定价", "planted_at": "早期提及", "planned_resolution": "各期", "status": "planted", "keyword": "列强"}
+      ]
     }
   ]
 }

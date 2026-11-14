@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 80 |
-| 语料案例 | 61 |
+| 技能方法论（references） | 81 |
+| 语料案例 | 66 |
 | 知识沉淀 | 21 |
 | 写作模板 | 23 |
-| **合计** | **210** |
+| **合计** | **216** |
 
 ## 创作技能
 
@@ -85,6 +85,7 @@
 - **制作统筹与独立审查契约（蒸馏）** — `skills/showrunning/references/production-contract.md` · `showrunning、production、contract`
 - **剧本形态格式规范（九类）** — `skills/script-writing/references/screenplay-formats.md` · `script-writing、screenplay、formats`
 - **剪辑节奏与切点方法** — `skills/storyboarding/references/edit-rhythm-and-transition.md` · `storyboarding、edit、rhythm、and`
+- **力量体系设计学（六维）：能力·天赋·经济·科技·实力·数值** — `skills/novel-writing/references/power-system-design.md` · `novel-writing、power、system、design`
 - **叙述学工具箱：视角、距离、时序与叙事速度** — `skills/novel-writing/references/narratology-toolbox.md` · `novel-writing、narratology、toolbox`
 - **台词改造实例库（bad → good 对照）** — `skills/script-writing/references/dialogue-examples.md` · `script-writing、dialogue、examples`
 - **各阶段验收清单实例** — `skills/showrunning/references/acceptance-checklists.md` · `showrunning、acceptance、checklists`
@@ -132,7 +133,12 @@
 - **中文商业素描喜剧结构** — `knowledge/corpus/deconstruction-comedy-sketch.md` · `高概念前提、升级三拍、怪人直人、回调`
 - **中文网文爆款引擎范式（六作逐案）** — `knowledge/corpus/paradigm-webnovel-hit-masters.md` · `数值化目标、轮回记忆账、文化规则库、语录体外溢`
 - **付费微短剧工程范式** — `knowledge/corpus/paradigm-paid-short-drama.md` · `免费转化窗、单集钩链、厂牌复利、投流素材`
+- **体系拆解：《Re:Zero》能力代价-加护-王国体系** — `knowledge/corpus/paradigm-power-system-rezero.md` · `能力代价、死亡回归、加护体系、隐性数值`
+- **体系拆解：《三体》科技-实力-文明体系** — `knowledge/corpus/paradigm-power-system-three-body.md` · `技术代差、威慑度、科技封锁、生存经济学`
 - **体系拆解：《凡人修仙传》境界-经济-天赋体系** — `knowledge/corpus/paradigm-power-system-mortal-cultivation.md` · `境界阶梯、灵根天赋、灵石经济、法宝丹药`
+- **体系拆解：《我独自升级》面板-副本-公会体系** — `knowledge/corpus/paradigm-power-system-solo-leveling.md` · `面板数值、系统任务、评级错位、副本经济`
+- **体系拆解：《斗破苍穹》等级-炼药师-经济体系** — `knowledge/corpus/paradigm-power-system-battle-through-heavens.md` · `九段星阶、炼药师、异火收集、微档推进`
+- **体系拆解：《无职转生》魔术阶级-公会-列强体系** — `knowledge/corpus/paradigm-power-system-mushoku-tensei.md` · `魔术阶级、公会定价、列强标尺、跨世天赋`
 - **体系拆解：《诡秘之主》能力-数值-经济体系** — `knowledge/corpus/paradigm-power-system-lord-of-mysteries.md` · `序列途径、魔药代价、扮演法、金镑经济`
 - **俄狄浦斯王** — `knowledge/corpus/deconstruction-sophocles-oedipus.md` · `调查即自证、命运反讽、线索链、象征动作`
 - **冰与火之歌多线史诗工程范式** — `knowledge/corpus/paradigm-western-epic-asoiaf.md` · `POV章节制、家族线账本、已知信息延迟兑现、低魔计价`

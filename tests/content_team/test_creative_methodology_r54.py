@@ -62,10 +62,10 @@ def test_core_mechanisms_present():
 
 def test_cases_registered_with_form():
     ids = {c.id for c in find_cases(form="power-system")}
-    assert ids == {
+    assert {
         "paradigm-power-system-lord-of-mysteries",
         "paradigm-power-system-mortal-cultivation",
-    }, f"power-system 注册异常: {ids}"
+    } <= ids, f"首批体系拆解注册缺失: {ids}"
     for case_id in ids:
         case = get_case(case_id)
         assert case and case.genres and case.tags and case.summary
@@ -75,7 +75,7 @@ def test_cases_registered_with_form():
 
 def test_readme_and_asset_map_updated():
     readme = (CORPUS_DIR / "README.md").read_text(encoding="utf-8")
-    assert "I. 体系拆解（2" in readme, "README 语料地图缺 I 族"
+    assert "I. 体系拆解" in readme, "README 语料地图缺 I 族"
     for filename in FILES:
         assert filename in readme, f"README 缺 {filename}"
     amap = (_ROOT / "knowledge" / "asset-map.md").read_text(encoding="utf-8")

@@ -100,6 +100,8 @@ curl http://127.0.0.1:8000/api/novels/<novel_id>/writing-desk
 | 开篇不抓人 / 前三章留不住 | `web-fiction-craft.md` → `hook-mechanics.md`（缺口机制） |
 | 章尾没钩 / 读者不追更 | `hook-library.md` + `hook-mechanics.md`（蔡格尼克）+ 欠钩检查 |
 | 中段塌陷 / 不知道写什么 | `beat-sheets.md`（15 拍定位）+ `failure-corpus.md`（中段病） |
+| 卷高潮无力 / 爽完即弃 | `event-conflict-arc.md`（卷高潮纪律：前必失败·后必清账·每爽必加码）+ `web-fiction-craft.md`（爽点兑现公式） |
+| 情绪全程同高 / 读着累 | `emotion-conflict-externalization.md`（卷级情绪配比与呼吸位）+ `revision-diagnosis.md`（ST7 情绪曲线） |
 | 人物扁平 / 说话一个腔调 | `character-bible.md`（四维/缺陷根源）+ `dialogue-examples.md`（8 症）+ `theme-engineering.md`（立场） |
 | 世界观漏气 / 规则随便改 | `worldbuilding-guide.md`（规则即代价）+ `rule-horror-techniques.md`（三构成） |
 | 转场跳跃 / 章节之间断线 | `chapter-continuity.md`（七法/五层） |

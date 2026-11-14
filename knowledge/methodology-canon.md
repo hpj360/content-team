@@ -64,7 +64,7 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 - 定义：世界观/金手指/规则体系的每条规则必须有代价、上限与失效条件，否则只是设定不是戏剧。
 - 操作：规则卡三件套（触发/禁忌/后果）+ 代价栏；规则怪谈另加三级渐进披露。
 - 失败信号：规则随便改、无代价、无失效条件。
-- 权威：`worldbuilding-guide`；`rule-horror-techniques`（规则怪谈专项）。
+- 权威：`worldbuilding-guide`（通用五层）；`rule-horror-techniques`（规则怪谈专项）；`power-system-design`（**六维体系设计学 S1–S10**：体系作为戏剧机器的量化与耦合）。
 
 ### P8 冲突纵深与外化（Conflict depth × externalization）
 - 定义：冲突先挖深（表层/利益/价值/自我四层），再外化（身体/空间/器物/话语/环境五维）。

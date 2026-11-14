@@ -56,7 +56,7 @@
 | 剪辑切点/声画 | `edit-rhythm-and-transition.md` / `sound-and-edit-craft.md` |
 | AI 视频分镜提示词 | `ai-video-storyboard-prompting.md` |
 | 改编（小说↔剧本） | `adaptation-guide.md` |
-| 能力/天赋/经济/数值体系设计 | `corpus/paradigm-power-system-*.md`（六维体系拆解：能力/天赋/经济/科技/实力/数值 + 耦合图） |
+| 能力/天赋/经济/数值体系设计 | `novel-writing/references/power-system-design.md`（**六维体系设计学 S1–S10**）+ 案例 `corpus/paradigm-power-system-*.md`（7 部六维拆解） |
 
 ## 四、题材簇权责（审计确认的三份散点已归位）
 
@@ -84,7 +84,7 @@
 
 ## 六、references 全清单（50 份，按簇分组；★=簇主文件）
 
-**novel-writing（18）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`event-conflict-arc`（**六拍事件链**）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
+**novel-writing（19）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`event-conflict-arc`（**六拍事件链**）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`power-system-design`（**六维体系设计学**）· ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `case-breakdown`
 
 **script-writing（13）**：★`screenwriting-craft`（总论）· ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（公式/爽点表达层）· `short-drama-genres`（含反派分级附录）· ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
 
