@@ -81,6 +81,7 @@ description: 剧本创作。当用户要写、改、评估剧本，或提到"剧
 - `references/screenwriting-craft.md` — 编剧手艺：事件—场景—序列—幕、三维人物与对手、台词即动作、场景五步法、晚进早出。
 - `references/short-drama-playbook.md` — 短剧手册：3/30/60 节奏公式、爽点矩阵、单集节奏表达层（**拍位与时长以 beat-sheets 为准**；反派分级见 genres 附录、合规红线见 platform 附录）。
 - `references/dialogue-examples.md` — 台词改造实例库：8 组病症 bad→good 对照 + 四步改造流程。
+- `references/comedy-engineering.md` — **喜剧工程（语料蒸馏）**：笑点五型、Setup-Build-Punch 三拍装载、排布纪律（密度/三重堵/节奏曲线）、人物喜剧三招、逐拍表宏观规律、喜悲转换还人情账。
 - `references/beat-sheets.md` — 节拍表模板：三幕 15 拍（含整季映射实例）+ 微短剧单集 8 拍（含时长分配与折算）。
 - `references/short-drama-genres.md` — 短剧题材库：六大题材的单集钩子/爽点链/反派配置/雷区 + 单集设计模板。
 - `references/scene-writing-drills.md` — 场景写作练习库：八类场景（冲突/揭示/追逐/情感/喜剧/悬疑/建置/过渡）的写法与改写要点。

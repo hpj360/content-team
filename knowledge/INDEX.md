@@ -7,11 +7,11 @@
 | 类别 | 数量 |
 |---|---|
 | 创作技能 | 25 |
-| 技能方法论（references） | 83 |
+| 技能方法论（references） | 86 |
 | 语料案例 | 69 |
 | 知识沉淀 | 21 |
 | 写作模板 | 23 |
-| **合计** | **221** |
+| **合计** | **224** |
 
 ## 创作技能
 
@@ -90,6 +90,7 @@
 - **叙述学工具箱：视角、距离、时序与叙事速度** — `skills/novel-writing/references/narratology-toolbox.md` · `novel-writing、narratology、toolbox`
 - **台词改造实例库（bad → good 对照）** — `skills/script-writing/references/dialogue-examples.md` · `script-writing、dialogue、examples`
 - **各阶段验收清单实例** — `skills/showrunning/references/acceptance-checklists.md` · `showrunning、acceptance、checklists`
+- **喜剧工程（Comedy Engineering）：从 setup 到 laugh 的机器** — `skills/script-writing/references/comedy-engineering.md` · `script-writing、comedy、engineering`
 - **场景写作练习库（八类场景写法）** — `skills/script-writing/references/scene-writing-drills.md` · `script-writing、scene、writing、drills`
 - **场景工程学：价值翻转、进出钩与过渡** — `skills/script-writing/references/scene-engineering.md` · `script-writing、scene、engineering`
 - **场景类型标准镜头序列（模式库）** — `skills/storyboarding/references/shot-patterns.md` · `storyboarding、shot、patterns`
@@ -107,6 +108,7 @@
 - **拆文工作流与案例拆解模板** — `skills/novel-writing/references/case-breakdown.md` · `novel-writing、case、breakdown`
 - **改编方法论（源 → 目标形态）** — `skills/script-writing/references/adaptation-guide.md` · `script-writing、adaptation、guide`
 - **故事状态与连续性契约（蒸馏）** — `skills/novel-writing/references/story-state-and-continuity.md` · `novel-writing、story、state、and`
+- **母题工程（Plot Device Engineering）：公版语料中的叙事装置** — `skills/novel-writing/references/plot-device-engineering.md` · `novel-writing、plot、device、engineering`
 - **玄幻/仙侠专属技法库** — `skills/novel-writing/references/genre-xuanhuan-techniques.md` · `novel-writing、genre、xuanhuan、techniques`
 - **短剧剧本手册（蒸馏）** — `skills/script-writing/references/short-drama-playbook.md` · `script-writing、short、drama、playbook`
 - **短剧题材库（单集钩子 / 爽点 / 反派）** — `skills/script-writing/references/short-drama-genres.md` · `script-writing、short、drama、genres`
@@ -120,6 +122,7 @@
 - **综艺台本 / 口播 / 广播剧（非叙事脚本写法）** — `skills/script-writing/references/variety-and-broadcast.md` · `script-writing、variety、and、broadcast`
 - **编剧手艺（蒸馏）** — `skills/script-writing/references/screenwriting-craft.md` · `script-writing、screenwriting、craft`
 - **网文商业创作方法（蒸馏）** — `skills/novel-writing/references/web-fiction-craft.md` · `novel-writing、web、fiction、craft`
+- **群像多线工程（Ensemble Engineering）：线、合流与人** — `skills/novel-writing/references/ensemble-engineering.md` · `novel-writing、ensemble、engineering`
 - **节拍表模板与实例** — `skills/script-writing/references/beat-sheets.md` · `script-writing、beat、sheets`
 - **规则怪谈规则工程：定义·分层披露·理解成本转移** — `skills/novel-writing/references/rule-horror-techniques.md` · `novel-writing、rule、horror、techniques`
 - **资产一致性审查法（设定库级体检）** — `skills/novel-writing/references/asset-consistency-audit.md` · `novel-writing、asset、consistency、audit`

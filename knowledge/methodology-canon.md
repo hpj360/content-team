@@ -134,6 +134,9 @@ L5 之上是**迭代层**：`revision-diagnosis`（三层体检）→ `quality_e
 | 台词三口径 | **分层**：时长折算 4.2 字/秒（`screenplay-formats` 对账）；单镜台词预算 ≤12 字（`ai-video-storyboard-prompting`）；镜头表行数 ≤2 行/≤70%（`vertical-shot-grammar`） | 各管一域 |
 | 800 字一钩 | `chapter-continuity` §5.2（章节侧权威） | `scene-detail-engineering` §9 只引用 |
 | "三细节"各层不同轴 | 可视细节 `dramaturgy-gate`；运动预算（≥2 运动+≥1 环境）`failure-casebook`/`ai-video-storyboard-prompting`；核心细节密度 3–5 `scene-detail-engineering` | 名称分轴，勿合并 |
+| 母题/叙事装置 | `plot-device-engineering`（母题卡片库，蒸馏自公版 20 部语料） | 兑现走 P6 登记 |
+| 喜剧三拍装载 | `comedy-engineering`（Setup-Build-Punch+笑点五型） | 拍位时长仍归 beat-sheets |
+| 多线合流/群像 | `ensemble-engineering`（线型三分+线架构五律） | 视角原理归 narratology-toolbox |
 
 ## 四、数值口径总表（**分档口径**：先按形态/粒度定位，再看数值）
 

@@ -57,6 +57,9 @@
 | AI 视频分镜提示词 | `ai-video-storyboard-prompting.md` |
 | 改编（小说↔剧本） | `adaptation-guide.md`（含文学↔影视转场对照表） |
 | 设定前后矛盾 | `asset-consistency-audit.md`（六类资产对账五步） |
+| 不知道写什么桥段 / 想用经典装置 | `plot-device-engineering.md`（母题卡片库，蒸馏自公版 20 部） |
+| 喜剧不会写 / 笑点平 | `comedy-engineering.md`（笑点五型+三拍装载+排布纪律） |
+| 多线乱 / 群像散 | `ensemble-engineering.md`（线型三分+线架构五律+群像管理七招） |
 | 能力/天赋/经济/数值体系设计 | `novel-writing/references/power-system-design.md`（**六维体系设计学 S1–S10**）+ 案例 `corpus/paradigm-power-system-*.md`（7 部六维拆解） |
 
 ## 四、题材簇权责（审计确认的三份散点已归位）
@@ -85,9 +88,9 @@
 
 ## 六、references 全清单（50 份，按簇分组；★=簇主文件）
 
-**novel-writing（20）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`event-conflict-arc`（**六拍事件链**）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`power-system-design`（**六维体系设计学**）· ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · `story-state-and-continuity` · `asset-consistency-audit`（资产一致性审查）· `case-breakdown`
+**novel-writing（22）**：★`web-fiction-craft`（商业/开篇）· `hook-library`/`hook-mechanics`（招式/机制配对）· ★`narratology-toolbox`（叙述原理）· ★`chapter-continuity`（章际）· ★`event-conflict-arc`（**六拍事件链**）· ★`theme-engineering` · ★`worldbuilding-guide` · ★`power-system-design`（**六维体系设计学**）· ★`character-bible` · `genre-playbooks`（速查）· `genre-xuanhuan-techniques` / `genre-scifi-techniques` / `genre-mystery-techniques`（参数）· ★`rule-horror-techniques` · ★`scene-detail-engineering` · ★`emotion-conflict-externalization` · ★`plot-device-engineering`（**母题工程**）· ★`ensemble-engineering`（**群像多线工程**）· `story-state-and-continuity` · `asset-consistency-audit`（资产一致性审查）· `case-breakdown`
 
-**script-writing（13）**：★`screenwriting-craft`（总论）· ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（公式/爽点表达层）· `short-drama-genres`（含反派分级附录）· ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
+**script-writing（14）**：★`screenwriting-craft`（总论）· ★`beat-sheets`（**拍位时长唯一权威**）· `short-drama-playbook`（公式/爽点表达层）· `short-drama-genres`（含反派分级附录）· ★`scene-engineering`（判定）· `scene-writing-drills`（素材）· ★`comedy-engineering`（**喜剧工程**）· ★`dialogue-examples` · ★`revision-diagnosis` · `screenplay-formats`（要点）· `variety-and-broadcast`（三形态完整模板）· `documentary-musical-immersive` · `interactive-and-game-script` · `adaptation-guide`
 
 **showrunning（7）**：★`platform-playbooks`（**平台数值权威**；含短剧合规附录）· `platform-structure-templates`（骨架）· `platform-rule-maintenance` · ★`series-planning` · `episode-rhythm-examples`（实例，口径同 beat-sheets）· ★`production-contract` · `acceptance-checklists`
 
